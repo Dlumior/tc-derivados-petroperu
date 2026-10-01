@@ -1,0 +1,124 @@
+% [4 pts] ~2.6 páginas. Identificación y CUANTIFICACIÓN de riesgos con cita a Nota/página.
+% Estructura por riesgo: fuente (qué partida) → dirección (qué movimiento daña) → magnitud → coberturas naturales.
+\section{Identificación de riesgos financieros}
+
+La Nota 3.1 clasifica la exposición de PETROPERÚ en riesgos de mercado (tipo de cambio, tasa de interés y precio
+del crudo), de crédito y de liquidez. El Cuadro~\ref{tab:matriz} resume su magnitud y si pueden gestionarse
+eficientemente con derivados.
+
+\begin{table}[htbp]\centering\small
+\caption{Matriz de riesgos financieros de PETROPERÚ al cierre de 2025}\label{tab:matriz}
+\newcommand{\muestra}[1]{\fcolorbox{gray!60}{#1}{\rule{0pt}{0.55em}\rule{0.9em}{0pt}}}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\fboxsep}{0pt}
+\newcommand{\sep}{\arrayrulecolor{white}\specialrule{1.2pt}{0pt}{0pt}\arrayrulecolor{black}}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash\bfseries}p{1.85cm}
+    >{\raggedright\arraybackslash}X
+    >{\raggedright\arraybackslash}p{3.0cm}
+    >{\raggedright\arraybackslash}p{3.45cm}
+    >{\raggedright\arraybackslash}p{3.0cm}}
+\toprule
+\normalfont\textbf{Riesgo} & \textbf{Origen} & \textbf{Exposición} & \textbf{Impacto (US\$ MM)} & \textbf{Respuesta} \\
+\midrule
+\rowcolor{prioAlta}
+Tipo de cambio & Pasivo neto en S/: préstamo del Banco de la Nación (BN) y cuentas por pagar
+  & S/~\PenNetoAbs\ MM \newline (US\$~\PenNetoUSD\ MM)
+  & TC $-10$\,\%: (\SensApreciacion) \newline TC $+10$\,\%: \SensDepreciacion
+  & CCS + NDF \newline (Estrategia 1) \\ \sep
+\rowcolor{prioAlta}
+Precio del crudo & Inventario de crudo; compras de \ComprasMBDC\ MBDC
+  & \InvCrudoMbl\ MBL \newline (US\$~\InvCrudoUSD\ MM)
+  & WTI $-20$\,\%: (\PerdidaInvVeinte) \newline = \PerdidaInvVeinteXUB\ veces la utilidad bruta
+  & Swap o collar OTC \newline (Estrategia 2) \\ \sep
+\rowcolor{prioMedia}
+Tasa de interés & Bonos a tasa fija; refinanciación del CESCE y de líneas de corto plazo
+  & Bonos: US\$~\BonosVR\ MM a mercado \newline (US\$~\BonosLibros\ MM en libros)
+  & $\pm100$~pb: $\mp$\BonosDVCien\ en el valor razonable
+  & Solo la tasa base, no el spread \\ \sep
+\rowcolor{prioNo}
+Liquidez & Capital de trabajo negativo; líneas usadas al \LineasPct
+  & US\$~\VencMenosUnAnio\ MM de pagos a menos de un año
+  & Restricción, no riesgo de precio
+  & Condiciona el diseño: sin márgenes ni primas altas \\ \sep
+\rowcolor{prioNo}
+Crédito & Mayoristas y entidades del Estado
+  & Baja concentración (Nota 3.1(b))
+  & No significativo
+  & No es necesario \\
+\bottomrule
+\end{tabularx}
+\par\vspace{3pt}{\footnotesize\raggedright\textbf{Prioridad:}\quad
+  \muestra{prioAlta}~Alta: se cubre con derivados\qquad
+  \muestra{prioMedia}~Media: cobertura parcial\qquad
+  \muestra{prioNo}~No se cubre con derivados\par}
+\fuente{\textcite{petroperu2026eeff}, Notas 3, 10 y 14 (pp.~42--46, 60--61 y 74--78). Elaboración propia.}
+\end{table}
+
+\subsection{Riesgo de tipo de cambio}
+Con contabilidad en dólares, el riesgo surge de las partidas en soles, euros y yenes. La exposición relevante es en
+soles: una posición pasiva neta de S/~\PenNetoAbs\ millones (US\$~\PenNetoUSD\ millones al TC SBS de \TCcierre\ que usa el EEFF),
+\PenNetoCrec\ mayor que la de 2024 (S/~\PenNetoVeinticuatro\ millones). La concentra el rubro \emph{otros pasivos
+financieros} (S/~\PenOtrosPasFin\ millones), que incluye el préstamo del BN con garantía soberana por
+S/~\BNSaldoPEN\ millones al \BNTasa, pagadero en \BNCuotasTot\ cuotas mensuales de enero de 2025 a diciembre de 2028
+(Nota~14(ii), p.~74); como en 2025 solo se pagaron intereses, la sección~3 supone \BNCuotasSup\ cuotas desde 2026. Las posiciones en euros (activa por EUR~\EurNeto\ millones) y yenes (pasiva por
+JPY~\JpyNeto\ millones) no son significativas según la Gerencia (Figura~\ref{fig:posicion}).
+
+\begin{figure}[htbp]\centering
+  \includegraphics[width=0.86\linewidth]{f_posicion_pen}
+  \caption{Composición de la posición en soles al cierre de 2025 (S/ millones)}\label{fig:posicion}
+  \fuente{\textcite{petroperu2026eeff}, Nota 3.1(a)(i), p.~42. Elaboración propia.}
+\end{figure}
+
+El riesgo ya se materializó: en 2025 el tipo de cambio interbancario medio del BCRP pasó de \TCcierreBCRPVeinticuatro\ a
+\TCcierreBCRPVeinticinco\ (\TCvarVeinticinco; el sol se apreció, Figura~\ref{fig:historia}) y la diferencia de
+cambio aumentó en US\$~\DifCambioBN\ millones el saldo en dólares del préstamo del BN (Nota~14(c), p.~77), aunque en
+el agregado la Compañía reportó una ganancia cambiaria neta de US\$~\GananciaDifCambio\ millones. La Compañía estima
+que un movimiento de $\pm$10\,\% del dólar frente al sol afecta el resultado antes de impuestos en
+$\pm$US\$~\SensibilidadFX\ millones, una aproximación lineal. El cálculo exacto es asimétrico: $-$US\$~\SensApreciacion\
+millones si el TC cae 10\,\% y +US\$~\SensDepreciacion\ millones si sube 10\,\%. El descalce no es solo contable: las ventas
+locales se facturan en soles, pero sus precios siguen la paridad de importación en dólares (Nota~1-c), por lo que
+económicamente son flujos en dólares que no cubren de forma natural una deuda en soles a tasa fija.
+
+\begin{figure}[htbp]\centering
+  \includegraphics[width=0.9\linewidth]{f_historia}
+  \caption{Tipo de cambio y precio del WTI, promedios mensuales (\HistDesde\ a \HistHasta)}\label{fig:historia}
+  \fuente{\textcite{bcrpseries2026}, series PN01210PM y PN01660XM. Volatilidad anualizada de los retornos
+  logarítmicos mensuales: TC \VolHistTC; WTI \VolHistWTI. Elaboración propia.}
+\end{figure}
+
+\subsection{Riesgo de precio del crudo}
+Es el riesgo operativo-financiero más directo. En 2025 PETROPERÚ compró crudo y productos por
+US\$~\ComprasUSD\ millones, a un precio promedio de US\$~\PrecioCompras/bl y con un volumen de \ComprasMBDC\ MBDC
+(Nota~23, p.~93), pero el crudo cerró el año en US\$~\WTIcierreVeinticinco/bl, \WTIvarVeinticinco\ frente a los
+US\$~\WTIcierreVeinticuatro/bl de 2024 (Nota~10, p.~61). Entre la compra y la venta del producto refinado pasan
+varias semanas, y en ese lapso el inventario pierde valor si el precio cae; la Nota~1-d señala esta caída como una
+causa de la pérdida de 2025. Al cierre, el inventario de crudo era de \InvCrudoMbl\ MBL (US\$~\InvCrudoUSD\ millones)
+y el de hidrocarburos sumaba US\$~\InvHidroUSD\ millones. Con una utilidad bruta de apenas
+US\$~\UtilidadBruta\ millones, una caída de 20\,\% del WTI sobre el inventario de crudo (US\$~\PerdidaInvVeinte\
+millones) equivale a \PerdidaInvVeinteXUB\ veces la utilidad bruta del año. El riesgo es simétrico y de gran escala:
+en 2026 el WTI subió hasta US\$~\WTISpot/bl al \FechaValorizacion, en plena crisis de oferta en Medio Oriente
+\parencite{reuters2026oil}. El FEPC solo alcanza al Diésel BX y al Petróleo Industrial~6 y en 2025 fue un aporte
+neto (\FEPCpct\ de los ingresos), no una compensación (Nota~1-c, p.~19).
+
+\subsection{Riesgos de tasa de interés, liquidez y crédito}
+Toda la deuda está pactada a tasa fija (Figura~\ref{fig:deuda}): bonos 2032 (\CuponTreintaDos) y 2047 (\CuponCuarentaSiete) por
+US\$~\BonosNominal\ millones nominales, el préstamo CESCE (\CESCETasa, 2030), el préstamo del BN y líneas de corto
+plazo. No hay riesgo de flujo de caja por tasas variables; el riesgo está en el valor razonable y en la
+refinanciación. Los bonos valen US\$~\BonosVR\ millones a mercado frente a US\$~\BonosLibros\ millones en libros
+(Nota~14(d), p.~78), lo que implica un rendimiento de \YTMBonos\ (cálculo propio): un spread de crédito de unos
+\SpreadBonosPb~pb sobre el Tesoro de EE.\,UU. de igual duración (\USTDurDic). Con una duración modificada de \BonosDurMod\ años, cada 100~pb modifican su valor en unos
+US\$~\BonosDVCien\ millones. Además, por la opinión con salvedades se incumplió un covenant no financiero del CESCE y su
+saldo (US\$~\CESCESaldo\ millones) se reclasificó al corto plazo. Un swap puede fijar la tasa base, pero no el spread,
+que es el componente dominante.
+
+\begin{figure}[htbp]\centering
+  \includegraphics[width=0.86\linewidth]{f_deuda}
+  \caption{Deuda financiera y con el accionista al cierre de 2025 (US\$~\DeudaTotal\ millones, sin intereses devengados)}\label{fig:deuda}
+  \fuente{\textcite{petroperu2026eeff}, Nota 14(a), p.~76, y Nota 3.2, p.~46. Elaboración propia.}
+\end{figure}
+
+El riesgo de liquidez es crítico: de US\$~\LineasRev\ millones en líneas revolventes se usaban
+US\$~\LineasUsadas\ millones (\LineasPct), y los pagos no descontados a menos de un año suman
+US\$~\VencMenosUnAnio\ millones (Nota 3.1(c), pp.~44--45). No se cubre con derivados, pero condiciona su diseño:
+deben evitarse instrumentos con llamadas de margen diarias, como los futuros en bolsa, y primas iniciales altas.
+El riesgo de crédito es bajo, porque la cartera se concentra en mayoristas de primer nivel y entidades del Estado.

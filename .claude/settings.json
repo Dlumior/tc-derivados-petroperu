@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(make:*)",
+      "Bash(python scripts/*)",
+      "Bash(python3 scripts/*)",
+      "Bash(.venv/bin/python:*)",
+      "Bash(uv run:*)",
+      "Bash(uv sync:*)",
+      "Bash(pytest:*)",
+      "Bash(ruff:*)",
+      "Bash(latexmk:*)",
+      "Bash(pdftotext:*)",
+      "Bash(pdfinfo:*)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "WebSearch",
+      "WebFetch(domain:estadisticas.bcrp.gob.pe)",
+      "WebFetch(domain:www.bcrp.gob.pe)",
+      "WebFetch(domain:www.smv.gob.pe)",
+      "WebFetch(domain:www.sbs.gob.pe)",
+      "WebFetch(domain:www.eia.gov)",
+      "WebFetch(domain:www.cmegroup.com)",
+      "WebFetch(domain:fred.stlouisfed.org)",
+      "WebFetch(domain:www.petroperu.com.pe)"
+    ],
+    "deny": [
+      "Edit(data/raw/**)",
+      "Write(data/raw/**)",
+      "Bash(rm -rf data*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guardian.py\" inicio" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guardian.py\" pre-edit" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guardian.py\" post-edit", "timeout": 300 }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guardian.py\" post-bash", "timeout": 120 }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+% [1.5 pts] ~0.8 páginas. Qué es la empresa, por qué importa, objetivo del informe.
+% Cifras solo con macros de generado/valores.tex.
+\section{Introducción y objetivo}
+
+PETROPERÚ es la empresa estatal que refina y comercializa combustibles en el Perú: opera la Nueva Refinería
+Talara (NRT), las refinerías de Iquitos y Conchán y el Oleoducto Norperuano. Reporta a la SMV y su moneda
+funcional es el dólar estadounidense. En 2025 registró ingresos por US\$~\IngresosVeinticinco\ millones,
+una pérdida neta de US\$~\PerdidaVeinticincoAbs\ millones y un capital de trabajo de US\$~\CapTrabajoVeinticinco\ millones;
+el auditor incluyó una incertidumbre material sobre la continuidad como empresa en marcha
+(Cuadro~\ref{tab:indicadores}) \parencite{petroperu2026eeff}. La calificación internacional sigue en grado
+especulativo: S\&P la rebajó a B- en diciembre de 2025 y la reafirmó en mayo de 2026 con perspectiva negativa;
+Moody's la reafirmó en Caa1 en setiembre de 2026 y cambió su perspectiva a positiva, y Fitch retiró sus calificaciones
+en enero de 2026 \parencite{sp2026petroperu,moodys2026petroperu,petroperu2026clasif}.
+
+En este contexto la volatilidad de mercado ya no es un tema secundario: cada dólar que se pierde por tipo de cambio
+o por el precio del crudo reduce una liquidez escasa \parencite{froot1993}. La Nota~3 confirma que la Compañía
+no usa derivados para cubrir el riesgo cambiario y asume ese riesgo; el único derivado revelado son swaps de monedas
+de corto plazo con Citibank (activo de US\$~\SwapCiti\ millones, Nota~9(g)), sin una política de cobertura
+que los enmarque. El precio del crudo tampoco se cubre: solo se amortigua en parte con el Fondo de Estabilización
+de Precios (FEPC).
+
+\textbf{Objetivo.} Sustentar ante la Gerencia General el uso de instrumentos derivados para gestionar los riesgos
+financieros del negocio. Para ello: (i) se identifican y cuantifican los riesgos con los estados financieros
+auditados 2025; (ii) se diseñan y valorizan dos estrategias con uso intensivo de derivados, un \emph{cross currency
+swap} (CCS) con forwards sin entrega (NDF) para el riesgo cambiario y un swap y un collar de opciones sobre WTI para
+el precio del crudo; y (iii) se proponen las condiciones de implementación. Las exposiciones corresponden al cierre
+de 2025 y los precios de mercado al \FechaValorizacion, fecha de valorización de este informe.
+
+\input{generado/tablas/t_indicadores}

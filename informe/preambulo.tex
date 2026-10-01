@@ -1,0 +1,52 @@
+% ---------------------------------------------------------------- idioma y fuentes (LuaLaTeX)
+\usepackage[spanish,es-noshorthands]{babel}  % rótulo "Cuadro", como en el texto
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\usepackage{microtype}
+\usepackage{csquotes}
+
+% ---------------------------------------------------------------- página (límite: 10 páginas POR TODO CONCEPTO)
+\usepackage[a4paper,margin=2.2cm,top=2.2cm,bottom=2.2cm]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\rhead{\small Gestión de Derivados Financieros — Trabajo Calificado}
+\lhead{\small PETROPERÚ S.A.}
+\cfoot{\small \thepage\ de \pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{lastpage}
+\usepackage[compact]{titlesec}
+\titlespacing*{\section}{0pt}{1.0ex}{0.6ex}
+\titlespacing*{\subsection}{0pt}{0.8ex}{0.4ex}
+\usepackage{enumitem}\setlist{nosep,leftmargin=*}
+\setlength{\parskip}{0.3em}\setlength{\parindent}{0pt}
+
+% ---------------------------------------------------------------- matemática, tablas, figuras
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx,multirow}
+\usepackage{graphicx}
+\graphicspath{{generado/figuras/}{figuras/}}
+\usepackage[font=small,labelfont=bf,skip=3pt]{caption}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{colortbl}   % bandas sombreadas en cuadros (p. ej., matriz de riesgos)
+\usepackage{array}
+\colorlet{prioAlta}{red!13}\colorlet{prioMedia}{orange!18}\colorlet{prioNo}{gray!12}  % prioridades de riesgo
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+
+% Nota de fuente OBLIGATORIA bajo cada tabla/figura (criterio "Material de apoyo").
+\newcommand{\fuente}[1]{\par\vspace{2pt}{\footnotesize\raggedright\textit{Fuente:} #1\par}}
+
+% ---------------------------------------------------------------- bibliografía (APA 7)
+\usepackage[backend=biber,style=apa]{biblatex}
+\addbibresource{referencias.bib}
+\renewcommand*{\bibfont}{\small}\setlength{\bibitemsep}{0pt}   % referencias en letra menor (ahorra espacio para el límite de 10 p.)
+
+\usepackage[hidelinks]{hyperref}
+
+% ---------------------------------------------------------------- cifras generadas (NO escribir números a mano)
+\IfFileExists{generado/valores.tex}{\input{generado/valores.tex}}{%
+  \PackageWarning{informe}{Falta generado/valores.tex: ejecute 'make calc'}}
+
+% Marca visible para lo pendiente (el hook y 'make final' fallan si queda alguna)
+\newcommand{\pendiente}[1]{\textcolor{red}{\textbf{[PENDIENTE: #1]}}}

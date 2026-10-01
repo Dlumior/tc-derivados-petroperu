@@ -1,0 +1,25 @@
+% Compilar con: latexmk -lualatex -output-directory=out main.tex   (o `make pdf`)
+\documentclass[11pt]{article}
+\input{preambulo}
+
+\begin{document}
+
+% Portada COMPACTA (la portada cuenta dentro de las 10 páginas)
+\begin{center}
+  {\small Universidad del Pacífico — Maestría en Finanzas — Gestión de Derivados Financieros (Prof. Alberto Humala)}\\[4pt]
+  {\Large\bfseries Gestión de riesgos financieros de PETROPERÚ S.A.\\ mediante instrumentos derivados}\\[4pt]
+  {\small Informe a la Gerencia General — Gerencia de Finanzas}\\[2pt]
+  {\small Grupo: \pendiente{Integrantes (máx. 4)} \quad Lima, 5 de octubre de 2026}
+\end{center}
+\vspace{-0.5em}
+
+% Presupuesto de páginas (total 10). Puntaje de la rúbrica entre corchetes.
+\input{secciones/01_introduccion}      % 0.6 p  [1.5]
+\input{secciones/02_riesgos}           % 2.0 p  [4.0]
+\input{secciones/03_estrategias}       % 2.4 p  [4.0]
+\input{secciones/04_analisis}          % 2.8 p  [4.0]  (+ Material de apoyo [3.5] repartido en todo el texto)
+\input{secciones/05_conclusiones}      % 0.6 p  [1.5]
+
+\printbibliography[heading=bibintoc,title={Referencias}]  % 0.6 p [1.5]
+
+\end{document}

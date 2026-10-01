@@ -1,0 +1,104 @@
+# Exposiciones de PETROPERÚ extraídas del dictamen EEFF 2025 (Gaveglio Aparicio y Asociados — PwC, 22-may-2026).
+# Moneda funcional: US$. Cifras en miles salvo indicación.
+# estado: verificado (leído del EEFF) | supuesto (decisión del grupo, justificar en el informe) | PENDIENTE
+# Página = numeración "- n -" del informe; folio = número de 4 dígitos del PDF.
+
+empresa:
+  perdida_neta_2025: {valor: -601482, unidad: "US$000", fuente: "EEFF 2025, Nota 1-f, p. 21", estado: verificado}
+  capital_trabajo_negativo: {valor: -2296448, unidad: "US$000", fuente: "EEFF 2025, Nota 1-f, p. 21", estado: verificado}
+  ingresos_2025: {valor: 3380362, unidad: "US$000", fuente: "EEFF 2025, Nota 21, p. 92", estado: verificado}
+  ventas_exterior_2025: {valor: 390840, unidad: "US$000", fuente: "EEFF 2025, Nota 21, p. 92", estado: verificado}
+  costo_ventas_2025: {valor: 3424866, unidad: "US$000", fuente: "EEFF 2025, Nota 23, p. 93", estado: verificado}
+  ingresos_2024: {valor: 3456397, unidad: "US$000", fuente: "EEFF 2025, Nota 5, p. 53 y Nota 21, p. 92", estado: verificado}
+  perdida_neta_2024: {valor: -773905, unidad: "US$000", fuente: "EEFF 2025, Nota 1-f, p. 21", estado: verificado}
+  capital_trabajo_negativo_2024: {valor: -1899985, unidad: "US$000", fuente: "EEFF 2025, Nota 1-f, p. 21", estado: verificado}
+  utilidad_bruta_2025: {valor: 14404, unidad: "US$000", fuente: "EEFF 2025, Nota 5, p. 52", estado: verificado}
+  apalancamiento_2025: {valor: 0.78, fuente: "EEFF 2025, Nota 3.2, p. 46 (deuda neta / capital total)", estado: verificado}
+  apalancamiento_2024: {valor: 0.70, fuente: "EEFF 2025, Nota 3.2, p. 46", estado: verificado}
+  du_003_2026_compromisos: {valor: 2000000, unidad: "US$000", fuente: "EEFF 2025, Nota 1, p. 25 (D.U. N.° 003-2026: compromisos contingentes del MINEM para la continuidad operativa)", estado: verificado}
+  fepc_pct_ingresos: {valor: -0.0043, fuente: "EEFF 2025, Nota 1-c, p. 19 (FEPC = -0.43 % de los ingresos)", estado: verificado}
+
+fx:  # Riesgo cambiario — Nota 3.1.a.i, p. 42
+  pen_activos: {valor: 990998, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  pen_pasivos: {valor: -5695011, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  pen_neto: {valor: -4704013, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado,
+             nota: "Posición pasiva neta en soles: pierde si el PEN se APRECIA (TC PEN/USD baja)."}
+  pen_otros_pasivos_financieros: {valor: -3824458, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  pen_efectivo: {valor: 41127, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  pen_cxc_comerciales: {valor: 482296, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  pen_otras_cxc: {valor: 467575, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  pen_cxp_comerciales: {valor: -517199, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  pen_cxp_relacionada: {valor: -607833, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  pen_otras_cxp: {valor: -740582, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  pen_arrendamientos: {valor: -4939, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  pen_neto_2024: {valor: -3880082, unidad: "S/000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  tc_cierre_2024_usd_por_pen: {valor: 0.265, unidad: "US$/S/", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42 (TC SBS)", estado: verificado}
+  dif_cambio_prestamo_bn: {valor: 119302, unidad: "US$000", fuente: "EEFF 2025, Nota 14(c), p. 77 (diferencia de cambio del préstamo con garantía, 2025)", estado: verificado}
+  eur_neto: {valor: 95636, unidad: "EUR000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  jpy_neto: {valor: -50510, unidad: "JPY000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  tc_cierre_usd_por_pen: {valor: 0.297, unidad: "US$/S/", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42 (TC SBS)", estado: verificado}
+  sensibilidad_10pct: {valor: 139709, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado,
+                       nota: "Efecto en resultado antes de impuestos por ±10 % del USD frente al S/."}
+  ganancia_dif_cambio_2025: {valor: 13387, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
+  swap_citibank_activo: {valor: 14623, unidad: "US$000", fuente: "EEFF 2025, Nota 9(g), p. 59-60", estado: verificado,
+                         nota: "Swaps de monedas de corto plazo con Citibank; contradice parcialmente la Nota 3 (sin derivados de cobertura FX)."}
+
+prestamo_bn:  # Préstamo Banco de la Nación con garantía soberana, en S/ — Nota 14(ii), p. 74
+  saldo_usd: {valor: 1118041, unidad: "US$000", fuente: "EEFF 2025, Nota 14(ii), p. 74", estado: verificado}
+  saldo_pen: {valor: 3765590, unidad: "S/000", fuente: "EEFF 2025, Nota 14(ii), p. 74", estado: verificado}
+  tasa: {valor: 0.0555, fuente: "EEFF 2025, Nota 14(ii), p. 74", estado: verificado}
+  cuotas_totales: {valor: 46, fuente: "EEFF 2025, Nota 14(ii), p. 74 (ene-2025 a 15-dic-2028)", estado: verificado}
+  cuotas_remanentes_dic25: {valor: 36, fuente: "Supuesto: cuotas mensuales ene-2026 a dic-2028", estado: supuesto,
+                            nota: "El EEFF indica 46 cuotas desde ene-2025, pero en 2025 solo se pagaron intereses (Nota 14(c), sin pagos de principal). Se supone amortización francesa (TEA) en 36 cuotas ene-2026 a dic-2028. Confirmar con EEFF intermedios 2026 (SMV)."}
+  cuotas_pagadas_a_valorizacion: {valor: 9, fuente: "Supuesto: cuotas del 15-ene al 15-sep-2026 pagadas según cronograma", estado: supuesto}
+  dias_a_primera_cuota: {valor: 17, unidad: "días", fuente: "Del 28-sep-2026 (fecha de valorización) al 15-oct-2026 (vencimiento mensual, Nota 14(ii))", estado: supuesto}
+
+crudo:  # Riesgo de precio — Notas 3.1.a.iii, 10 y 23
+  inventario_crudo_mbl: {valor: 2901, unidad: "miles bbl", fuente: "EEFF 2025, Nota 10, p. 61", estado: verificado}
+  inventario_crudo_usd: {valor: 168369, unidad: "US$000", fuente: "EEFF 2025, Nota 10, p. 60", estado: verificado}
+  inventario_refinados_usd: {valor: 313490, unidad: "US$000", fuente: "EEFF 2025, Nota 10, p. 60 (en proceso + terminados + adquiridos)", estado: verificado}
+  wti_cierre_2025: {valor: 57.42, unidad: "US$/bbl", fuente: "EEFF 2025, Nota 10, p. 61", estado: verificado}
+  compras_mbdc: {valor: 87, unidad: "miles bbl/día", fuente: "EEFF 2025, Nota 23, p. 93", estado: verificado}
+  precio_prom_compras: {valor: 78.66, unidad: "US$/bbl", fuente: "EEFF 2025, Nota 23, p. 93", estado: verificado}
+  compras_usd: {valor: 2490013, unidad: "US$000", fuente: "EEFF 2025, Nota 23, p. 93", estado: verificado}
+  wti_cierre_2024: {valor: 71.72, unidad: "US$/bbl", fuente: "EEFF 2025, Nota 10, p. 61", estado: verificado}
+  inventario_hidrocarburos_usd: {valor: 563490, unidad: "US$000", fuente: "EEFF 2025, Nota 10, p. 60 (crudo + en proceso + terminados + adquiridos + en tránsito)", estado: verificado}
+  cobertura_objetivo: {valor: 1.0, fuente: "Supuesto: se cubre el 100 % del inventario de crudo al cierre para ilustrar; la política propuesta fija 50 %-80 %", estado: supuesto}
+  plazo_cobertura_anios: {valor: 0.25, unidad: "años", fuente: "Supuesto: rotación del inventario de 1 a 3 meses (Nota 1-d); se cubre con vencimiento de 3 meses", estado: supuesto}
+  reparto_swap: {valor: 0.5, fuente: "Supuesto de diseño: 50 % del volumen cubierto con swap (cargamentos con margen ya fijado) y 50 % con collar de costo cero", estado: supuesto}
+  put_pct_forward: {valor: 0.90, fuente: "Supuesto de diseño: piso del collar al 90 % del futuro a 3 meses", estado: supuesto}
+
+deuda:  # Nota 14, p. 74-76 — toda a tasa fija (Nota 3.1.a.ii)
+  bonos_2032: {valor: 1000000, unidad: "US$000", fuente: "EEFF 2025, Nota 14(iii), p. 74 — cupón 4.750 %", estado: verificado}
+  bonos_2047: {valor: 2000000, unidad: "US$000", fuente: "EEFF 2025, Nota 14(iii), p. 75 — cupón 5.625 %", estado: verificado}
+  cesce: {valor: 722222, unidad: "US$000", fuente: "EEFF 2025, Nota 14(iv), p. 75-76 — 3.285 %, vence 2030, reclasificado a corriente por covenant", estado: verificado}
+  cesce_tasa: {valor: 0.03285, fuente: "EEFF 2025, Nota 14(iv), p. 75", estado: verificado}
+  bancarios_corto_plazo: {valor: 226921, unidad: "US$000", fuente: "EEFF 2025, Nota 14(i), p. 74 — tasas 3.85 %–12.22 %", estado: verificado}
+  lineas_revolventes: {valor: 376875, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.c, p. 44", estado: verificado}
+  lineas_utilizadas: {valor: 354635, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.c, p. 44", estado: verificado}
+  otros_pasivos_financieros: {valor: 5168839, unidad: "US$000", fuente: "EEFF 2025, Nota 14, p. 74", estado: verificado}
+  otros_pasivos_financieros_2024: {valor: 5610658, unidad: "US$000", fuente: "EEFF 2025, Nota 14, p. 74", estado: verificado}
+  libros_bonos_2032: {valor: 996065, unidad: "US$000", fuente: "EEFF 2025, Nota 14(a), p. 76", estado: verificado}
+  libros_bonos_2047: {valor: 2110917, unidad: "US$000", fuente: "EEFF 2025, Nota 14(a), p. 76", estado: verificado}
+  libros_cesce: {valor: 705282, unidad: "US$000", fuente: "EEFF 2025, Nota 14(a), p. 76", estado: verificado}
+  libros_prestamo_bn: {valor: 1118041, unidad: "US$000", fuente: "EEFF 2025, Nota 14(a), p. 76", estado: verificado}
+  libros_bancarios_cp: {valor: 226922, unidad: "US$000", fuente: "EEFF 2025, Nota 14(a), p. 76 (115,523 en S/ + 111,400 en US$)", estado: verificado}
+  parte_relacionada_mef: {valor: 1271727, unidad: "US$000", fuente: "EEFF 2025, Nota 3.2, p. 46 y Nota 16", estado: verificado}
+  bonos_libros_total: {valor: 3095968, unidad: "US$000", fuente: "EEFF 2025, Nota 14(d), p. 78", estado: verificado}
+  bonos_valor_razonable: {valor: 2030330, unidad: "US$000", fuente: "EEFF 2025, Nota 14(d), p. 78", estado: verificado}
+  bonos_2032_cupon: {valor: 0.0475, fuente: "EEFF 2025, Nota 14(iii), p. 74", estado: verificado}
+  bonos_2047_cupon: {valor: 0.05625, fuente: "EEFF 2025, Nota 14(iii), p. 75", estado: verificado}
+  bonos_2032_anios_dic25: {valor: 6.5, unidad: "años", fuente: "Vencimiento jun-2032 (Nota 14(iii)); plazo desde 31-dic-2025", estado: verificado}
+  bonos_2047_anios_dic25: {valor: 21.5, unidad: "años", fuente: "Vencimiento jun-2047 (Nota 14(iii)); plazo desde 31-dic-2025", estado: verificado}
+
+liquidez:  # Flujos no descontados de pasivos financieros — Nota 3.1.c, p. 45
+  venc_menos_1a_2025: {valor: 3163445, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.c, p. 45", estado: verificado}
+  venc_1a_2a_2025: {valor: 345207, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.c, p. 45", estado: verificado}
+  venc_mas_2a_2025: {valor: 6068107, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.c, p. 45", estado: verificado}
+  venc_menos_1a_2024: {valor: 2631269, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.c, p. 45", estado: verificado}
+  venc_1a_2a_2024: {valor: 1063291, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.c, p. 45", estado: verificado}
+  venc_mas_2a_2024: {valor: 6035456, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.c, p. 45", estado: verificado}
+
+cobertura_fx:  # Parámetros de diseño de la Estrategia 1
+  ndf_pct_residual: {valor: 0.80, fuente: "Supuesto de diseño: NDF sobre el 80 % de la posición en S/ distinta del préstamo BN (política propuesta 70 %-100 %)", estado: supuesto}
+  ndf_dias: {valor: 91, unidad: "días", fuente: "Supuesto de diseño: NDF a 3 meses renovables (28-sep-2026 a 28-dic-2026)", estado: supuesto}

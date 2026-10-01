@@ -1,0 +1,34 @@
+[project]
+name = "derivados"
+version = "0.1.0"
+description = "Trabajo Calificado — Gestión de Derivados Financieros (Prom. 44): coberturas para PETROPERÚ"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.1",
+  "matplotlib>=3.8",
+  "pyyaml>=6.0",
+  "openpyxl>=3.1",
+  "pypdf>=4.0",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.5", "jupyter"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 120
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

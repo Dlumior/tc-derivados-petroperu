@@ -1,0 +1,629 @@
+"""Pipeline único: insumos (YAML/CSV) → cálculos → informe/generado/{valores.tex, tablas/, figuras/}.
+
+Uso:  python scripts/run_all.py          (o `make calc`)
+
+Exposiciones: EEFF auditados al 31-dic-2025. Mercado: fecha de valorización 28-sep-2026.
+Estrategias:
+  E1  Riesgo cambiario (pasivo neto en S/): CCS amortizable recibe S/ – paga US$ sobre el préstamo BN
+      + NDF de compra de S/ a 3 meses sobre el resto de la posición.
+  E2  Riesgo de precio del crudo (inventario): swap de WTI a precio promedio vs. collar de costo cero
+      (instrumentos OTC, sin márgenes diarios de bolsa).
+  Tasa (no recomendada hoy): tasa de un swap de inicio diferido para la refinanciación del CESCE.
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+import matplotlib.pyplot as plt  # noqa: E402
+
+from derivados import cobertura, datos, fx, opciones, swaps  # noqa: E402
+from derivados import forwards as fw  # noqa: E402
+from derivados.reporte import Macros, estilo_figuras, guardar_figura, tabla_latex  # noqa: E402
+
+RAIZ = Path(__file__).resolve().parents[1]
+MERCADO = RAIZ / "data" / "mercado"
+
+EEFF = "PETROPERÚ, EEFF auditados al 31.12.2025 (Gaveglio, Aparicio y Asociados, 2026)"
+BCRP = "BCRP, series estadísticas"
+SBS = "SBS, curva cupón cero soberana en soles (28-sep-2026)"
+SOFR = "BlueGamma, swaps SOFR (28-sep-2026)"
+NYMEX = "NYMEX CL vía Yahoo Finance; CBOE OVX vía FRED (28-sep-2026)"
+
+AZUL, NARANJA, VERDE, GRIS = "#2a78d6", "#eb6834", "#1baf7a", "#888888"
+
+
+def serie(nombre: str) -> pd.Series:
+    df = pd.read_csv(MERCADO / f"{nombre}.csv")
+    return pd.Series(df.iloc[:, 1].to_numpy(float), index=df.iloc[:, 0].astype(str))
+
+
+def curva_sbs(archivo: str) -> swaps.Curva:
+    """Curva cupón cero SBS (plazo en días, año de 360 días; tasa efectiva anual en %)."""
+    df = pd.read_csv(MERCADO / archivo)
+    return swaps.curva_interpolada(df["plazo_dias"] / 360, df["tasa_pct"] / 100)
+
+
+def curva_sofr(mk: dict) -> swaps.Curva:
+    """Curva cero US$: 3M SOFR OIS (simple ACT/360 → efectiva) + bootstrap de los swaps SOFR par anuales."""
+    w = lambda k: mk[k].valor  # noqa: E731
+    plazos = (1, 2, 3, 4, 5, 7, 10)
+    grilla, ceros = swaps.bootstrap_par_anual(plazos, [w(f"tasas.usd_{p}a") for p in plazos])
+    r3m = fx.tasa_efectiva_desde_simple(w("tasas.usd_3m"), 91)
+    return swaps.curva_interpolada([91 / 360, *grilla], [r3m, *ceros])
+
+
+# =========================================================================== contexto y riesgos
+
+
+def contexto(ex: dict, mk: dict, m: Macros) -> None:
+    v = lambda k: ex[k].valor  # noqa: E731
+    mm = lambda k: v(k) / 1e3  # noqa: E731  US$000 → US$ millones
+
+    m.set("IngresosVeinticinco", mm("empresa.ingresos_2025"), 1)
+    m.set("IngresosVeinticuatro", mm("empresa.ingresos_2024"), 1)
+    m.set("PerdidaVeinticinco", mm("empresa.perdida_neta_2025"), 1)
+    m.set("PerdidaVeinticuatro", mm("empresa.perdida_neta_2024"), 1)
+    m.set("CapTrabajoVeinticinco", mm("empresa.capital_trabajo_negativo"), 1)
+    m.set("UtilidadBruta", mm("empresa.utilidad_bruta_2025"), 1)
+    m.set("PerdidaVeinticincoAbs", abs(mm("empresa.perdida_neta_2025")), 1)
+    m.set("FEPCpct", abs(v("empresa.fepc_pct_ingresos")), 2, pct=True)  # aporte neto (signo en el texto)
+
+    tabla = pd.DataFrame(
+        {
+            "2024": [
+                mm("empresa.ingresos_2024"),
+                mm("empresa.perdida_neta_2024"),
+                mm("empresa.capital_trabajo_negativo_2024"),
+                mm("deuda.otros_pasivos_financieros_2024"),
+                f'{v("empresa.apalancamiento_2024"):.2f}',
+            ],
+            "2025": [
+                mm("empresa.ingresos_2025"),
+                mm("empresa.perdida_neta_2025"),
+                mm("empresa.capital_trabajo_negativo"),
+                mm("deuda.otros_pasivos_financieros"),
+                f'{v("empresa.apalancamiento_2025"):.2f}',
+            ],
+            "Comentario": [
+                "Menor precio del crudo",
+                "Pérdida menor que en 2024",
+                "Pasivo corriente > activo corriente",
+                "100% a tasa fija",
+                "Mayor apalancamiento",
+            ],
+        },
+        index=[
+            "Ingresos de actividades ordinarias",
+            "Resultado neto",
+            "Capital de trabajo",
+            "Otros pasivos financieros",
+            "Deuda neta / capital total",
+        ],
+    )
+    tabla_latex(
+        tabla,
+        "t_indicadores",
+        "Indicadores financieros de PETROPERÚ (US\\$ millones)",
+        f"{EEFF}, Notas 1, 3, 5 y 14",
+        "tab:indicadores",
+        decimales={"2024": 1, "2025": 1},
+    )
+
+
+def riesgo_cambiario(ex: dict, m: Macros) -> None:
+    v = lambda k: ex[k].valor  # noqa: E731
+    tc = 1 / v("fx.tc_cierre_usd_por_pen")
+    pen = v("fx.pen_neto")
+
+    m.set("TCcierre", tc, 3)
+    m.set("PenNeto", pen / 1e3, 1)
+    m.set("PenNetoAbs", abs(pen) / 1e3, 1)
+    m.set("PenNetoUSD", abs(pen) / tc / 1e3, 0)
+    m.set("PenNetoVeinticuatro", abs(v("fx.pen_neto_2024")) / 1e3, 1)
+    m.set("PenNetoCrec", pen / v("fx.pen_neto_2024") - 1, 0, pct=True)
+    m.set("PenOtrosPasFin", abs(v("fx.pen_otros_pasivos_financieros")) / 1e3, 1)
+    m.set("EurNeto", v("fx.eur_neto") / 1e3, 1)
+    m.set("JpyNeto", abs(v("fx.jpy_neto")) / 1e3, 1)
+    m.set("SensibilidadFX", v("fx.sensibilidad_10pct") / 1e3, 1)
+    m.set("DifCambioBN", v("fx.dif_cambio_prestamo_bn") / 1e3, 1)
+    m.set("GananciaDifCambio", v("fx.ganancia_dif_cambio_2025") / 1e3, 1)
+    m.set("SwapCiti", v("fx.swap_citibank_activo") / 1e3, 1)
+
+    # Variación del TC en 2025 con cierres BCRP (interbancario medio)
+    tc_mid = (serie("usdpen_interbancario_compra") + serie("usdpen_interbancario_venta")) / 2
+    tc24, tc25 = tc_mid.loc[:"2024-12-31"].iloc[-1], tc_mid.loc[:"2025-12-31"].iloc[-1]
+    m.set("TCcierreBCRPVeinticuatro", tc24, 3)
+    m.set("TCcierreBCRPVeinticinco", tc25, 3)
+    m.set("TCvarVeinticinco", tc25 / tc24 - 1, 1, pct=True)
+
+    # Sensibilidad propia: ±10 % del TC sobre la posición neta (US$ millones)
+    perdida = abs(pen) / (tc * 0.9) - abs(pen) / tc
+    ganancia = abs(pen) / tc - abs(pen) / (tc * 1.1)
+    m.set("SensApreciacion", perdida / 1e3, 1)
+    m.set("ApreciacionSolDiez", 1 / 0.9 - 1, 1, pct=True)
+    m.set("SensDepreciacion", ganancia / 1e3, 1)
+
+    # Figura: composición de la posición en S/
+    partidas = {
+        "Efectivo": v("fx.pen_efectivo"),
+        "CxC comerciales": v("fx.pen_cxc_comerciales"),
+        "Otras CxC": v("fx.pen_otras_cxc"),
+        "Otros pasivos financieros": v("fx.pen_otros_pasivos_financieros"),
+        "CxP comerciales": v("fx.pen_cxp_comerciales"),
+        "CxP parte relacionada": v("fx.pen_cxp_relacionada"),
+        "Otras CxP": v("fx.pen_otras_cxp"),
+        "Arrendamientos": v("fx.pen_arrendamientos"),
+    }
+    fig, ax = plt.subplots(figsize=(6.2, 2.4))
+    nombres, valores = list(partidas)[::-1], [x / 1e3 for x in list(partidas.values())[::-1]]
+    ax.barh(nombres, valores, color=[VERDE if x > 0 else NARANJA for x in valores], height=0.65)
+    for i, x in enumerate(valores):
+        ax.text(x + (40 if x > 0 else -40), i, f"{x:,.1f}", va="center", ha="left" if x > 0 else "right", fontsize=8)
+    ax.axvline(0, color=GRIS, lw=0.8)
+    ax.set_xlim(-4700, 1100)
+    ax.set_xlabel("S/ millones (activos +, pasivos −)")
+    ax.grid(axis="y", visible=False)
+    guardar_figura(fig, "f_posicion_pen")
+
+
+def historia_mercado(mk: dict, m: Macros) -> None:
+    df = pd.read_csv(MERCADO / "bcrp_mensual_tc_wti.csv")
+    ret_tc = np.diff(np.log(df["tc_bancario_promedio"]))
+    ret_wti = np.diff(np.log(df["wti_promedio"]))
+    m.set("VolHistTC", ret_tc.std(ddof=1) * np.sqrt(12), 1, pct=True)
+    m.set("VolHistWTI", ret_wti.std(ddof=1) * np.sqrt(12), 1, pct=True)
+    m.set("HistDesde", "ene-2021")
+    m.set("HistHasta", "ago-2026")
+
+    x = pd.to_datetime(df["fecha"])
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(6.4, 2.3))
+    a1.plot(x, df["tc_bancario_promedio"], color=AZUL)
+    a1.set_title("Tipo de cambio (S/ por US\\$)", fontsize=8, loc="left")
+    a2.plot(x, df["wti_promedio"], color=NARANJA)
+    a2.set_title("Petróleo WTI (US\\$ por barril)", fontsize=8, loc="left")
+    for a in (a1, a2):
+        a.axvspan(pd.Timestamp("2025-01-01"), pd.Timestamp("2025-12-31"), color=GRIS, alpha=0.12, lw=0)
+        a.tick_params(labelsize=7)
+    a1.annotate("EEFF 2025", (pd.Timestamp("2025-02-01"), a1.get_ylim()[1]), fontsize=6.5, va="top", color=GRIS)
+    guardar_figura(fig, "f_historia")
+
+
+def riesgo_crudo(ex: dict, mk: dict, m: Macros) -> None:
+    v = lambda k: ex[k].valor  # noqa: E731
+    inv = v("crudo.inventario_crudo_mbl") * 1e3
+    m.set("InvCrudoMbl", v("crudo.inventario_crudo_mbl"), 0)
+    m.set("InvCrudoMMbl", inv / 1e6, 3)
+    m.set("InvCrudoUSD", v("crudo.inventario_crudo_usd") / 1e3, 1)
+    m.set("InvRefinadosUSD", v("crudo.inventario_refinados_usd") / 1e3, 1)
+    m.set("InvHidroUSD", v("crudo.inventario_hidrocarburos_usd") / 1e3, 1)
+    m.set("WTIcierreVeinticinco", v("crudo.wti_cierre_2025"), 2)
+    m.set("WTIcierreVeinticuatro", v("crudo.wti_cierre_2024"), 2)
+    m.set("WTIvarVeinticinco", v("crudo.wti_cierre_2025") / v("crudo.wti_cierre_2024") - 1, 1, pct=True)
+    m.set("ComprasUSD", v("crudo.compras_usd") / 1e3, 1)
+    m.set("ComprasMBDC", v("crudo.compras_mbdc"), 0)
+    m.set("PrecioCompras", v("crudo.precio_prom_compras"), 2)
+    perd20 = inv * v("crudo.wti_cierre_2025") * 0.20 / 1e6
+    m.set("PerdidaInvVeinte", perd20, 1)
+    m.set("PerdidaInvVeinteXUB", perd20 / (v("empresa.utilidad_bruta_2025") / 1e3), 1)
+    # Revaluación del inventario de crudo del cierre 2025 a precios de la fecha de valorización
+    m.set("GananciaInvHoy", inv * (mk["crudo.wti_spot"].valor - v("crudo.wti_cierre_2025")) / 1e6, 1)
+
+
+def riesgo_tasa(ex: dict, m: Macros) -> None:
+    v = lambda k: ex[k].valor  # noqa: E731
+    bonos = [
+        (v("deuda.bonos_2032"), v("deuda.bonos_2032_cupon"), v("deuda.bonos_2032_anios_dic25")),
+        (v("deuda.bonos_2047"), v("deuda.bonos_2047_cupon"), v("deuda.bonos_2047_anios_dic25")),
+    ]
+    vr = v("deuda.bonos_valor_razonable")
+    y = swaps.rendimiento_cartera(bonos, vr)
+    precio = lambda r: sum(swaps.precio_bono(n, c, a, r) for n, c, a in bonos)  # noqa: E731
+    dv100 = (precio(y - 0.005) - precio(y + 0.005)) / 1e3
+    dur_mod = dv100 * 1e3 / vr / 0.01
+    ust7, ust10 = serie("ust_7a").loc[:"2025-12-31"].iloc[-1], serie("ust_10a").loc[:"2025-12-31"].iloc[-1]
+    ust_dur = np.interp(dur_mod, [7, 10], [ust7, ust10]) / 100
+    m.set("BonosLibros", v("deuda.bonos_libros_total") / 1e3, 1)
+    m.set("BonosVR", vr / 1e3, 1)
+    m.set("YTMBonos", y, 1, pct=True)
+    m.set("BonosDVCien", dv100, 0)
+    m.set("BonosDurMod", dur_mod, 1)
+    m.set("USTDurDic", ust_dur, 2, pct=True)
+    m.set("SpreadBonosPb", (y - ust_dur) * 1e4, 0)
+    m.set("CuponTreintaDos", v("deuda.bonos_2032_cupon"), 3, pct=True)
+    m.set("CuponCuarentaSiete", v("deuda.bonos_2047_cupon"), 3, pct=True)
+    m.set("BonosNominal", (v("deuda.bonos_2032") + v("deuda.bonos_2047")) / 1e3, 0)
+    m.set("CESCESaldo", v("deuda.cesce") / 1e3, 1)
+    m.set("CESCETasa", v("deuda.cesce_tasa"), 3, pct=True)
+    m.set("LineasRev", v("deuda.lineas_revolventes") / 1e3, 1)
+    m.set("LineasUsadas", v("deuda.lineas_utilizadas") / 1e3, 1)
+    m.set("LineasPct", v("deuda.lineas_utilizadas") / v("deuda.lineas_revolventes"), 0, pct=True)
+    m.set("VencMenosUnAnio", v("liquidez.venc_menos_1a_2025") / 1e3, 1)
+
+    deuda = {
+        "Bonos 2047 (5.625% fijo)": (v("deuda.libros_bonos_2047"), AZUL),
+        "Bonos 2032 (4.750% fijo)": (v("deuda.libros_bonos_2032"), AZUL),
+        "Préstamo BN en S/ (5.55% fijo, 2028)": (v("deuda.libros_prestamo_bn"), NARANJA),
+        "Préstamo CESCE (3.285% fijo, 2030)": (v("deuda.libros_cesce"), AZUL),
+        "Bancarios corto plazo S/ y US$": (v("deuda.libros_bancarios_cp"), NARANJA),
+        "Parte relacionada MEF": (v("deuda.parte_relacionada_mef"), VERDE),
+    }
+    m.set("DeudaTotal", sum(x for x, _ in deuda.values()) / 1e3, 1)
+    fig, ax = plt.subplots(figsize=(6.2, 2.2))
+    nombres = list(deuda)[::-1]
+    vals = [deuda[k][0] / 1e3 for k in nombres]
+    ax.barh(nombres, vals, color=[deuda[k][1] for k in nombres], height=0.6)
+    for i, x in enumerate(vals):
+        ax.text(x + 25, i, f"{x:,.0f}", va="center", fontsize=8)
+    ax.set_xlim(0, 2500)
+    ax.set_xlabel("US\\$ millones (valor en libros)")
+    ax.grid(axis="y", visible=False)
+    from matplotlib.patches import Patch
+
+    ax.legend(
+        [Patch(color=c) for c in (AZUL, NARANJA, VERDE)],
+        ["Mercado internacional US\\$", "Bancos (S/ y US\\$)", "Estado (MEF)"],
+        fontsize=8,
+        loc="lower right",
+    )
+    guardar_figura(fig, "f_deuda")
+
+
+# =========================================================================== E1: CCS + NDF
+
+
+def e1_cambiario(ex: dict, mk: dict, m: Macros) -> None:
+    v = lambda k: ex[k].valor  # noqa: E731
+    w = lambda k: mk[k].valor  # noqa: E731
+    bid, ask = w("usdpen.spot_bid"), w("usdpen.spot_ask")
+    s0 = (bid + ask) / 2
+    m.set("SpotBid", bid, 4)
+    m.set("SpotAsk", ask, 4)
+    m.set("SpotUSDPEN", s0, 4)
+
+    # Partida cubierta: préstamo BN, cronograma francés (TEA) de 36 cuotas desde ene-2026 (supuesto)
+    cron = swaps.cronograma_cuota_constante(
+        v("prestamo_bn.saldo_pen"), v("prestamo_bn.tasa"), int(v("prestamo_bn.cuotas_remanentes_dic25"))
+    )
+    pagadas = int(v("prestamo_bn.cuotas_pagadas_a_valorizacion"))
+    rem = swaps.cronograma_remanente(cron, pagadas, v("prestamo_bn.dias_a_primera_cuota"))
+    saldo_rem = rem["saldo_inicial"].iloc[0]
+    m.set("BNSaldoPEN", v("prestamo_bn.saldo_pen") / 1e3, 1)
+    m.set("BNSaldoUSD", v("prestamo_bn.saldo_usd") / 1e3, 1)
+    m.set("BNTasa", v("prestamo_bn.tasa"), 2, pct=True)
+    m.set("BNCuotasTot", int(v("prestamo_bn.cuotas_totales")), 0)
+    m.set("BNCuotasSup", int(v("prestamo_bn.cuotas_remanentes_dic25")), 0)
+    m.set("BNCuotasPagadas", pagadas, 0)
+    m.set("BNCuotasRem", len(rem), 0)
+    m.set("BNCuota", rem["cuota"].iloc[0] / 1e3, 1)
+    m.set("BNSaldoRem", saldo_rem / 1e3, 1)
+
+    # Curvas a la fecha de valorización
+    c_pen = curva_sbs("sbs_curva_CCPSS_2026-09-28.csv")
+    c_usd = curva_sofr(mk)
+    m.set("PENUnAnio", w("tasas.pen_1a"), 2, pct=True)
+    m.set("PENDosAnios", c_pen(2.0) ** (-1 / 2.0) - 1, 2, pct=True)
+    m.set("PENTresAnios", w("tasas.pen_3a"), 2, pct=True)
+    m.set("USDUnAnio", w("tasas.usd_1a"), 2, pct=True)
+    m.set("USDDosAnios", w("tasas.usd_2a"), 2, pct=True)
+    m.set("USDTresAnios", w("tasas.usd_3a"), 2, pct=True)
+
+    # PETROPERÚ vende US$ (paga US$, recibe S/) → cotización de compra (bid) del banco
+    ccs = swaps.CrossCurrencySwap(rem, bid, 0.0)
+    t_usd = ccs.tasa_usd_justa(c_pen, c_usd)
+    ccs = swaps.CrossCurrencySwap(rem, bid, t_usd)
+    pata_usd = ccs.cron_usd()
+    vp_pen_usd = swaps.vp_flujos(rem, c_pen) / bid
+    m.set("CCSTasaUSD", t_usd, 2, pct=True)
+    m.set("CCSNocionalUSD", saldo_rem / bid / 1e3, 1)
+    m.set("CCSVPPataPEN", vp_pen_usd / 1e3, 1)
+    m.set("CCSCuotaUSD", pata_usd["cuota"].iloc[0] / 1e3, 1)
+    m.set("CCSTotalUSD", pata_usd["cuota"].sum() / 1e3, 1)
+    m.set("CCSVsBN", (t_usd - v("prestamo_bn.tasa")) * 1e4, 0)
+
+    # Flujos anuales del CCS (S/ y US$ millones)
+    fechas = pd.date_range("2026-10-01", periods=len(rem), freq="MS") + pd.Timedelta(days=14)
+    anio = fechas.year.to_numpy()
+    filas = {}
+    for a in sorted(set(anio)):
+        sel = anio == a
+        filas[str(a)] = {
+            "Recibe S/": rem.loc[sel, "cuota"].sum() / 1e3,
+            "Interés S/": rem.loc[sel, "interes"].sum() / 1e3,
+            "Paga US\\$": pata_usd.loc[sel, "cuota"].sum() / 1e3,
+            "Interés US\\$": pata_usd.loc[sel, "interes"].sum() / 1e3,
+        }
+    filas["Total"] = {
+        "Recibe S/": rem["cuota"].sum() / 1e3,
+        "Interés S/": rem["interes"].sum() / 1e3,
+        "Paga US\\$": pata_usd["cuota"].sum() / 1e3,
+        "Interés US\\$": pata_usd["interes"].sum() / 1e3,
+    }
+    tabla_latex(
+        pd.DataFrame(filas).T,
+        "t_e1_flujos",
+        "E1: Flujos del CCS por año calendario (millones)",
+        f"{EEFF}, Nota 14(ii); {SBS}; {SOFR}",
+        "tab:e1-flujos",
+        decimales=1,
+        nota="La pata en S/ replica el servicio de deuda al BN; PETROPERÚ solo desembolsa la pata en US\\$.",
+    )
+
+    # NDF sobre el resto de la posición en S/ (partidas distintas del préstamo BN)
+    resto = abs(v("fx.pen_neto")) - v("prestamo_bn.saldo_pen")  # S/000 al cierre 2025 (se supone estable)
+    ndf_nocional = resto * v("cobertura_fx.ndf_pct_residual")
+    dias = v("cobertura_fx.ndf_dias")
+    r_pen_3m = float(np.interp(dias, *pd.read_csv(MERCADO / "sbs_curva_CCPSS_2026-09-28.csv").to_numpy().T) / 100)
+    # SOFR 3M OIS es tasa simple ACT/360 → efectiva base 360 para la paridad
+    r_usd_3m = fx.tasa_efectiva_desde_simple(w("tasas.usd_3m"), dias)
+    f_ndf = fx.forward_paridad(bid, r_pen_3m, r_usd_3m, dias)  # vende US$ → cotización compra (bid)
+    m.set("RestoPEN", resto / 1e3, 1)
+    m.set("NDFNocional", ndf_nocional / 1e3, 1)
+    m.set("NDFPct", v("cobertura_fx.ndf_pct_residual"), 0, pct=True)
+    m.set("NDFDias", int(dias), 0)
+    m.set("PENTresMeses", r_pen_3m, 2, pct=True)
+    m.set("USDTresMesesSimple", w("tasas.usd_3m"), 2, pct=True)
+    m.set("USDTresMeses", r_usd_3m, 2, pct=True)
+    m.set("NDFForward", f_ndf, 4)
+    m.set("NDFPuntos", (f_ndf - bid) * 1e4, 1)
+    # (F/S)^(360/d) − 1 < 0: comprar S/ a plazo cuesta (F < S), mismo origen que el costo del CCS
+    m.set("NDFCostoAnual", -fx.diferencial_implicito(f_ndf, bid, dias / 360), 2, pct=True)
+    m.set("NDFCostoUSD", ndf_nocional / f_ndf / 1e3 - ndf_nocional / bid / 1e3, 2)  # costo (> 0)
+
+    # Tabla de resultados al vencimiento del NDF (patrón Inicio/Vencimiento: neto constante)
+    fix = {f"{bid * (1 + p):.3f} ({p:+.0%})".replace("%", "\\%") if p else f"{bid:.3f} (spot)": bid * (1 + p)
+           for p in (-0.10, 0.0, 0.10)}
+    t_ndf = fx.resultados_ndf_pasivo_pen(ndf_nocional / 1e3, bid, f_ndf, fix)
+    t_ndf = t_ndf.drop(index="TC fixing")
+    t_ndf.index = ["Cuentas por pagar en S/", "NDF compra S/", "Neto", "Verificación N/S0 − N/F"]
+    tabla_latex(
+        t_ndf,
+        "t_e1_ndf",
+        f"E1: NDF a {int(dias)} días, resultado al vencimiento (US\\$ MM)",
+        f"{EEFF}, Nota 3; {SBS}; {SOFR}",
+        "tab:e1-ndf",
+        decimales=2,
+        nota="Inicio: el NDF se pacta a valor cero, sin flujo. Vencimiento: se liquida la diferencia en US\\$.",
+        flotante=False,
+    )
+
+    # Escenarios de TC sobre la posición a la fecha de valorización (US$ millones)
+    pos = saldo_rem + resto
+    residuo_ccs = resto
+    residuo_total = resto - ndf_nocional
+    m.set("PosicionHoy", pos / 1e3, 1)
+    m.set("ResiduoTotal", residuo_total / 1e3, 1)
+    m.set("CoberturaFX", 1 - residuo_total / pos, 0, pct=True)
+
+    def resultado(pasivo_pen: float, s: float) -> float:
+        return (pasivo_pen / s0 - pasivo_pen / s) / 1e3
+
+    shocks = (-0.10, -0.05, 0.0, 0.05, 0.10)
+    esc = pd.DataFrame(
+        {
+            f"{s0 * (1 + p):.3f} ({p:+.0%})" if p else f"{s0:.3f} (base)": {
+                "Sin cobertura": resultado(pos, s0 * (1 + p)),
+                "Solo CCS": resultado(residuo_ccs, s0 * (1 + p)),
+                "CCS + NDF": resultado(residuo_total, s0 * (1 + p)),
+            }
+            for p in shocks
+        }
+    )
+    esc.columns = [c.replace("%", "\\%") for c in esc.columns]
+    tabla_latex(
+        esc,
+        "t_e1_escenarios",
+        "E1: Resultado por diferencia de cambio según TC final (US\\$ millones)",
+        f"{EEFF}, Notas 3 y 14; {BCRP} (TC interbancario 28-sep-2026)",
+        "tab:e1-escenarios",
+        decimales=1,
+        nota="Signo negativo = pérdida. Posición en S/ estimada a la fecha de valorización.",
+    )
+    m.set("EscSinCobMenosDiez", abs(resultado(pos, s0 * 0.9)), 1)
+    m.set("EscConCobMenosDiez", abs(resultado(residuo_total, s0 * 0.9)), 1)
+    m.set("ReduccionFX", 1 - residuo_total / pos, 0, pct=True)
+
+    # Posiciones de cambio (en S/; − = pasiva en S/): PCC contable, PND derivados, PCG global
+    pc = fx.PosicionCambio(pcc=-pos, pnd=saldo_rem + ndf_nocional)
+    t_pos = pd.DataFrame(
+        {
+            "S/ MM": [pc.pcc / 1e3, saldo_rem / 1e3, ndf_nocional / 1e3, pc.pcg / 1e3],
+            "TC −10\\% (US\\$)": [
+                resultado(-pc.pcc, s0 * 0.9),
+                -resultado(saldo_rem, s0 * 0.9),
+                -resultado(ndf_nocional, s0 * 0.9),
+                resultado(-pc.pcg, s0 * 0.9),
+            ],
+        },
+        index=["PCC: pasivo neto en S/", "PND: CCS (recibe S/)", "PND: NDF (compra S/)", "PCG = PCC + PND"],
+    )
+    tabla_latex(
+        t_pos,
+        "t_e1_posiciones",
+        "E1: Posiciones de cambio en S/ (millones)",
+        f"{EEFF}, Notas 3 y 14",
+        "tab:e1-posiciones",
+        decimales=1,
+        nota="Negativo = posición pasiva en S/ (o pérdida).",
+        flotante=False,
+    )
+
+    # NIIF 9: valor razonable de los derivados ante un choque instantáneo de ±10 % del TC
+    def valor_ndf(s: float) -> float:  # compra de S/ a F: V = N·(1/F' − 1/F)·DF_US$
+        f_nuevo = fx.forward_paridad(s, r_pen_3m, r_usd_3m, dias)
+        return ndf_nocional * (1 / f_nuevo - 1 / f_ndf) * c_usd(dias / 360) / 1e3
+
+    m.set("NDFValMenosDiez", valor_ndf(bid * 0.9), 1)
+    m.set("NDFValMasDiez", abs(valor_ndf(bid * 1.1)), 1)  # pasivo
+    m.set("CCSValMenosDiez", ccs.valor_usd(c_pen, c_usd, spot_hoy=bid * 0.9) / 1e3, 1)
+    m.set("CCSValMasDiez", abs(ccs.valor_usd(c_pen, c_usd, spot_hoy=bid * 1.1)) / 1e3, 1)  # pasivo
+
+    xs = np.linspace(s0 * 0.88, s0 * 1.12, 100)
+    fig, ax = plt.subplots(figsize=(6.2, 2.3))
+    ax.plot(xs, [resultado(pos, x) for x in xs], color=NARANJA, label="Sin cobertura")
+    ax.plot(xs, [resultado(residuo_ccs, x) for x in xs], color="#e0a800", label="Solo CCS")
+    ax.plot(xs, [resultado(residuo_total, x) for x in xs], color=AZUL, lw=2.2, label="CCS + NDF")
+    ax.axhline(0, color=GRIS, lw=0.8)
+    ax.axvline(s0, color=GRIS, lw=0.8, ls="--")
+    ax.set_xlabel("Tipo de cambio al cierre (S/ por US\\$)")
+    ax.set_ylabel("US\\$ millones")
+    ax.legend(fontsize=8)
+    guardar_figura(fig, "f_e1_escenarios")
+
+
+# =========================================================================== E2: swap + collar WTI
+
+
+def e2_crudo(ex: dict, mk: dict, m: Macros) -> None:
+    v = lambda k: ex[k].valor  # noqa: E731
+    w = lambda k: mk[k].valor  # noqa: E731
+    spot = w("crudo.wti_spot")
+    f1, f2, f3 = w("crudo.wti_fut_1m"), w("crudo.wti_fut_2m"), w("crudo.wti_fut_3m")
+    # Opciones sobre CLF27: T hasta su vencimiento real; r continua desde SOFR 3M (simple ACT/360)
+    dias_op = w("crudo.dias_venc_opciones")
+    T, sig = dias_op / 365, w("crudo.vol_implicita")
+    r = fx.tasa_continua_desde_simple(w("tasas.usd_3m"), dias_op)
+    reparto = v("crudo.reparto_swap")
+    q = v("crudo.inventario_crudo_mbl") * 1e3 * v("crudo.cobertura_objetivo")  # barriles
+    p_swap = (f1 + f2 + f3) / 3  # swap de precio promedio de los 3 próximos meses
+    k_put = round(f3 * v("crudo.put_pct_forward"), 1)
+    k_call = opciones.strike_collar_costo_cero(f3, k_put, T, r, sig, fijo="put")
+    prima = opciones.black76(f3, k_put, T, r, sig, "put")
+
+    m.set("WTISpot", spot, 2)
+    m.set("WTIFutUno", f1, 2)
+    m.set("WTIFutDos", f2, 2)
+    m.set("WTIFut", f3, 2)
+    m.set("WTIFutDoce", w("crudo.wti_fut_12m"), 2)
+    m.set("Backwardation", 1 - f3 / spot, 1, pct=True)
+    m.set("BrentFut", w("crudo.brent_fut_1m"), 2)
+    m.set("BrentWTI", w("crudo.brent_fut_1m") - f1, 1)
+    m.set("SwapPrecio", p_swap, 2)
+    m.set("VolCrudo", sig, 1, pct=True)
+    m.set("RUSDCont", r, 2, pct=True)
+    m.set("PlazoMeses", round(v("crudo.plazo_cobertura_anios") * 12), 0)
+    m.set("PlazoDiasOpc", int(dias_op), 0)
+    # Costo de acarreo entre el contrato frente (nov-26) y el de ene-27: F = S·e^{(r−y)T}, T = 2 meses
+    m.set("ConvenienciaImplicita", fw.rendimiento_conveniencia_implicito(f1, f3, r, 2 / 12), 1, pct=True)
+    m.set("CollarPut", k_put, 2)
+    m.set("CollarCall", k_call, 2)
+    m.set("PutPctFwd", v("crudo.put_pct_forward"), 0, pct=True)
+    m.set("PrimaPut", prima, 2)
+    m.set("DeltaPutAbs", abs(opciones.delta_black76(f3, k_put, T, r, sig, "put")), 2)
+    m.set("CostoPutTotal", prima * q / 1e6, 1)
+    m.set("CoberturaCrudoPct", v("crudo.cobertura_objetivo"), 0, pct=True)
+    m.set("ContratosEquiv", f"{round(q / w('crudo.tamano_contrato')):,}")
+    m.set("ContratosH", f"{cobertura.numero_contratos(w('crudo.h_minima_varianza'), q, w('crudo.tamano_contrato')):,}")
+    m.set("RepartoSwap", reparto, 0, pct=True)
+    m.set("RepartoCollar", 1 - reparto, 0, pct=True)
+    m.set("InvValorHoy", q * spot / 1e6, 1)
+    m.set("RatioH", w("crudo.h_minima_varianza"), 2)
+
+    def neto(st: float, estrategia: str) -> float:
+        if estrategia == "Sin cobertura":
+            return (st - spot) * q / 1e6
+        if estrategia == "Swap":
+            return (p_swap - spot) * q / 1e6
+        if estrategia == "Collar":
+            return (min(max(st, k_put), k_call) - spot) * q / 1e6
+        if estrategia == "Mixto":
+            return reparto * neto(st, "Swap") + (1 - reparto) * neto(st, "Collar")
+        return ((max(st, k_put) - spot) - prima) * q / 1e6  # solo put
+
+    etiquetas = {
+        "Sin cobertura": "Sin cobertura",
+        "Swap": f"Swap (venta a {p_swap:.2f})",
+        "Collar": f"Collar {k_put:.2f} / {k_call:.2f}",
+        "Put": "Solo put (prima pagada)",
+        "Mixto": f"Propuesta: {reparto:.0%} swap + {1 - reparto:.0%} collar".replace("%", "\\%"),
+    }
+    # Escenarios alrededor del precio de hoy + el escenario "WTI converge al futuro" (F, backwardation)
+    precios = {f"{p:+.0%}".replace("%", "\\%") if p else "0\\%": spot * (1 + p) for p in (-0.30, -0.20, -0.10)}
+    precios["$=F$"] = f3
+    precios |= {f"{p:+.0%}".replace("%", "\\%") if p else "0\\%": spot * (1 + p) for p in (0.0, 0.10, 0.20, 0.30)}
+    tabla = pd.DataFrame({c: {etiquetas[e]: neto(x, e) for e in etiquetas} for c, x in precios.items()})
+    tabla.loc["WTI (US\\$/bbl)"] = list(precios.values())
+    tabla = tabla.loc[["WTI (US\\$/bbl)", *etiquetas.values()]]
+    tabla_latex(
+        tabla,
+        "t_e2_escenarios",
+        "E2: Resultado sobre el inventario de crudo al vencimiento (US\\$ millones)",
+        f"{EEFF}, Nota 10; {NYMEX}",
+        "tab:e2-escenarios",
+        decimales=1,
+        nota="Variación del WTI respecto del precio del 28-sep-2026. Signo negativo = pérdida.",
+    )
+    m.set("PerdidaSinCobTreinta", abs(neto(spot * 0.7, "Sin cobertura")), 1)
+    m.set("PerdidaMaxCollar", abs(neto(0.0, "Collar")), 1)
+    m.set("GananciaMaxCollar", neto(1e6, "Collar"), 1)
+    m.set("CostoSwap", abs(neto(spot, "Swap")), 1)
+    m.set("PerdidaSinCobForward", abs(neto(f3, "Sin cobertura")), 1)
+    m.set("PerdidaMaxMixto", abs(neto(0.0, "Mixto")), 1)
+    m.set("GananciaMaxMixto", neto(1e6, "Mixto"), 1)
+
+    # NIIF 9: valor razonable ante un choque instantáneo de ±10 % de la curva de futuros
+    q_col, q_swap = q * (1 - reparto), q * reparto
+    def valor_collar(fn: float) -> float:
+        return (opciones.black76(fn, k_put, T, r, sig, "put") - opciones.black76(fn, k_call, T, r, sig, "call")) * q_col / 1e6
+
+    df_swap = np.exp(-r * T)
+    m.set("CollarValMenosDiez", valor_collar(f3 * 0.9), 1)
+    m.set("CollarValMasDiez", abs(valor_collar(f3 * 1.1)), 1)  # pasivo
+    m.set("SwapValDiez", 0.10 * p_swap * q_swap * df_swap / 1e6, 1)
+
+    xs = np.linspace(spot * 0.6, spot * 1.4, 200)
+    fig, ax = plt.subplots(figsize=(6.2, 2.4))
+    ax.plot(xs, [neto(x, "Sin cobertura") for x in xs], color=NARANJA, label="Inventario sin cobertura")
+    ax.plot(xs, [neto(x, "Swap") for x in xs], color=AZUL, label=f"Inventario + swap WTI ({p_swap:.2f})")
+    ax.plot(xs, [neto(x, "Collar") for x in xs], color=VERDE, lw=2.2, label=f"Inventario + collar {k_put:.1f}/{k_call:.1f}")
+    for k in (k_put, k_call):
+        ax.axvline(k, color=GRIS, lw=0.8, ls="--")
+    ax.axhline(0, color=GRIS, lw=0.8)
+    ax.set_xlabel("Precio WTI al vencimiento (US\\$/bbl)")
+    ax.set_ylabel("US\\$ millones")
+    ax.legend(fontsize=8, loc="upper left")
+    guardar_figura(fig, "f_e2_payoff")
+
+
+def tasa_refinanciacion(mk: dict, m: Macros) -> None:
+    w = lambda k: mk[k].valor  # noqa: E731
+    c_usd = curva_sofr(mk)
+    m.set("FwdSwapRate", swaps.forward_starting_rate(c_usd, inicio=1.0, anios=4.0), 2, pct=True)
+    m.set("USDCincoAnios", w("tasas.usd_5a"), 2, pct=True)
+
+
+def main() -> None:
+    estilo_figuras()
+    ex, mk = datos.cargar("exposiciones"), datos.cargar("mercado")
+    m = Macros()
+    contexto(ex, mk, m)
+    riesgo_cambiario(ex, m)
+    historia_mercado(mk, m)
+    riesgo_crudo(ex, mk, m)
+    riesgo_tasa(ex, m)
+    e1_cambiario(ex, mk, m)
+    e2_crudo(ex, mk, m)
+    tasa_refinanciacion(mk, m)
+    m.set("FechaValorizacion", "28 de setiembre de 2026")
+    m.set("DUCrisis", "N.°~003-2026")  # EEFF 2025, Nota 1, p. 25
+    m.set("DUCrisisMonto", ex["empresa.du_003_2026_compromisos"].valor / 1e3, 0)
+    m.set("LimiteFX", "70\\,\\%--100\\,\\%")  # política propuesta (supuesto de diseño)
+    m.set("LimiteCrudo", "50\\,\\%--80\\,\\%")
+    pend = datos.pendientes("exposiciones", "mercado")
+    m.set("InsumosPendientes", str(len(pend)))
+    ruta = m.escribir()
+    print(f"OK → {ruta.relative_to(RAIZ)}")
+    if pend:
+        print(f"AVISO: {len(pend)} insumos PENDIENTES (no apto para versión final):")
+        for i in pend:
+            print(f"  - {i.clave}: {i.fuente[:120]}")
+
+
+if __name__ == "__main__":
+    main()

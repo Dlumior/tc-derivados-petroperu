@@ -1,0 +1,53 @@
+% ~1 página. Comparación de estrategias, riesgo de tasa (no recomendado hoy) y condiciones de implementación.
+\section{Análisis comparativo e implementación}
+
+\begin{table}[htbp]\centering\small
+\caption{Comparación de las estrategias propuestas}\label{tab:comparacion}
+\renewcommand{\arraystretch}{1.25}
+\newcommand{\filasep}{\arrayrulecolor{gray!45}\specialrule{0.3pt}{1pt}{1pt}\arrayrulecolor{black}}
+\newcommand{\encab}[2]{\textbf{#1}\newline #2}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash\bfseries}p{2.3cm}
+    >{\raggedright\arraybackslash}X
+    >{\raggedright\arraybackslash}X
+    >{\raggedright\arraybackslash}X}
+\toprule
+\normalfont\textbf{Criterio}
+  & \cellcolor{prioAlta}\encab{E1: tipo de cambio}{CCS + NDF}
+  & \cellcolor{prioAlta}\encab{E2: precio del crudo}{Swap + collar WTI}
+  & \cellcolor{prioMedia}\encab{Tasa de interés}{\textit{No recomendada hoy}} \\
+\midrule
+Exposición cubierta & \CoberturaFX\ de la posición en S/
+  & \InvCrudoMMbl\ MMbl \newline (US\$~\InvValorHoy\ MM)
+  & Tasa base de la refinanciación del CESCE (US\$~\CESCESaldo\ MM) \\ \filasep
+Reducción del riesgo \newline {\normalfont (US\$ MM)}
+  & Pérdida si el TC cae 10\,\%: \newline Sin cobertura: (\EscSinCobMenosDiez) \newline Con cobertura: (\EscConCobMenosDiez)
+  & Pérdida máxima: \newline Sin cobertura: (\PerdidaSinCobTreinta) \newline Con cobertura: (\PerdidaMaxMixto)
+  & Baja: no cubre el spread de crédito \\ \filasep
+Costo inicial & Cero (CVA incluido en la tasa) & Cero (swap y collar) & Cero (swap de inicio diferido) \\ \filasep
+Costo económico & Diferencial implícito del NDF: \NDFCostoAnual\ anual
+  & Swap: US\$~\CostoSwap\ MM por \emph{backwardation}
+  & Pagos si la tasa baja \\ \filasep
+Efecto en liquidez & Bajo: CSA con umbral & Bajo: sin márgenes de bolsa & Bajo \\ \filasep
+Tratamiento NIIF~9 & Cobertura de flujos de efectivo (ORI)
+  & Cobertura de valor razonable del inventario
+  & Cobertura de flujos de efectivo \\
+\bottomrule
+\end{tabularx}
+\fuente{Cuadros~\ref{tab:e1-param} a \ref{tab:e2-escenarios}; \textcite{ifrs9}. Elaboración propia.}
+\end{table}
+
+\textbf{Riesgo de tasa.} No se recomienda contratar hoy un swap de tasa. La deuda ya es fija, y pasarla a variable
+añadiría riesgo sin reducir el costo de crédito, que es lo que encarece la deuda. La herramienta adecuada es un swap
+de inicio diferido (\emph{forward-starting}) o un \emph{rate lock}, que se activaría cuando se defina la
+refinanciación del CESCE: hoy fijaría una tasa swap de \FwdSwapRate\ para cuatro años a partir de 2027 (cálculo propio con la curva SOFR
+\parencite{bluegamma2026}), frente al
+\CESCETasa\ vigente del préstamo.
+
+\textbf{Condiciones de implementación.} (i) Aprobar en el Directorio una Política de Cobertura con límites
+(\LimiteFX\ de la posición en soles y \LimiteCrudo\ del inventario de crudo), prohibición expresa de especular
+y métricas mensuales de seguimiento. (ii) Firmar contratos marco ISDA con anexos CSA de umbrales de colateral altos y
+solicitar que los compromisos contingentes que el D.U.~\DUCrisis\ autoriza al MINEM (Nota~1, p.~25) (hasta US\$~\DUCrisisMonto\ millones para la continuidad operativa) respalden también las líneas de derivados.
+(iii) Documentar cada relación de cobertura según la NIIF~9 (partida cubierta, instrumento, ratio y pruebas de
+efectividad) \parencite{ifrs9}. (iv) Incorporar los swaps de monedas de corto plazo con Citibank a esa política, para
+que dejen de ser operaciones aisladas. (v) Separar funciones: la Gerencia Corporativa de Finanzas contrata, Riesgos
+mide y controla límites, y Contabilidad registra \parencite{humala2026}.
