@@ -1,6 +1,7 @@
 """Controles de calidad del informe (usados por `make check`, `make final` y los hooks).
 
-  1. Páginas del PDF ≤ 10 (límite del enunciado; lo que exceda NO se evalúa).
+  1. Páginas del cuerpo ≤ 10, hasta \\label{fin-cuerpo}; las referencias quedan fuera del límite (acordado con el
+     profesor: no se evalúan como extensión).
   2. Cada table/figure tiene \\fuente{...} (criterio Material de apoyo: su omisión resta nota).
   3. Cifras escritas a mano en secciones/*.tex (deben venir de macros generadas).
   4. Marcas \\pendiente{...} restantes y insumos PENDIENTE en data/procesado/*.yaml.
@@ -37,15 +38,27 @@ def sin_matematica(tex: str) -> str:
     return re.sub(r"\$[^$]*\$", "", tex)
 
 
+def conteo_paginas() -> tuple[int, int | None]:
+    """(páginas totales del PDF, página donde termina el cuerpo según \\label{fin-cuerpo} o None)."""
+    from pypdf import PdfReader
+
+    total = len(PdfReader(str(PDF)).pages)
+    aux = PDF.with_suffix(".aux")
+    m = re.search(r"\\newlabel\{fin-cuerpo\}\{\{[^}]*\}\{(\d+)\}", aux.read_text()) if aux.exists() else None
+    return total, int(m.group(1)) if m else None
+
+
 def paginas() -> tuple[list[str], list[str]]:
     if not PDF.exists():
         return [f"No existe {PDF.relative_to(RAIZ)} (compile con `make pdf`)."], []
-    from pypdf import PdfReader
-
-    n = len(PdfReader(str(PDF)).pages)
-    if n > MAX_PAGINAS:
-        return [f"El PDF tiene {n} páginas (> {MAX_PAGINAS}). Las páginas adicionales NO se evalúan."], []
-    return [], [f"Páginas: {n}/{MAX_PAGINAS}"]
+    total, cuerpo = conteo_paginas()
+    if cuerpo is None:
+        return [], [f"Sin \\label{{fin-cuerpo}} en el .aux: se cuenta el PDF completo ({total} páginas)."] + (
+            [f"El PDF tiene {total} páginas (> {MAX_PAGINAS})."] if total > MAX_PAGINAS else []
+        )
+    if cuerpo > MAX_PAGINAS:
+        return [f"El cuerpo termina en la página {cuerpo} (> {MAX_PAGINAS}). Lo que exceda NO se evalúa."], []
+    return [], [f"Páginas: cuerpo {cuerpo}/{MAX_PAGINAS} (PDF {total} con referencias)"]
 
 
 def fuentes_y_cifras() -> tuple[list[str], list[str]]:
@@ -61,6 +74,8 @@ def fuentes_y_cifras() -> tuple[list[str], list[str]]:
         if "secciones" in f.parts:
             limpio = sin_matematica(re.sub(r"\\pendiente\{[^}]*\}", "", tex))
             limpio = re.sub(r"Notas? \d+(\.\d+)*(\.[a-z](\.[ivx]+)?)?(\([ivx]+\))?", "", limpio)
+            # Citas de normas: "NIIF~9, 6.3.3", "NIIF 13 ¶71", "NIC~21"
+            limpio = re.sub(r"(NIIF|NIC)(~|\s)*\d+(,?(~|\s)*¶?[A-Z]?\d+(\.\d+)*[A-Z]?)?", "", limpio)
             limpio = re.sub(
                 r"\\(parencite|textcite|cite|ref|label|input|includegraphics)(\[[^]]*\])?\{[^}]*\}", "", limpio
             )

@@ -10,7 +10,8 @@ No has visto cómo se produjo el informe: evalúa solo lo que está en el PDF.
 
 1. Ejecuta `make pdf` si `informe/out/main.pdf` no existe o es más antiguo que los .tex. Lee el texto con `pdftotext -layout informe/out/main.pdf -`
    y mira las páginas con figuras (`pdftoppm -r 70 -png` a un directorio temporal + Read) para juzgar legibilidad.
-2. Cuenta páginas (`pdfinfo`). Todo lo que pase de la página 10 no existe para la nota.
+2. Cuenta páginas del cuerpo, desde la portada hasta antes de "Referencias". Las referencias no cuentan para el límite.
+   Todo lo del cuerpo que pase de la página 10 no existe para la nota.
 3. Puntúa cada criterio con justificación de una línea:
    Introducción y objetivo (1.5) · Identificación de riesgos (4) · Estrategias con derivados (4) · Análisis/Cálculos (4) ·
    Referencias bibliográficas (1.5) · Material de apoyo (3.5: ¿cada cuadro/gráfico con fuente y elaboración? ¿aportan?) · Conclusiones (1.5).

@@ -4,7 +4,7 @@ Dictamen: [`dictamen.md`](dictamen.md), recibido el 3-oct-2026. Entrega impresa:
 Este archivo es el registro de avance: marcar `[x]` al cerrar cada tarea y cambiar el estado en la tabla.
 
 **Reglas que siguen aplicando** (CLAUDE.md): cero cifras tecleadas (todo por `m.set` + `make calc`), todo
-insumo con fuente, toda fórmula nueva en `src/derivados/` con su test, y **≤ 10 páginas**. Cada párrafo que se
+insumo con fuente, toda fórmula nueva en `src/derivados/` con su test, y **≤ 10 páginas de cuerpo** (las referencias no cuentan, 3-oct). Cada párrafo que se
 agregue tiene que compensarse recortando otro.
 
 ## 1. Validación de los hallazgos
@@ -111,8 +111,8 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
   - **B1, base del TC:** no se unificó. Cada cuadro se rotuló con su base (NDF a TC compra, escenarios a TC medio),
     porque forzar el TC medio en el NDF distorsionaba su costo. El valor razonable del registro contable pasó a TC
     medio.
-  - **Páginas: 10.** Las referencias se desbordan unas 20 líneas a la página 10, así que quedan **~0.6 páginas**
-    para la Fase 2. Los cuadros nuevos tienen que ser mínimos o reemplazar texto.
+  - **Páginas:** el PDF tiene 10 en total, pero el **cuerpo ocupa 9/10**. Desde el 3-oct las referencias no cuentan
+    para el límite (`make check` mide hasta `\label{fin-cuerpo}`). Queda **~1 página** de cuerpo para las fases 2 a 5.
 
 ### Fase 2 — Cálculos nuevos (cada uno en `src/derivados/` + test, con macros en `run_all.py`)
 - [ ] **C2 Liquidez por colateral.** Nueva función: valor de mercado conjunto de E1 + E2 bajo choques combinados
@@ -191,4 +191,5 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 |---|---|---|
 | 2026-10-03 | Dictamen recibido, validado y plan creado | 2a0a387 |
 | 2026-10-03 | Fase 0: línea base, 9 páginas, 26 tests OK | 5ebfac7 |
-| 2026-10-03 | Fase 1: C6, M7, M8, B1, B2, B4 levantados; C3 y B3 parciales; 10 páginas | (este commit) |
+| 2026-10-03 | Fase 1: C6, M7, M8, B1, B2, B4 levantados; C3 y B3 parciales | 91a725a |
+| 2026-10-03 | Referencias fuera del límite de 10 páginas; el verificador mide solo el cuerpo (9/10) | (este commit) |

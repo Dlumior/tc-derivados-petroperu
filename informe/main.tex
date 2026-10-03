@@ -4,7 +4,7 @@
 
 \begin{document}
 
-% Portada COMPACTA (la portada cuenta dentro de las 10 páginas)
+% Portada COMPACTA (la portada cuenta dentro de las 10 páginas; las referencias NO cuentan)
 \begin{center}
   {\small Universidad del Pacífico — Maestría en Finanzas — Gestión de Derivados Financieros (Prof. Alberto Humala)}\\[4pt]
   {\Large\bfseries Gestión de riesgos financieros de PETROPERÚ S.A.\\ mediante instrumentos derivados}\\[4pt]
@@ -13,13 +13,14 @@
 \end{center}
 \vspace{-0.5em}
 
-% Presupuesto de páginas (total 10). Puntaje de la rúbrica entre corchetes.
+% Presupuesto de páginas (cuerpo ≤ 10, referencias aparte). Puntaje de la rúbrica entre corchetes.
 \input{secciones/01_introduccion}      % 0.6 p  [1.5]
 \input{secciones/02_riesgos}           % 2.0 p  [4.0]
 \input{secciones/03_estrategias}       % 2.4 p  [4.0]
 \input{secciones/04_analisis}          % 2.8 p  [4.0]  (+ Material de apoyo [3.5] repartido en todo el texto)
 \input{secciones/05_conclusiones}      % 0.6 p  [1.5]
 
-\printbibliography[heading=bibintoc,title={Referencias}]  % 0.6 p [1.5]
+\label{fin-cuerpo}  % scripts/verificar_informe.py mide el límite de 10 páginas hasta aquí
+\printbibliography[heading=bibintoc,title={Referencias}]  % fuera del límite de 10 páginas [1.5]
 
 \end{document}

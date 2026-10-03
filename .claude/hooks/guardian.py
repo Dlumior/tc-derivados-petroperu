@@ -86,7 +86,7 @@ def post_bash(d: dict) -> int:
     r = _run([PY, "scripts/verificar_informe.py", "--solo-paginas"])
     if r.returncode:
         print(
-            r.stdout + r.stderr + "\nRecorte contenido: el enunciado solo evalúa 10 páginas POR TODO CONCEPTO.",
+            r.stdout + r.stderr + "\nRecorte contenido: solo se evalúan 10 páginas de cuerpo (las referencias no cuentan).",
             file=sys.stderr,
         )
         return 2
@@ -107,9 +107,11 @@ def inicio(_: dict) -> int:
     paginas = "sin compilar"
     if pdf.exists():
         try:
-            from pypdf import PdfReader
+            sys.path.insert(0, str(RAIZ / "scripts"))
+            from verificar_informe import conteo_paginas
 
-            paginas = f"{len(PdfReader(str(pdf)).pages)}/10"
+            total, cuerpo = conteo_paginas()
+            paginas = f"cuerpo {cuerpo}/10 (PDF {total})" if cuerpo else f"{total}/10"
         except Exception:  # noqa: BLE001
             pass
     print(

@@ -14,7 +14,7 @@ calc: test        ## genera informe/generado/{valores.tex,tablas,figuras}
 pdf:              ## compila con LuaLaTeX + biber (mismo motor que VS Code)
 	cd informe && latexmk -lualatex -interaction=nonstopmode -halt-on-error -output-directory=out main.tex
 
-check:            ## controles: ≤10 páginas, \fuente en tablas/figuras, cifras a mano, pendientes
+check:            ## controles: cuerpo ≤10 páginas (sin referencias), \fuente en tablas/figuras, cifras a mano, pendientes
 	$(PY) scripts/verificar_informe.py
 
 final: calc pdf   ## versión para imprimir: CERO avisos permitidos

@@ -1,6 +1,6 @@
 # Trabajo Calificado — Gestión de Derivados Financieros (Prom. 44, Prof. Humala)
 
-Informe profesional (≤ **10 páginas por todo concepto**, LaTeX) de la Gerencia de Finanzas de **PETROPERÚ S.A.**
+Informe profesional (≤ **10 páginas de cuerpo**, portada incluida; las **referencias no cuentan**, LaTeX) de la Gerencia de Finanzas de **PETROPERÚ S.A.**
 a la Gerencia General, sustentando **al menos dos estrategias con uso intensivo de derivados**.
 Entrega impresa: **5-oct-2026, 19:30**. Rúbrica (20): Intro 1.5 · Riesgos 4 · Estrategias 4 · Cálculos 4 ·
 Referencias 1.5 · Material de apoyo 3.5 · Conclusiones 1.5.

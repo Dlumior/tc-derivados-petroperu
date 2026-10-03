@@ -1,13 +1,14 @@
 ---
 name: informe-latex
-description: Convenciones para redactar y compilar el informe LaTeX del Trabajo Calificado (máx. 10 páginas por todo concepto, rúbrica de 20 pts, APA 7, fuente en cada cuadro/gráfico). Úsala al escribir o editar cualquier archivo en informe/, al recortar extensión o al preparar la versión final para imprimir.
+description: Convenciones para redactar y compilar el informe LaTeX del Trabajo Calificado (máx. 10 páginas de cuerpo, referencias aparte, rúbrica de 20 pts, APA 7, fuente en cada cuadro/gráfico). Úsala al escribir o editar cualquier archivo en informe/, al recortar extensión o al preparar la versión final para imprimir.
 ---
 
 # Informe LaTeX — reglas del proyecto
 
 ## Restricciones duras del enunciado
-- **≤ 10 páginas por todo concepto** (portada, referencias y anexos incluidos). Lo que exceda **no se evalúa**.
-  Por eso: portada compacta en la página 1, sin índice, sin anexos largos.
+- **≤ 10 páginas de cuerpo** (portada y anexos incluidos). Las **referencias quedan fuera del límite**: son un extra
+  que no se evalúa como extensión (acordado el 3-oct-2026). Lo que exceda del cuerpo **no se evalúa**.
+  `make check` mide hasta `\label{fin-cuerpo}` en `main.tex`. Portada compacta en la página 1, sin índice, sin anexos largos.
 - **Todo cuadro/gráfico con fuente y elaboración** → macro `\fuente{...}` bajo cada `table`/`figure`. Omitirla *resta* nota.
 - Contenido original; textos de terceros citados (`\parencite{clave}`, APA 7 vía biblatex-apa).
 - Entrega impresa: **5-oct-2026, 19:30**, Sesión 9.
@@ -21,7 +22,7 @@ description: Convenciones para redactar y compilar el informe LaTeX del Trabajo 
 | Estrategias con derivados (≥ 2) | `03_estrategias.tex` | 4 | 2.4 |
 | Análisis / cálculos | `04_analisis.tex` | 4 | 2.8 |
 | Conclusiones | `05_conclusiones.tex` | 1.5 | 0.6 |
-| Referencias | `referencias.bib` | 1.5 | 0.6 |
+| Referencias | `referencias.bib` | 1.5 | fuera del límite |
 | Material de apoyo (transversal) | tablas/figuras | 3.5 | — |
 
 ## Reglas de redacción
@@ -38,5 +39,5 @@ description: Convenciones para redactar y compilar el informe LaTeX del Trabajo 
 ## Compilación
 - Motor: **LuaLaTeX + biber** (`latexmk`, salida en `informe/out/`) — igual que la receta de VS Code.
 - `make pdf` compila; `make check` controla páginas/fuentes/cifras; `make final` = calc + pdf + control estricto.
-- Si se pasa de 10 páginas: 1) reducir figuras a `width=0.7\linewidth` o poner dos lado a lado,
+- Si el cuerpo pasa de 10 páginas: 1) reducir figuras a `width=0.7\linewidth` o poner dos lado a lado,
   2) fusionar tablas de escenarios, 3) acortar prosa en 02/03 — nunca eliminar fuentes ni referencias.

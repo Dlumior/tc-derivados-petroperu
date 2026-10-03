@@ -5,7 +5,7 @@ make setup          # uv sync: .venv + dependencias (Python ≥ 3.11)
 make test           # 19 tests: réplica exacta del Excel de referencia + propiedades teóricas
 make calc           # genera informe/generado/ (macros, tablas, figuras)
 make pdf            # LuaLaTeX + biber → informe/out/main.pdf   (o receta "LuaLaTeX (local)" en VS Code)
-make check          # ≤10 páginas, \fuente en cuadros, cifras a mano, pendientes
+make check          # cuerpo ≤10 páginas (sin referencias), \fuente en cuadros, cifras a mano, pendientes
 make final          # versión para imprimir (falla si queda algún PENDIENTE)
 ```
 
