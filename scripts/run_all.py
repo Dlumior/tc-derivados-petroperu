@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import matplotlib.pyplot as plt  # noqa: E402
 
-from derivados import cobertura, datos, fx, opciones, swaps  # noqa: E402
+from derivados import cobertura, datos, fx, opciones, riesgo, swaps  # noqa: E402
 from derivados import forwards as fw  # noqa: E402
 from derivados.reporte import Macros, estilo_figuras, guardar_figura, tabla_latex  # noqa: E402
 
@@ -216,7 +216,8 @@ def riesgo_crudo(ex: dict, mk: dict, m: Macros) -> None:
     m.set("GananciaInvHoy", inv * (mk["crudo.wti_spot"].valor - v("crudo.wti_cierre_2025")) / 1e6, 1)
 
 
-def riesgo_tasa(ex: dict, m: Macros) -> None:
+def riesgo_tasa(ex: dict, m: Macros) -> float:
+    """Riesgo de tasa de los bonos; devuelve el spread de crédito implícito (base del CVA de E1)."""
     v = lambda k: ex[k].valor  # noqa: E731
     bonos = [
         (v("deuda.bonos_2032"), v("deuda.bonos_2032_cupon"), v("deuda.bonos_2032_anios_dic25")),
@@ -275,12 +276,13 @@ def riesgo_tasa(ex: dict, m: Macros) -> None:
         loc="lower right",
     )
     guardar_figura(fig, "f_deuda")
+    return float(y - ust_dur)
 
 
 # =========================================================================== E1: CCS + NDF
 
 
-def e1_cambiario(ex: dict, mk: dict, m: Macros) -> None:
+def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     v = lambda k: ex[k].valor  # noqa: E731
     w = lambda k: mk[k].valor  # noqa: E731
     bid, ask = w("usdpen.spot_bid"), w("usdpen.spot_ask")
@@ -328,6 +330,39 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros) -> None:
     m.set("CCSCuotaUSD", pata_usd["cuota"].iloc[0] / 1e3, 1)
     m.set("CCSTotalUSD", pata_usd["cuota"].sum() / 1e3, 1)
     m.set("CCSVsBN", (t_usd - v("prestamo_bn.tasa")) * 1e4, 0)
+
+    # C1: sensibilidad al cronograma del BN (el EEFF no lo detalla: 46 cuotas entre ene-2025 y dic-2028)
+    n_base, dias1 = int(v("prestamo_bn.cuotas_remanentes_dic25")), v("prestamo_bn.dias_a_primera_cuota")
+    alternativos = {
+        "base": {},
+        "nominal": {"convencion": "nominal"},  # TNA/12 en lugar de TEA
+        "lineal": {"tipo": "lineal"},  # amortización constante de capital
+        "gracia 2026": {"gracia": 12, "n_cuotas": n_base - 12},  # 2026 solo intereses, 24 cuotas en 2027-2028
+    }
+    sens = {}
+    for nombre, kw in alternativos.items():
+        n = kw.pop("n_cuotas", n_base)
+        r_alt = swaps.cronograma_remanente(
+            swaps.cronograma_cuota_constante(v("prestamo_bn.saldo_pen"), v("prestamo_bn.tasa"), n, **kw), pagadas, dias1
+        )
+        tasa_alt = swaps.CrossCurrencySwap(r_alt, bid, 0.0).tasa_usd_justa(c_pen, c_usd)
+        sens[nombre] = (tasa_alt, r_alt["saldo_inicial"].iloc[0] / bid / 1e3, r_alt["cuota"].iloc[0] / 1e3)
+    tasas_alt = [x[0] for x in sens.values()]
+    nocionales_alt = [x[1] for x in sens.values()]
+    m.set("CCSTasaMin", min(tasas_alt), 2, pct=True)
+    m.set("CCSTasaMax", max(tasas_alt), 2, pct=True)
+    m.set("CCSNocionalMin", min(nocionales_alt), 1)
+    m.set("CCSNocionalMax", max(nocionales_alt), 1)
+    m.set("BNCuotaNominal", sens["nominal"][2], 1)
+
+    # C3: CVA que el banco cargaría por el riesgo de crédito de PETROPERÚ (EPE analítica, Hull cap. 24)
+    cva = riesgo.cva_ccs(rem, pata_usd, bid, c_pen, c_usd, w("usdpen.vol_implicita_1a"), spread, w("credito.lgd"))
+    m.set("CCSCVApb", cva["pb"], 0)
+    m.set("CCSCVAUSD", cva["cva"] / 1e3, 1)
+    m.set("CCSEPEMax", cva["epe_max"] / 1e3, 1)
+    m.set("CCSTasaAllIn", t_usd + cva["pb"] / 1e4, 2, pct=True)
+    m.set("LGD", w("credito.lgd"), 0, pct=True)
+    m.set("VolTC", w("usdpen.vol_implicita_1a"), 2, pct=True)
 
     # Flujos anuales del CCS (S/ y US$ millones)
     fechas = pd.date_range("2026-10-01", periods=len(rem), freq="MS") + pd.Timedelta(days=14)
@@ -479,11 +514,18 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros) -> None:
     ax.legend(fontsize=8)
     guardar_figura(fig, "f_e1_escenarios")
 
+    return {
+        "s0": s0,
+        "resultado_sin": lambda s: resultado(pos, s),
+        "resultado_con": lambda s: resultado(residuo_total, s),
+        "valor": lambda s: (ccs.valor_usd(c_pen, c_usd, spot_hoy=s) + valor_ndf(s) * 1e3) / 1e3,  # US$ MM
+    }
+
 
 # =========================================================================== E2: swap + collar WTI
 
 
-def e2_crudo(ex: dict, mk: dict, m: Macros) -> None:
+def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     v = lambda k: ex[k].valor  # noqa: E731
     w = lambda k: mk[k].valor  # noqa: E731
     spot = w("crudo.wti_spot")
@@ -523,13 +565,11 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> None:
     m.set("CostoPutTotal", prima * q / 1e6, 1)
     m.set("CoberturaCrudoPct", v("crudo.cobertura_objetivo"), 0, pct=True)
     m.set("ContratosEquiv", f"{round(q / w('crudo.tamano_contrato')):,}")
-    m.set("ContratosH", f"{cobertura.numero_contratos(w('crudo.h_minima_varianza'), q, w('crudo.tamano_contrato')):,}")
     m.set("RepartoSwap", reparto, 0, pct=True)
     m.set("RepartoCollar", 1 - reparto, 0, pct=True)
     m.set("InvValorHoy", q_tot * spot / 1e6, 1)
     m.set("InvCubiertoMMbl", q / 1e6, 2)
     m.set("InvCubiertoValor", q * spot / 1e6, 1)
-    m.set("RatioH", w("crudo.h_minima_varianza"), 2)
 
     def neto(st: float, estrategia: str) -> float:
         """Resultado sobre TODO el inventario: la parte no cubierta (q_tot − q) queda expuesta al spot."""
@@ -586,6 +626,14 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> None:
     m.set("CollarValMasDiez", abs(valor_collar(f3 * 1.1)), 1)  # pasivo
     m.set("SwapValDiez", 0.10 * p_swap * q_swap * df_swap / 1e6, 1)
 
+    # M6: vega del collar (put comprado − call vendido), US$ MM por punto de volatilidad
+    vega = opciones.vega_black76(f3, k_put, T, r, sig) - opciones.vega_black76(f3, k_call, T, r, sig)
+    m.set("VegaCollar", vega * q_col / 100 / 1e6, 2)
+    # M2: strike del call de costo cero según la volatilidad supuesta
+    for nombre, s_alt in (("Baja", 0.35), ("Media", 0.45)):
+        m.set(f"VolSens{nombre}", s_alt, 0, pct=True)
+        m.set(f"CollarCallVol{nombre}", opciones.strike_collar_costo_cero(f3, k_put, T, r, s_alt, fijo="put"), 2)
+
     xs = np.linspace(spot * 0.6, spot * 1.4, 200)
     fig, ax = plt.subplots(figsize=(6.2, 2.4))
     ax.plot(xs, [neto(x, "Sin cobertura") for x in xs], color=NARANJA, label="Inventario sin cobertura")
@@ -598,6 +646,113 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> None:
     ax.set_ylabel("US\\$ millones")
     ax.legend(fontsize=8, loc="upper left")
     guardar_figura(fig, "f_e2_payoff")
+
+    return {
+        "spot": spot,
+        "T": T,
+        "resultado_sin": lambda x: neto(x, "Sin cobertura"),
+        "resultado_con": lambda x: neto(x, "Mixto"),
+        # valor de mercado de swap + collar ante un choque proporcional de la curva de futuros (US$ MM)
+        "valor": lambda p: valor_collar(f3 * (1 + p)) - p * p_swap * q_swap * df_swap / 1e6,
+    }
+
+
+# =========================================================================== riesgo residual y liquidez
+
+
+def h_minima_varianza(partida: str) -> dict[str, float]:
+    """h* semanal (miércoles) de la partida cubierta frente al futuro CL frente, 2 años al 22-sep-2026."""
+    def s(nombre: str) -> pd.Series:
+        x = serie(nombre)
+        x.index = pd.to_datetime(x.index)
+        return x
+    df = pd.concat({"S": s(partida), "F": s("cl_front_yahoo")}, axis=1, sort=True).loc["2024-09-22":"2026-09-22"]
+    d = df.dropna()
+    d = d[d.index.weekday == 2].diff().dropna()
+    return cobertura.ratio_minima_varianza(d["S"], d["F"]) | {"n": len(d)}
+
+
+def riesgo_residual(ex: dict, mk: dict, m: Macros, e1: dict, e2: dict) -> None:
+    v = lambda k: ex[k].valor  # noqa: E731
+    w = lambda k: mk[k].valor  # noqa: E731
+
+    # C4: riesgo de base. WTI Cushing frente a CL (casi idéntico) y Brent frente a CL (base real)
+    h_wti, h_brent = h_minima_varianza("wti_spot_eia"), h_minima_varianza("brent_spot_eia")
+    q = v("crudo.inventario_crudo_mbl") * 1e3 * v("crudo.cobertura_objetivo")
+    m.set("RatioH", h_wti["h"], 2)
+    m.set("RatioHBrent", h_brent["h"], 2)
+    m.set("EfectividadBrent", h_brent["efectividad"], 0, pct=True)
+    m.set("EfectividadWTI", h_wti["efectividad"], 0, pct=True)
+    m.set("ContratosH", f"{cobertura.numero_contratos(h_wti['h'], q, w('crudo.tamano_contrato')):,}")
+    m.set("ContratosHBrent", f"{cobertura.numero_contratos(h_brent['h'], q, w('crudo.tamano_contrato')):,}")
+    m.set("SemanasH", h_brent["n"], 0)
+
+    # M6: VaR al 95 % al vencimiento de las coberturas (~3 meses), con volatilidad realizada de un año
+    def vol_realizada(nombre: str) -> float:
+        x = serie(nombre).loc["2025-09-28":"2026-09-28"]
+        return float(np.log(x).diff().dropna().std(ddof=1) * np.sqrt(252))
+    tc = (serie("usdpen_interbancario_compra") + serie("usdpen_interbancario_venta")) / 2
+    vol_tc = float(np.log(tc.loc["2025-09-28":"2026-09-28"]).diff().dropna().std(ddof=1) * np.sqrt(252))
+    vol_cl = vol_realizada("cl_front_yahoo")
+    m.set("VolRealCL", vol_cl, 1, pct=True)
+    T_fx, T_cr = v("cobertura_fx.ndf_dias") / 360, e2["T"]
+    var = {
+        ("E1 (TC)", "Sin cob."): riesgo.var_monotono(e1["resultado_sin"], e1["s0"], vol_tc, T_fx),
+        ("E1 (TC)", "Con cob."): riesgo.var_monotono(e1["resultado_con"], e1["s0"], vol_tc, T_fx),
+        ("E2 (crudo)", "Sin cob."): riesgo.var_monotono(e2["resultado_sin"], e2["spot"], vol_cl, T_cr),
+        ("E2 (crudo)", "Con cob."): riesgo.var_monotono(e2["resultado_con"], e2["spot"], vol_cl, T_cr),
+    }
+    t_var = pd.DataFrame({e: {c: var[(e, c)] for c in ("Sin cob.", "Con cob.")} for e in ("E1 (TC)", "E2 (crudo)")}).T
+    t_var["Reducción"] = [f"{1 - r['Con cob.'] / r['Sin cob.']:.0%}".replace("%", "\\%") for _, r in t_var.iterrows()]
+    tabla_latex(
+        t_var,
+        "t_var",
+        "VaR al 95\\,\\% al vencimiento de la cobertura (US\\$ MM)",
+        f"{BCRP}; {NYMEX}. Volatilidad realizada de un año",
+        "tab:var",
+        decimales=1,
+        nota="Horizonte: 91 días (E1) y vencimiento de las opciones (E2). La E2 incluye el 20 \\% no cubierto.",
+        flotante=False,
+    )
+    m.set("VaRFXSin", var[("E1 (TC)", "Sin cob.")], 1)
+    m.set("VaRFXCon", var[("E1 (TC)", "Con cob.")], 1)
+    m.set("VaRCrudoSin", var[("E2 (crudo)", "Sin cob.")], 1)
+    m.set("VaRCrudoCon", var[("E2 (crudo)", "Con cob.")], 1)
+
+    # C2: colateral exigible bajo un CSA con umbral cero ante choques adversos para PETROPERÚ
+    s0 = e1["s0"]
+    libres = (v("deuda.lineas_revolventes") - v("deuda.lineas_utilizadas")) / 1e3
+    choques = {
+        "TC $+10$\\,\\%": (0.10, 0.0),
+        "WTI $+30$\\,\\%": (0.0, 0.30),
+        "TC $+5$\\,\\% y WTI $+10$\\,\\%": (0.05, 0.10),
+        "TC $+10$\\,\\% y WTI $+30$\\,\\%": (0.10, 0.30),
+    }
+    filas = {}
+    for nombre, (p_tc, p_wti) in choques.items():
+        v1 = e1["valor"](s0 * (1 + p_tc)) - e1["valor"](s0)  # cambio desde el inicio (sin el bid-ask del día uno)
+        v2 = e2["valor"](p_wti)
+        col = riesgo.colateral_exigible(v1 + v2)
+        filas[nombre] = {"E1": -v1, "E2": -v2, "Colat.": col, "Déficit": max(col - libres, 0.0)}
+    t_col = pd.DataFrame(filas).T
+    tabla_latex(
+        t_col,
+        "t_colateral",
+        "Colateral exigible con umbral cero (US\\$ MM)",
+        f"{EEFF}, Nota 3.1(c)",
+        "tab:colateral",
+        decimales=1,
+        nota=f"E1 y E2: pasivo de los derivados. Déficit: colateral menos líneas libres (US\\$ {libres:.1f} MM).",
+        flotante=False,
+    )
+    peor = t_col.iloc[-1]
+    m.set("LineasLibres", libres, 1)
+    m.set("ColateralTC", t_col.iloc[0]["Colat."], 1)
+    m.set("ColateralWTI", t_col.iloc[1]["Colat."], 1)
+    m.set("ColateralConjunto", peor["Colat."], 1)
+    m.set("DeficitConjunto", peor["Déficit"], 1)
+    m.set("UmbralNecesario", peor["Déficit"], 0)  # umbral que haría el colateral ≤ líneas libres
+    m.set("PrestamoPuente", w("credito.prestamo_puente") / 1e3, 0)
 
 
 def tasa_refinanciacion(mk: dict, m: Macros) -> None:
@@ -616,9 +771,10 @@ def main() -> None:
     riesgo_cambiario(ex, m)
     historia_mercado(mk, m)
     riesgo_crudo(ex, mk, m)
-    riesgo_tasa(ex, m)
-    e1_cambiario(ex, mk, m)
-    e2_crudo(ex, mk, m)
+    spread = riesgo_tasa(ex, m)
+    e1 = e1_cambiario(ex, mk, m, spread)
+    e2 = e2_crudo(ex, mk, m)
+    riesgo_residual(ex, mk, m, e1, e2)
     tasa_refinanciacion(mk, m)
     m.set("FechaValorizacion", "28 de setiembre de 2026")
     m.set("DUCrisis", "N.°~003-2026")  # EEFF 2025, Nota 1, p. 25

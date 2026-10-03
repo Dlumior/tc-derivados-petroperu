@@ -25,6 +25,12 @@ def black76(F: float, K: float, T: float, r: float, sigma: float, tipo: str = "c
     raise ValueError(tipo)
 
 
+def vega_black76(F: float, K: float, T: float, r: float, sigma: float) -> float:
+    """∂V/∂σ (igual para call y put), por unidad de σ: dividir entre 100 para un punto de volatilidad."""
+    d1 = (log(F / K) + 0.5 * sigma**2 * T) / (sigma * sqrt(T))
+    return exp(-r * T) * F * sqrt(T) * exp(-0.5 * d1 * d1) / sqrt(2 * 3.141592653589793)
+
+
 def garman_kohlhagen(
     S: float, K: float, T: float, r_dom: float, r_ext: float, sigma: float, tipo: str = "call"
 ) -> float:

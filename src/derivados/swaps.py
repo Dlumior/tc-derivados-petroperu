@@ -50,16 +50,32 @@ def bootstrap_par_anual(plazos: Sequence[float], tasas_par: Sequence[float]) -> 
 # --------------------------------------------------------------------------- cronogramas
 
 
-def cronograma_cuota_constante(saldo: float, tasa_anual: float, n_cuotas: int, freq: int = 12) -> pd.DataFrame:
-    """Cronograma francés (cuota constante). Útil para el préstamo BN S/ (46 cuotas mensuales)."""
-    i = (1 + tasa_anual) ** (1 / freq) - 1
+def cronograma_cuota_constante(
+    saldo: float,
+    tasa_anual: float,
+    n_cuotas: int,
+    freq: int = 12,
+    gracia: int = 0,
+    convencion: str = "efectiva",
+    tipo: str = "frances",
+) -> pd.DataFrame:
+    """Cronograma del préstamo BN en S/: `gracia` períodos de solo interés y luego `n_cuotas` de amortización.
+
+    convencion: "efectiva" (TEA → (1+TEA)^(1/freq) − 1) o "nominal" (TNA/freq).
+    tipo: "frances" (cuota constante) o "lineal" (amortización constante de capital).
+    """
+    i = (1 + tasa_anual) ** (1 / freq) - 1 if convencion == "efectiva" else tasa_anual / freq
     cuota = saldo * i / (1 - (1 + i) ** -n_cuotas)
     filas, s = [], saldo
-    for k in range(1, n_cuotas + 1):
+    for k in range(1, gracia + n_cuotas + 1):
         interes = s * i
-        amort = cuota - interes
+        if k <= gracia:
+            amort = 0.0
+        else:
+            amort = cuota - interes if tipo == "frances" else saldo / n_cuotas
         filas.append(
-            {"k": k, "t": k / freq, "saldo_inicial": s, "interes": interes, "amortizacion": amort, "cuota": cuota}
+            {"k": k, "t": k / freq, "saldo_inicial": s, "interes": interes, "amortizacion": amort,
+             "cuota": interes + amort}
         )
         s -= amort
     return pd.DataFrame(filas)

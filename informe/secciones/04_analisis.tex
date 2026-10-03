@@ -23,11 +23,11 @@ Reducción del riesgo \newline {\normalfont (US\$ MM)}
   & Pérdida si el TC cae 10\,\%: \newline Sin cobertura: (\EscSinCobMenosDiez) \newline Con cobertura: (\EscConCobMenosDiez)
   & Pérdida si el WTI cae 30\,\%: \newline Sin cobertura: (\PerdidaSinCobTreinta) \newline Con cobertura: (\PerdidaMaxMixto)
   & Baja: no cubre el spread de crédito \\ \filasep
-Costo inicial & Cero; la tasa no incluye el CVA & Cero (swap y collar) & Cero (swap de inicio diferido) \\ \filasep
+Costo inicial & Cero; CVA de \CCSCVApb~pb en la tasa & Cero (swap y collar) & Cero (swap de inicio diferido) \\ \filasep
 Costo económico & Diferencial implícito del NDF: \NDFCostoAnual\ anual
   & Swap: US\$~\CostoSwap\ MM frente al spot (nulo frente al forward)
   & Pagos si la tasa baja \\ \filasep
-Efecto en liquidez & Bajo: CSA con umbral & Bajo: sin márgenes de bolsa & Bajo \\ \filasep
+Colateral con umbral cero \newline {\normalfont (US\$ MM)} & \ColateralTC\ si el TC sube 10\,\% & \ColateralWTI\ si el WTI sube 30\,\% & Bajo \\ \filasep
 Tratamiento NIIF~9 & Cobertura de flujos de efectivo (ORI)
   & Cobertura de valor razonable del inventario
   & Flujos de efectivo, solo si la refinanciación es altamente probable \\
@@ -35,6 +35,21 @@ Tratamiento NIIF~9 & Cobertura de flujos de efectivo (ORI)
 \end{tabularx}
 \fuente{Cuadros~\ref{tab:e1-param} a \ref{tab:e2-escenarios}; \textcite{ifrs9}. Elaboración propia.}
 \end{table}
+
+\textbf{Riesgo residual y liquidez.} El VaR al 95\,\% al vencimiento de cada cobertura cae de
+US\$~\VaRFXSin\ a \VaRFXCon\ millones en la E1 y de \VaRCrudoSin\ a \VaRCrudoCon\ millones en la E2, que conserva el
+20\,\% no cubierto (Cuadro~\ref{tab:var}). La restricción real es la liquidez. Los derivados OTC no tienen márgenes de
+bolsa, pero un banco exigirá colateral a una contraparte B-/Caa1, probablemente con umbral cero. En un estrés conjunto
+(TC $+10$\,\% y WTI $+30$\,\%; el Perú es importador neto de crudo) el colateral llegaría a US\$~\ColateralConjunto\
+millones, frente a solo US\$~\LineasLibres\ millones de líneas libres (Cuadro~\ref{tab:colateral}); el préstamo puente
+de US\$~\PrestamoPuente\ millones (Moody's, setiembre de 2026) tiene otro destino. Por eso la ejecución se condiciona a
+un umbral de al menos US\$~\UmbralNecesario\ millones o a la garantía del Estado sobre la línea de derivados: sin ello,
+la cobertura agravaría el riesgo de liquidez que busca mitigar \parencite{moodys2026petroperu}.
+
+\medskip\noindent
+\begin{minipage}[t]{0.42\linewidth}\footnotesize\setlength{\tabcolsep}{2.5pt}\input{generado/tablas/t_var}\end{minipage}\hfill
+\begin{minipage}[t]{0.55\linewidth}\footnotesize\setlength{\tabcolsep}{2.5pt}\input{generado/tablas/t_colateral}\end{minipage}
+\medskip
 
 \textbf{Riesgo de tasa.} No se recomienda contratar hoy un swap de tasa. La deuda ya es fija, y pasarla a variable
 añadiría riesgo sin reducir el costo de crédito, que es lo que encarece la deuda. Queda como opción a evaluar un swap
@@ -46,7 +61,7 @@ plazo sí se reprecian en cada renovación, pero su plazo no justifica un deriva
 
 \textbf{Condiciones de implementación.} (i) Aprobar en el Directorio una Política de Cobertura con límites
 (\LimiteFX\ de la posición en soles y \LimiteCrudo\ del inventario de crudo), prohibición expresa de especular
-y métricas mensuales de seguimiento. (ii) Firmar contratos marco ISDA con anexos CSA de umbrales de colateral altos y
+y métricas mensuales de seguimiento. (ii) Firmar contratos marco ISDA con anexos CSA con un umbral de colateral de al menos US\$~\UmbralNecesario\ millones y
 solicitar que los compromisos contingentes que el D.U.~\DUCrisis\ autoriza al MINEM (Nota~1, p.~25) (hasta US\$~\DUCrisisMonto\ millones para la continuidad operativa) respalden también las líneas de derivados.
 (iii) Documentar cada relación de cobertura según la NIIF~9 (partida cubierta, instrumento, ratio y pruebas de
 efectividad) \parencite{ifrs9}. (iv) Incorporar los swaps de monedas de corto plazo con Citibank a esa política, para

@@ -12,7 +12,11 @@ soles (S/~\RestoPEN\ millones, sobre todo cuentas por pagar) se cubre en un \NDF
 \NDFDias\ días, renovables, que se liquidan por diferencias en dólares sin entregar el principal.
 Como el EEFF no detalla el cronograma, se supone que el saldo se amortiza en \BNCuotasSup\ cuotas francesas desde
 enero de 2026 (en 2025 solo se pagaron intereses, Nota~14(c)); a la fecha de valorización quedan \BNCuotasRem\ cuotas
-y un saldo de S/~\BNSaldoRem\ millones.
+y un saldo de S/~\BNSaldoRem\ millones. La tasa mensual es la TEA convertida, $(1+\text{TEA})^{1/12}-1$ (con la TNA
+dividida entre 12, la cuota sería S/~\BNCuotaNominal\ millones). La fuente es ambigua (\BNCuotasTot\ cuotas en 48 meses),
+así que se probaron otros cronogramas (tasa nominal, amortización lineal y 2026 solo con intereses): la tasa del CCS
+varía entre \CCSTasaMin\ y \CCSTasaMax\ y el nocional entre US\$~\CCSNocionalMin\ y \CCSNocionalMax\ millones. Las
+cifras son indicativas: el CCS solo puede pactarse sobre el cronograma contractual.
 
 \begin{figure}[t]\centering\small
 \begin{tikzpicture}[caja/.style={draw,rounded corners,align=center,minimum width=2.9cm,minimum height=0.9cm,font=\small\bfseries},
@@ -57,6 +61,7 @@ Saldo cubierto del préstamo del BN (S/ MM) & \BNSaldoRem & Cronograma supuesto,
 Nocional (US\$ MM) & \CCSNocionalUSD & Saldo al tipo de cambio de compra \\
 VP de la pata en S/ (US\$ MM) & \CCSVPPataPEN & Descontada con la curva SBS \\
 Tasa fija de equilibrio de la pata en US\$ & \CCSTasaUSD & Antes del cargo por riesgo de crédito \\
+Tasa con CVA (\emph{all-in}) & \CCSTasaAllIn & CVA de \CCSCVApb~pb; LGD de \LGD \\
 Pagos totales de la pata en US\$ (US\$ MM) & \CCSTotalUSD & Suma de las \BNCuotasRem\ cuotas \\
 \grupo{NDF de compra de S/ a \NDFDias\ días}
 Nocional (S/ MM) & \NDFNocional & \NDFPct\ del resto de la posición en S/ \\
@@ -77,8 +82,11 @@ El NDF se pacta a \NDFForward, \NDFPuntos~pips por debajo del spot de compra, po
 (\PENTresMeses) es menor que la de dólares (\USDTresMeses). Como PETROPERÚ compra soles a plazo, recibe menos soles
 por dólar: la cobertura le cuesta \NDFCostoAnual\ anual, unos US\$~\NDFCostoUSD\ millones por trimestre. Aun así la
 tasa del CCS queda muy por debajo del rendimiento que el mercado exige a los bonos de la Compañía (\YTMBonos). Dada
-la calificación B-/Caa1, el banco añadirá un cargo por riesgo de crédito de la contraparte (CVA) o exigirá colateral,
-por lo que conviene negociar la garantía del Estado para la línea de derivados. El Cuadro~\ref{tab:e1-flujos} muestra
+la calificación B-/Caa1, el banco cobrará un ajuste por riesgo de crédito (CVA). Con la exposición esperada del banco
+(máximo de US\$~\CCSEPEMax\ millones, volatilidad del TC de \VolTC), el spread de \SpreadBonosPb~pb y una LGD de \LGD,
+el CVA es de US\$~\CCSCVAUSD\ millones, unos \CCSCVApb~pb anuales: la tasa \emph{all-in} sería \CCSTasaAllIn\
+\parencite{hull2022}. Es un mínimo, porque no incluye el costo de fondeo del banco (FVA) ni el riesgo \emph{wrong-way}:
+la exposición del banco crece si el sol se deprecia, un escenario de estrés que tiende a coincidir con el de la Compañía. El Cuadro~\ref{tab:e1-flujos} muestra
 que la pata en soles calza con el servicio de deuda al BN, por lo que PETROPERÚ solo desembolsa dólares, su moneda
 funcional.
 
@@ -151,7 +159,7 @@ con la regla de vencimiento de CME, por confirmar) y se valorizan con el modelo 
 \grupo{Insumos de mercado}
 WTI, contrato frente (US\$/bl) & \WTIFutUno & NYMEX CL, noviembre de 2026 \\
 Futuro de enero, $F$ (US\$/bl) & \WTIFut & NYMEX CL, enero de 2027 (subyacente) \\
-Volatilidad implícita, $\sigma$ & \VolCrudo & Índice OVX \\
+Volatilidad implícita, $\sigma$ & \VolCrudo & Índice OVX; realizada a un año: \VolRealCL \\
 Plazo al vencimiento, $T$ (días) & \PlazoDiasOpc & Vencimiento supuesto: 18 de diciembre de 2026 \\
 Tasa libre de riesgo, $r$ & \RUSDCont & SOFR, capitalización continua \\
 \grupo{Estructura del collar (costo cero)}
@@ -190,11 +198,20 @@ US\$~\CollarCall/bl y no requiere una prima que la caja no puede financiar; comp
 US\$~\CostoPutTotal\ millones por trimestre. En ese escenario la combinación propuesta reduce la pérdida a
 US\$~\PerdidaMaxMixto\ millones. Si el WTI sube, la Compañía renuncia a parte de la ganancia (con un alza de
 30\,\% gana US\$~\GananciaMaxMixto\ millones); aun así conviene, porque protege la caja de una empresa sin margen para absorber otra caída como la de 2025
-\parencite{froot1993}. El principal riesgo residual es el de base: PETROPERÚ compra crudos referidos al Brent, cuyo
-diferencial con el WTI es hoy de US\$~\BrentWTI/bl, y crudos pesados con descuento. El ratio de mínima varianza del
-WTI de Cushing frente al futuro CL es $h^*=\rho\,\sigma_S/\sigma_F=$~\RatioH\ \parencite{hull2022}; como es casi uno,
-el nocional OTC se fija 1:1 (con $h^*$ serían \ContratosH\ contratos). Debe reestimarse con la serie interna de costos
-de compra, que es la que mide la base real.
+\parencite{froot1993}. El OVX mide opciones a 30 días sobre un ETF, pero coincide con la volatilidad realizada del CL en el último año
+(\VolRealCL); el \VolHistWTI\ de la sección~2 sale de promedios mensuales, que suavizan la serie. El strike del call
+es poco sensible a ese supuesto (US\$~\CollarCallVolBaja\ con $\sigma=$~\VolSensBaja\ y US\$~\CollarCallVolMedia\ con
+\VolSensMedia), y el collar es casi neutro a la volatilidad (vega de US\$~\VegaCollar\ millones por punto); el sesgo
+(\emph{skew}) no se modela, por lo que el strike debe confirmarse con cotizaciones bancarias.
+
+El principal riesgo residual es el de base: PETROPERÚ compra crudos referidos al Brent, cuyo diferencial con el WTI
+es hoy de US\$~\BrentWTI/bl, y crudos pesados con descuento. El ratio de mínima varianza $h^*=\rho\,\sigma_S/\sigma_F$
+del Brent frente al futuro CL es \RatioHBrent, con una efectividad $\rho^2$ de \EfectividadBrent\ (\SemanasH\
+semanas; para el WTI de Cushing: \RatioH\ y \EfectividadWTI) \parencite{hull2022}. Si la partida fuera el Brent, el
+nocional subiría a \ContratosHBrent\ contratos y una quinta parte de la varianza quedaría sin cubrir. Se mantiene el
+WTI porque los precios de venta locales siguen la paridad de importación sobre el WTI más spreads (Nota~11(viii),
+p.~70), lo que lo hace un componente de riesgo identificable (NIIF~9, 6.3.7); los swaps sobre Brent (ICE) son la
+alternativa si la serie interna de costos de compra se ajusta mejor a ese marcador.
 
 \textbf{Registro contable.} El swap y el collar se pactan a valor cero. Ante una caída instantánea de 10\,\% de la
 curva de futuros, el collar sería un activo de US\$~\CollarValMenosDiez\ millones y el swap uno de
