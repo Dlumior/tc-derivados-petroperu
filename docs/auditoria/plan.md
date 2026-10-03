@@ -73,8 +73,12 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 ## 3. Tareas por fase
 
 ### Fase 0 — Línea base
-- [ ] `make test && make calc && make pdf` y anotar aquí el número de páginas actual: **__ páginas**.
-- [ ] Commit de la línea base antes de tocar nada.
+- [x] `make test && make calc && make pdf` y anotar aquí el número de páginas actual: **9 páginas** (la 9 está
+      llena: termina en las referencias). **Margen: ~1 página** para todo lo que agreguen las fases 1 a 5.
+      26 tests OK. `make calc` regenera sin cambios de cifras (las figuras solo cambian en metadatos).
+      Avisos: 1 insumo PENDIENTE (`tasas.spread_credito_petroperu`, ya conocido) y 3 *overfull hbox*
+      (10.6 pt, 1.8 pt y 0.8 pt); resolverlos en la Fase 5 con `make final`.
+- [x] Commit de la línea base antes de tocar nada (2a0a387: plan + dictamen; el estado del informe es el de 9167c85).
 
 ### Fase 1 — Coherencia y correcciones rápidas (solo código, yaml y texto)
 - [ ] **C6** `exposiciones.yaml`: `crudo.cobertura_objetivo` → 0.80, dentro del límite, con fuente "Supuesto de
@@ -174,4 +178,5 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 ## 5. Registro de avance
 | Fecha | Qué se hizo | Commit |
 |---|---|---|
-| 2026-10-03 | Dictamen recibido, validado y plan creado | — |
+| 2026-10-03 | Dictamen recibido, validado y plan creado | 2a0a387 |
+| 2026-10-03 | Fase 0: línea base, 9 páginas, 26 tests OK | (este commit) |
