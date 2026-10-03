@@ -47,18 +47,18 @@ condición previa a la ejecución**, no inventando el dato.
 
 | # | Estado | Fase |
 |---|---|---|
-| C1 | ⬜ pendiente | 2, 4 |
-| C2 | ⬜ pendiente | 2 |
-| C3 | 🟡 texto unificado; falta el CVA (Fase 2) | 1, 2 |
-| C4 | ⬜ pendiente | 2 |
+| C1 | 🟡 sensibilidad hecha; falta reformular la NIIF 9 (Fase 3) y el EEFF de jun-2026 (Fase 4) | 2, 4 |
+| C2 | ✅ levantado | 2 |
+| C3 | ✅ levantado | 1, 2 |
+| C4 | ✅ levantado | 2 |
 | C5 | ⬜ pendiente | 3 |
 | C6 | ✅ levantado | 1 |
 | M1 | ⬜ pendiente | 3 |
-| M2 | ⬜ pendiente | 2, 4 |
+| M2 | ✅ levantado (salvo el skew, que queda declarado) | 2, 4 |
 | M3 | ⬜ pendiente | 3, 4 |
 | M4 | ⬜ pendiente | 3 |
 | M5 | ⬜ pendiente | 3 |
-| M6 | ⬜ pendiente | 2 |
+| M6 | ✅ levantado (VaR + vega; ES y backtesting quedan fuera de alcance) | 2 |
 | M7 | ✅ levantado | 1 |
 | M8 | ✅ levantado | 1 |
 | M9 | ⬜ pendiente | 5 |
@@ -115,28 +115,50 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
     para el límite (`make check` mide hasta `\label{fin-cuerpo}`). Queda **~1 página** de cuerpo para las fases 2 a 5.
 
 ### Fase 2 — Cálculos nuevos (cada uno en `src/derivados/` + test, con macros en `run_all.py`)
-- [ ] **C2 Liquidez por colateral.** Nueva función: valor de mercado conjunto de E1 + E2 bajo choques combinados
+- [x] **C2 Liquidez por colateral.** Nueva función: valor de mercado conjunto de E1 + E2 bajo choques combinados
       (TC +5/+10 %, WTI +10/+30 %, y el caso adverso conjunto: sol depreciado + crudo al alza). Cuadro pequeño:
       colateral exigible con umbral 0 frente a liquidez disponible (líneas libres 22.3; verificar si se puede citar el
       préstamo puente de US$ 475 MM de Moody's, sep-2026, que está en `data/raw/mercado_2026-09-30/`).
       Conclusión explícita: **la ejecución queda condicionada** a un umbral CSA ≥ X o a la garantía del Estado.
       Cambiar "Bajo" en el Cuadro 10 por la cifra.
-- [ ] **C3 CVA.** EPE del CCS con simulación simple del TC (vol `usdpen.vol_implicita_1a`), multiplicada por el spread
+- [x] **C3 CVA.** EPE del CCS con simulación simple del TC (vol `usdpen.vol_implicita_1a`), multiplicada por el spread
       de PETROPERÚ (569 pb, ya calculado) y por LGD 60 % (supuesto declarado). Convertir a pb anuales y obtener la
       tasa all-in = `\CCSTasaUSD` + CVA. Mencionar el riesgo *wrong-way* de forma cualitativa. Macros
       `\CCSCVApb` y `\CCSTasaAllIn`; actualizar el Cuadro 10 y las conclusiones.
-- [ ] **C1 Sensibilidad al cronograma.** Recalcular la tasa y el nocional del CCS con cronogramas alternativos
+- [x] **C1 Sensibilidad al cronograma.** Recalcular la tasa y el nocional del CCS con cronogramas alternativos
       (36 cuotas desde ene-2026 [base]; 46 cuotas desde mar-2025, que dan 48 − 2 de gracia; tasa nominal/12 frente a
       TEA). Rango de `\CCSTasaUSD` en una línea del Cuadro 3. Explicar la convención TEA → (1+TEA)^(1/12) − 1.
-- [ ] **C4 Base.** Usar h* contra Brent (1.156, ρ² = 0.80, ya en `mercado.yaml`) como cifra principal, con h* WTI
+- [x] **C4 Base.** Usar h* contra Brent (1.156, ρ² = 0.80, ya en `mercado.yaml`) como cifra principal, con h* WTI
       como referencia. Número de contratos con el h* de Brent. Corregir la fuente del yaml: p. 70 = precios de
       **venta** por paridad WTI + spreads. Agregar una oración sobre la alternativa de swaps Brent (ICE).
-- [ ] **M6 Métricas.** VaR al 95 % a 1 mes (paramétrico, con la vol histórica diaria) del TC y del inventario, con
+- [x] **M6 Métricas.** VaR al 95 % a 1 mes (paramétrico, con la vol histórica diaria) del TC y del inventario, con
       y sin cobertura: una sola tabla de 2×2. Agregar la vega del collar (`opciones.py`).
-- [ ] **M2 Volatilidad.** Sensibilidad del strike del call a σ ∈ {35 %, 45 %, 56 %}. Aclarar que el 29.3 % sale de
+- [x] **M2 Volatilidad.** Sensibilidad del strike del call a σ ∈ {35 %, 45 %, 56 %}. Aclarar que el 29.3 % sale de
       promedios mensuales. Mencionar el *skew* como limitación.
-- [ ] Pedir al agente `validador-cuantitativo` que recalcule independientemente C2, C3 y C1.
-- [ ] Commit "Fase 2".
+- [ ] Pedir al agente `validador-cuantitativo` que recalcule independientemente C2, C3 y C1 (pendiente: validé a
+      mano las cifras clave y hay tests nuevos, incluido uno que contrasta la EPE analítica con Monte Carlo).
+- [x] Commit "Fase 2" (184a824).
+
+  **Resultado de la Fase 2** (nuevo módulo `src/derivados/riesgo.py` + `tests/test_riesgo.py`, 33 tests):
+  - **C2 (colateral con umbral cero):** 97.0 con TC +10 %, 52.5 con WTI +30 % y **149.5 en el estrés conjunto**,
+    frente a 22.2 de líneas libres. La ejecución queda condicionada a un umbral CSA ≥ US$ 127 MM o a la garantía del
+    Estado. El préstamo puente de US$ 475 MM (Moody's) se menciona, pero no se cuenta como liquidez porque tiene
+    destino específico. Se agregó el Cuadro 12.
+  - **C3 (CVA):** con EPE analítica (put de Black sobre 1/S), σ TC 6.75 %, spread de 569 pb y LGD de 60 % (supuesto,
+    agregado en `mercado.yaml`), el CVA es de **US$ 1.0 MM ≈ 10 pb**, para una tasa all-in de **5.98 %**. Se declara
+    que es un mínimo (sin FVA ni wrong-way).
+  - **C1 (cronograma):** con cronogramas alternativos (TNA/12, lineal, 2026 solo intereses), la tasa del CCS queda
+    entre 5.88 % y 6.02 % y el nocional entre US$ 821.8 y 1,095.7 MM. La convención TEA → mensual queda explicada
+    (cuota de 113.6 frente a 113.8 con TNA/12).
+  - **C4 (base):** h* se recalcula en `run_all.py`. Brent: **1.14 (ρ² = 79 %)**; WTI Cushing: 1.01 (99 %). Con
+    Brent serían 2,648 contratos. El WTI se justifica por la Nota 11(viii), p. 70 (precios de venta por paridad
+    WTI + spreads), que antes estaba citada como "costos de compra"; ya está corregido en el yaml.
+  - **M2:** la volatilidad realizada del CL en un año es **55.8 %**, prácticamente igual al OVX (56.1 %). El strike
+    del call casi no se mueve (97.19 con σ 35 %, 97.60 con 45 %, 98.08 con 56 %).
+  - **M6:** VaR al 95 % al vencimiento: E1 baja de 63.7 a 3.1 y E2 de 94.3 a 39.6 (Cuadro 11). La vega del collar
+    es casi nula.
+  - **Páginas: cuerpo 10/10**; termina a ~1/3 de la página 10, así que quedan **~0.6 páginas**. Las fases 3 y 5
+    deben **reemplazar** texto, no agregarlo.
 
 ### Fase 3 — Rediseño de la exposición y de la contabilidad (prosa + parámetros)
 - [ ] **C5 + M5 Exposición de crudo.** Recomendación: redefinir la partida cubierta como el **desfase de precio
@@ -192,4 +214,5 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 | 2026-10-03 | Dictamen recibido, validado y plan creado | 2a0a387 |
 | 2026-10-03 | Fase 0: línea base, 9 páginas, 26 tests OK | 5ebfac7 |
 | 2026-10-03 | Fase 1: C6, M7, M8, B1, B2, B4 levantados; C3 y B3 parciales | 91a725a |
-| 2026-10-03 | Referencias fuera del límite de 10 páginas; el verificador mide solo el cuerpo (9/10) | (este commit) |
+| 2026-10-03 | Referencias fuera del límite de 10 páginas; el verificador mide solo el cuerpo (9/10) | ffdfc4d |
+| 2026-10-03 | Fase 2: C2, C3, C4, M2 y M6 levantados; C1 parcial; cuerpo 10/10 | 184a824 |
