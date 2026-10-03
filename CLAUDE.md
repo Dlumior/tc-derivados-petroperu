@@ -46,3 +46,7 @@ Exposiciones al 31-dic-2025 (EEFF); mercado a la **fecha de valorización 28-sep
 ## Limitaciones conocidas
 - El .txt del dictamen **no incluye los estados primarios** (eran imágenes, folios 0010–0014).
 - `mercado.yaml`: solo `tasas.spread_credito_petroperu` sigue `PENDIENTE` (requiere Bloomberg); el informe ya no lo usa (el spread se calcula del valor razonable de los bonos, Nota 14(d)), pero bloquea `make final`.
+
+## Auditoría en curso
+Dictamen externo (3-oct-2026) y plan de levantamiento con checklist: `docs/auditoria/plan.md`. Antes de editar el
+informe, revisar qué fase sigue y marcar `[x]` / actualizar el tablero al cerrar cada tarea.
