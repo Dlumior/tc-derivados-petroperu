@@ -49,23 +49,23 @@ condición previa a la ejecución**, no inventando el dato.
 |---|---|---|
 | C1 | ⬜ pendiente | 2, 4 |
 | C2 | ⬜ pendiente | 2 |
-| C3 | ⬜ pendiente | 1, 2 |
+| C3 | 🟡 texto unificado; falta el CVA (Fase 2) | 1, 2 |
 | C4 | ⬜ pendiente | 2 |
 | C5 | ⬜ pendiente | 3 |
-| C6 | ⬜ pendiente | 1 |
+| C6 | ✅ levantado | 1 |
 | M1 | ⬜ pendiente | 3 |
 | M2 | ⬜ pendiente | 2, 4 |
 | M3 | ⬜ pendiente | 3, 4 |
 | M4 | ⬜ pendiente | 3 |
 | M5 | ⬜ pendiente | 3 |
 | M6 | ⬜ pendiente | 2 |
-| M7 | ⬜ pendiente | 1 |
-| M8 | ⬜ pendiente | 1 |
+| M7 | ✅ levantado | 1 |
+| M8 | ✅ levantado | 1 |
 | M9 | ⬜ pendiente | 5 |
-| B1 | ⬜ pendiente | 1 |
-| B2 | ⬜ pendiente | 1 |
-| B3 | ⬜ pendiente | 1, 4 |
-| B4 | ⬜ pendiente | 1 |
+| B1 | ✅ levantado | 1 |
+| B2 | ✅ levantado | 1 |
+| B3 | 🟡 falta el vencimiento de las opciones (Fase 4) | 1, 4 |
+| B4 | ✅ levantado | 1 |
 | B5 | ⬜ pendiente | 5 |
 
 Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como limitación (declarado en el informe)
@@ -81,27 +81,38 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 - [x] Commit de la línea base antes de tocar nada (2a0a387: plan + dictamen; el estado del informe es el de 9167c85).
 
 ### Fase 1 — Coherencia y correcciones rápidas (solo código, yaml y texto)
-- [ ] **C6** `exposiciones.yaml`: `crudo.cobertura_objetivo` → 0.80, dentro del límite, con fuente "Supuesto de
+- [x] **C6** `exposiciones.yaml`: `crudo.cobertura_objetivo` → 0.80, dentro del límite, con fuente "Supuesto de
       diseño: tope de la política propuesta". `make calc` y revisar cuánto cambian las cifras de E2.
-- [ ] **M7** `run_all.py`: `CostoSwap` × `reparto`, para que refleje solo el volumen del swap. Etiquetar el volumen en
+- [x] **M7** `run_all.py`: `CostoSwap` × `reparto`, para que refleje solo el volumen del swap. Etiquetar el volumen en
       los Cuadros 8, 9 y 10 ("sobre X MMbl, Y % del inventario"). Redacción: "frente al precio de hoy; frente al
       forward el costo esperado es nulo, porque el *backwardation* ya lo descuenta el mercado".
-- [ ] **C3 (texto)** Unificar: el Cuadro 10 dice "Cero (antes de CVA)" hasta tener la cifra de la Fase 2.
-- [ ] **M8** `run_all.py`: `FwdSwapRate` con plazo de 2027 a 2030 (3 años), igual al vencimiento del CESCE.
+- [x] **C3 (texto)** Unificar: el Cuadro 10 dice "Cero (antes de CVA)" hasta tener la cifra de la Fase 2.
+- [x] **M8** `run_all.py`: `FwdSwapRate` con plazo de 2027 a 2030 (3 años), igual al vencimiento del CESCE.
       Reescribir 04 l. 393-398: es una *opción a evaluar* si la refinanciación pasa a ser altamente probable
       (NIIF 9 6.3.3); comparar tasa swap + spread (`\SpreadBonosPb`) frente al 3.285 %; mencionar el riesgo de
       *repricing* de las líneas revolventes. En el Cuadro 10, la columna NIIF 9 de tasa pasa a "Solo si la
       transacción es altamente probable".
-- [ ] **B1** Nota al pie o aclaración en la Figura 3: Nota 14(a) frente a 14(d) (la diferencia es el costo
+- [x] **B1** Nota al pie o aclaración en la Figura 3: Nota 14(a) frente a 14(d) (la diferencia es el costo
       amortizado y los intereses devengados). Rotular el CESCE como "nominal" frente a "libros". Unificar la base del
       TC del escenario −10 % (usar la misma en los Cuadros 6 y 7).
-- [ ] **B2** 02 l. 101: "tipo de cambio interbancario de cierre (promedio compra-venta)".
-- [ ] **B3** Revisar la oración que cita a Reuters: solo el contexto, porque el precio viene de BCRP/NYMEX.
+- [x] **B2** 02 l. 101: "tipo de cambio interbancario de cierre (promedio compra-venta)".
+- [x] **B3** Revisar la oración que cita a Reuters: solo el contexto, porque el precio viene de BCRP/NYMEX.
       Completar los integrantes en `main.tex:12` (pedir los nombres al grupo).
-- [ ] **B4** Una línea después de la Ec. (1): "las cuotas incluyen amortización, por lo que no hay intercambio final
+- [x] **B4** Una línea después de la Ec. (1): "las cuotas incluyen amortización, por lo que no hay intercambio final
       de nocional". Decidir el TC del VR: **recomendación: TC medio** en el registro contable (NIIF 13 ¶71, precio
       medio como práctica) y TC compra solo en el pricing de la tasa. Aplicarlo en `run_all.py:462-465`.
-- [ ] `make test && make calc && make pdf`, revisar páginas y hacer commit "Fase 1".
+- [x] `make test && make calc && make pdf`, revisar páginas y hacer commit "Fase 1".
+
+  **Resultado de la Fase 1:**
+  - **E2 al 80 %:** ahora los Cuadros 8, 9 y 10 miden el resultado sobre el **inventario total**, con el 20 %
+    abierto. Como con ese 20 % la pérdida ya no tiene piso, "pérdida máxima" se cambió por "pérdida si el WTI cae
+    30 %": 80.6 sin cobertura, 50.2 con el collar y 36.9 con la propuesta. El costo del swap bajó de 9.3 a 3.7.
+  - **Tasa forward del swap de inicio diferido:** 4.85 % (2027-2030).
+  - **B1, base del TC:** no se unificó. Cada cuadro se rotuló con su base (NDF a TC compra, escenarios a TC medio),
+    porque forzar el TC medio en el NDF distorsionaba su costo. El valor razonable del registro contable pasó a TC
+    medio.
+  - **Páginas: 10.** Las referencias se desbordan unas 20 líneas a la página 10, así que quedan **~0.6 páginas**
+    para la Fase 2. Los cuadros nuevos tienen que ser mínimos o reemplazar texto.
 
 ### Fase 2 — Cálculos nuevos (cada uno en `src/derivados/` + test, con macros en `run_all.py`)
 - [ ] **C2 Liquidez por colateral.** Nueva función: valor de mercado conjunto de E1 + E2 bajo choques combinados
@@ -170,8 +181,8 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 - [ ] Actualizar el tablero de la sección 2 y hacer el commit final.
 
 ## 4. Decisiones abiertas (requieren al grupo)
-1. Integrantes del grupo (B3).
-2. Volumen de E2: 80 % (tope) o 70 % (centro del rango). Recomendación: **80 %**, que es el menor cambio.
+1. ~~Integrantes del grupo (B3).~~ Resuelto el 3-oct.
+2. ~~Volumen de E2~~: el grupo eligió **80 %** (3-oct).
 3. Si el EEFF de jun-2026 contradice el supuesto del BN: rehacer la E1 con el saldo real o mantener el supuesto con
    sensibilidad. Recomendación: usar el saldo real si está disponible.
 
@@ -179,4 +190,5 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 | Fecha | Qué se hizo | Commit |
 |---|---|---|
 | 2026-10-03 | Dictamen recibido, validado y plan creado | 2a0a387 |
-| 2026-10-03 | Fase 0: línea base, 9 páginas, 26 tests OK | (este commit) |
+| 2026-10-03 | Fase 0: línea base, 9 páginas, 26 tests OK | 5ebfac7 |
+| 2026-10-03 | Fase 1: C6, M7, M8, B1, B2, B4 levantados; C3 y B3 parciales; 10 páginas | (este commit) |

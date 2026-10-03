@@ -63,7 +63,7 @@ crudo:  # Riesgo de precio — Notas 3.1.a.iii, 10 y 23
   compras_usd: {valor: 2490013, unidad: "US$000", fuente: "EEFF 2025, Nota 23, p. 93", estado: verificado}
   wti_cierre_2024: {valor: 71.72, unidad: "US$/bbl", fuente: "EEFF 2025, Nota 10, p. 61", estado: verificado}
   inventario_hidrocarburos_usd: {valor: 563490, unidad: "US$000", fuente: "EEFF 2025, Nota 10, p. 60 (crudo + en proceso + terminados + adquiridos + en tránsito)", estado: verificado}
-  cobertura_objetivo: {valor: 1.0, fuente: "Supuesto: se cubre el 100 % del inventario de crudo al cierre para ilustrar; la política propuesta fija 50 %-80 %", estado: supuesto}
+  cobertura_objetivo: {valor: 0.80, fuente: "Supuesto de diseño: se cubre el 80 % del inventario de crudo al cierre, tope de la política propuesta (50 %-80 %); decisión del grupo 3-oct-2026 (hallazgo C6 de la auditoría)", estado: supuesto}
   plazo_cobertura_anios: {valor: 0.25, unidad: "años", fuente: "Supuesto: rotación del inventario de 1 a 3 meses (Nota 1-d); se cubre con vencimiento de 3 meses", estado: supuesto}
   reparto_swap: {valor: 0.5, fuente: "Supuesto de diseño: 50 % del volumen cubierto con swap (cargamentos con margen ya fijado) y 50 % con collar de costo cero", estado: supuesto}
   put_pct_forward: {valor: 0.90, fuente: "Supuesto de diseño: piso del collar al 90 % del futuro a 3 meses", estado: supuesto}

@@ -9,12 +9,13 @@
   de CVA), junto con NDF de compra de soles, cubre el \CoberturaFX\ de la exposición en soles y reduce la pérdida ante
   una caída de 10\,\% del tipo de cambio de US\$~\EscSinCobMenosDiez\ millones a US\$~\EscConCobMenosDiez\ millones, sin
   costo inicial y con contabilidad de coberturas; su costo es el diferencial de tasas (\NDFCostoAnual\ anual).
-  \item \textbf{Estrategia 2:} cubrir el \RepartoSwap\ del inventario de crudo con un swap de WTI a US\$~\SwapPrecio/bl
-  y el \RepartoCollar\ con un collar de costo cero (put de US\$~\CollarPut\ y call de US\$~\CollarCall) limita la
-  pérdida máxima a US\$~\PerdidaMaxMixto\ millones (frente a US\$~\PerdidaSinCobTreinta\ millones) sin pagar prima.
+  \item \textbf{Estrategia 2:} cubrir el \CoberturaCrudoPct\ del inventario de crudo, por partes iguales con un swap de WTI a
+  US\$~\SwapPrecio/bl y con un collar de costo cero (put de US\$~\CollarPut\ y call de US\$~\CollarCall), reduce la
+  pérdida ante una caída de 30\,\% del WTI a US\$~\PerdidaMaxMixto\ millones (frente a US\$~\PerdidaSinCobTreinta\
+  millones) sin pagar prima.
   \item La restricción de liquidez obliga a preferir instrumentos OTC sin costo inicial y con umbrales de colateral,
   en lugar de futuros con márgenes diarios. Para el riesgo de tasa conviene esperar al diseño de la refinanciación
-  y usar entonces swaps de inicio diferido.
+  y evaluar entonces un swap de inicio diferido, solo si la refinanciación es altamente probable.
   \item Se recomienda a la Gerencia General: (1) presentar la Política de Cobertura al Directorio; (2) iniciar la
   negociación ISDA/CSA con al menos tres bancos; (3) gestionar el respaldo del Estado (MINEM, D.U.~\DUCrisis) para las líneas de derivados; y
   (4) ejecutar primero el CCS, que cubre el riesgo de mayor impacto y es el más sencillo de implementar.

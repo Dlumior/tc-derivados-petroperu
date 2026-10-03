@@ -32,7 +32,8 @@ y un saldo de S/~\BNSaldoRem\ millones.
 soles se descuenta con la curva cupón cero soberana de la SBS (supuesto: no hay una curva swap en soles pública) y la
 pata en dólares con la curva cero obtenida por \emph{bootstrap} de los swaps SOFR
 \parencite{sbs2026curvas,bluegamma2026,hull2022}. Ambas patas se convierten al tipo de cambio de compra, porque
-PETROPERÚ vende dólares. El forward del NDF se obtiene por paridad cubierta de tasas, con el SOFR a tres meses
+PETROPERÚ vende dólares; el registro contable usa el TC medio. Como las cuotas ya incluyen la amortización, no hay
+intercambio final de nocional. El forward del NDF se obtiene por paridad cubierta de tasas, con el SOFR a tres meses
 (tasa simple de \USDTresMesesSimple) convertido a tasa efectiva:
 \begin{equation}
   \frac{1}{S_0}\sum_{k} C_k^{S/}\,DF^{S/}(t_k) \;=\; \sum_{k} C_k^{US\$}(r_{US\$})\,DF^{US\$}(t_k),
@@ -124,8 +125,9 @@ diferencia de cambio de la partida cubierta los afecta, con lo que la volatilida
 
 \textbf{Diseño.} La exposición es el valor del inventario de crudo: \InvCrudoMbl\ MBL, que al WTI de
 US\$~\WTISpot/bl valen US\$~\InvValorHoy\ millones, con una rotación que este informe supone de uno a tres meses. Se
+cubre el \CoberturaCrudoPct\ (\InvCubiertoMMbl\ MMbl), el tope de la política propuesta (sección~4). Se
 proponen dos instrumentos OTC en lugar de futuros NYMEX, porque los futuros exigen márgenes diarios que la liquidez no
-soporta. El \RepartoSwap\ del volumen se cubre con (a) un \textbf{swap de WTI a precio promedio}, en el que
+soporta. El \RepartoSwap\ del volumen cubierto se cubre con (a) un \textbf{swap de WTI a precio promedio}, en el que
 PETROPERÚ vende a precio fijo el promedio de los próximos \PlazoMeses\ meses (US\$~\SwapPrecio/bl, promedio de los
 futuros CL de noviembre a enero), para los cargamentos cuyo margen ya está definido. El \RepartoCollar\ restante se
 cubre con (b) un \textbf{collar de costo cero}: compra de un put con strike de US\$~\CollarPut\ (\PutPctFwd\ del
@@ -153,13 +155,13 @@ Volatilidad implícita, $\sigma$ & \VolCrudo & Índice OVX \\
 Plazo al vencimiento, $T$ (días) & \PlazoDiasOpc & Vencimiento supuesto: 18 de diciembre de 2026 \\
 Tasa libre de riesgo, $r$ & \RUSDCont & SOFR, capitalización continua \\
 \grupo{Estructura del collar (costo cero)}
-Volumen cubierto total (MMbl) & \InvCrudoMMbl & \RepartoSwap\ swap y \RepartoCollar\ collar; \ContratosEquiv\ contratos (1:1) \\
+Volumen cubierto (MMbl) & \InvCubiertoMMbl & \CoberturaCrudoPct\ del inventario; \ContratosEquiv\ contratos (1:1) \\
 Put comprado: strike (US\$/bl) & \CollarPut & \PutPctFwd\ de $F$ \\
 Put comprado: prima (US\$/bl) & \PrimaPut & \textcite{black1976}; delta $-$\DeltaPutAbs \\
 Call vendido: strike (US\$/bl) & \CollarCall & Su prima iguala la del put: prima neta cero \\
-\grupo{Resultado: pérdida máxima del inventario (US\$ MM)}
-Sin cobertura (WTI $-30$\,\%) & (\PerdidaSinCobTreinta) & Valor del inventario a mercado \\
-Solo collar & (\PerdidaMaxCollar) & Piso en el strike del put \\
+\grupo{Resultado del inventario total si el WTI cae 30\,\% (US\$ MM)}
+Sin cobertura & (\PerdidaSinCobTreinta) & Valor del inventario a mercado \\
+Solo collar & (\PerdidaMaxCollar) & Piso del put sobre lo cubierto \\
 \textbf{Propuesta: swap + collar} & \textbf{(\PerdidaMaxMixto)} & Comprar solo el put costaría US\$~\CostoPutTotal\ MM \\
 \bottomrule
 \end{tabularx}
@@ -178,15 +180,16 @@ Solo collar & (\PerdidaMaxCollar) & Piso en el strike del put \\
 por debajo del contrato frente. El modelo de costo de acarreo, $F=S\,e^{(r-y)T}$, lo explica con un rendimiento de
 conveniencia neto implícito de \ConvenienciaImplicita\ anual entre ambos contratos, muy superior a la tasa libre de
 riesgo (\RUSDCont): en plena crisis de oferta el mercado paga por tener crudo disponible hoy \parencite{hull2022}.
-Por eso toda venta a plazo fija un precio menor que el actual, y el swap elimina la variabilidad a cambio de una
-pérdida cierta de US\$~\CostoSwap\ millones frente al precio de hoy. Pero si el WTI converge al futuro (columna
+Por eso toda venta a plazo fija un precio menor que el actual: sobre su volumen, el swap elimina la variabilidad a
+cambio de US\$~\CostoSwap\ millones menos que el precio de hoy, pero su costo esperado frente al forward, que el mercado
+ya descuenta, es nulo. Pero si el WTI converge al futuro (columna
 $=F$ del Cuadro~\ref{tab:e2-escenarios}), el inventario sin cobertura pierde US\$~\PerdidaSinCobForward\ millones, más
-que el swap. El collar limita la pérdida máxima a US\$~\PerdidaMaxCollar\ millones (frente a
-US\$~\PerdidaSinCobTreinta\ millones sin cobertura si el WTI cae 30\,\%), conserva la ganancia hasta
+que el swap. Si el WTI cae 30\,\%, el inventario pierde US\$~\PerdidaSinCobTreinta\ millones sin cobertura y
+US\$~\PerdidaMaxCollar\ millones con el collar, que conserva la ganancia hasta
 US\$~\CollarCall/bl y no requiere una prima que la caja no puede financiar; comprar solo el put costaría
-US\$~\CostoPutTotal\ millones por trimestre. La combinación propuesta acota la pérdida a US\$~\PerdidaMaxMixto\
-millones. Si el WTI sube, la Compañía renuncia a la mayor parte de la ganancia (a lo sumo US\$~\GananciaMaxMixto\
-millones); aun así conviene, porque protege la caja de una empresa sin margen para absorber otra caída como la de 2025
+US\$~\CostoPutTotal\ millones por trimestre. En ese escenario la combinación propuesta reduce la pérdida a
+US\$~\PerdidaMaxMixto\ millones. Si el WTI sube, la Compañía renuncia a parte de la ganancia (con un alza de
+30\,\% gana US\$~\GananciaMaxMixto\ millones); aun así conviene, porque protege la caja de una empresa sin margen para absorber otra caída como la de 2025
 \parencite{froot1993}. El principal riesgo residual es el de base: PETROPERÚ compra crudos referidos al Brent, cuyo
 diferencial con el WTI es hoy de US\$~\BrentWTI/bl, y crudos pesados con descuento. El ratio de mínima varianza del
 WTI de Cushing frente al futuro CL es $h^*=\rho\,\sigma_S/\sigma_F=$~\RatioH\ \parencite{hull2022}; como es casi uno,

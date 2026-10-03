@@ -230,6 +230,8 @@ def riesgo_tasa(ex: dict, m: Macros) -> None:
     ust7, ust10 = serie("ust_7a").loc[:"2025-12-31"].iloc[-1], serie("ust_10a").loc[:"2025-12-31"].iloc[-1]
     ust_dur = np.interp(dur_mod, [7, 10], [ust7, ust10]) / 100
     m.set("BonosLibros", v("deuda.bonos_libros_total") / 1e3, 1)
+    m.set("BonosLibrosNotaA", (v("deuda.libros_bonos_2032") + v("deuda.libros_bonos_2047")) / 1e3, 1)
+    m.set("CESCELibros", v("deuda.libros_cesce") / 1e3, 1)
     m.set("BonosVR", vr / 1e3, 1)
     m.set("YTMBonos", y, 1, pct=True)
     m.set("BonosDVCien", dv100, 0)
@@ -389,7 +391,7 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros) -> None:
         f"{EEFF}, Nota 3; {SBS}; {SOFR}",
         "tab:e1-ndf",
         decimales=2,
-        nota="Inicio: el NDF se pacta a valor cero, sin flujo. Vencimiento: se liquida la diferencia en US\\$.",
+        nota="TC compra (al que PETROPERÚ pacta). Inicio: valor cero, sin flujo. Vencimiento: se liquida la diferencia en US\\$.",
         flotante=False,
     )
 
@@ -423,7 +425,7 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros) -> None:
         f"{EEFF}, Notas 3 y 14; {BCRP} (TC interbancario 28-sep-2026)",
         "tab:e1-escenarios",
         decimales=1,
-        nota="Signo negativo = pérdida. Posición en S/ estimada a la fecha de valorización.",
+        nota="TC medio (compra-venta). Negativo = pérdida. Posición en S/ estimada a la fecha de valorización.",
     )
     m.set("EscSinCobMenosDiez", abs(resultado(pos, s0 * 0.9)), 1)
     m.set("EscConCobMenosDiez", abs(resultado(residuo_total, s0 * 0.9)), 1)
@@ -459,10 +461,11 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros) -> None:
         f_nuevo = fx.forward_paridad(s, r_pen_3m, r_usd_3m, dias)
         return ndf_nocional * (1 / f_nuevo - 1 / f_ndf) * c_usd(dias / 360) / 1e3
 
-    m.set("NDFValMenosDiez", valor_ndf(bid * 0.9), 1)
-    m.set("NDFValMasDiez", abs(valor_ndf(bid * 1.1)), 1)  # pasivo
-    m.set("CCSValMenosDiez", ccs.valor_usd(c_pen, c_usd, spot_hoy=bid * 0.9) / 1e3, 1)
-    m.set("CCSValMasDiez", abs(ccs.valor_usd(c_pen, c_usd, spot_hoy=bid * 1.1)) / 1e3, 1)  # pasivo
+    # Registro contable a TC medio (NIIF 13 ¶71); el pricing de la tasa usa el TC compra
+    m.set("NDFValMenosDiez", valor_ndf(s0 * 0.9), 1)
+    m.set("NDFValMasDiez", abs(valor_ndf(s0 * 1.1)), 1)  # pasivo
+    m.set("CCSValMenosDiez", ccs.valor_usd(c_pen, c_usd, spot_hoy=s0 * 0.9) / 1e3, 1)
+    m.set("CCSValMasDiez", abs(ccs.valor_usd(c_pen, c_usd, spot_hoy=s0 * 1.1)) / 1e3, 1)  # pasivo
 
     xs = np.linspace(s0 * 0.88, s0 * 1.12, 100)
     fig, ax = plt.subplots(figsize=(6.2, 2.3))
@@ -490,7 +493,8 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> None:
     T, sig = dias_op / 365, w("crudo.vol_implicita")
     r = fx.tasa_continua_desde_simple(w("tasas.usd_3m"), dias_op)
     reparto = v("crudo.reparto_swap")
-    q = v("crudo.inventario_crudo_mbl") * 1e3 * v("crudo.cobertura_objetivo")  # barriles
+    q_tot = v("crudo.inventario_crudo_mbl") * 1e3  # barriles en inventario
+    q = q_tot * v("crudo.cobertura_objetivo")  # barriles cubiertos (límite de la política)
     p_swap = (f1 + f2 + f3) / 3  # swap de precio promedio de los 3 próximos meses
     k_put = round(f3 * v("crudo.put_pct_forward"), 1)
     k_call = opciones.strike_collar_costo_cero(f3, k_put, T, r, sig, fijo="put")
@@ -522,19 +526,23 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> None:
     m.set("ContratosH", f"{cobertura.numero_contratos(w('crudo.h_minima_varianza'), q, w('crudo.tamano_contrato')):,}")
     m.set("RepartoSwap", reparto, 0, pct=True)
     m.set("RepartoCollar", 1 - reparto, 0, pct=True)
-    m.set("InvValorHoy", q * spot / 1e6, 1)
+    m.set("InvValorHoy", q_tot * spot / 1e6, 1)
+    m.set("InvCubiertoMMbl", q / 1e6, 2)
+    m.set("InvCubiertoValor", q * spot / 1e6, 1)
     m.set("RatioH", w("crudo.h_minima_varianza"), 2)
 
     def neto(st: float, estrategia: str) -> float:
+        """Resultado sobre TODO el inventario: la parte no cubierta (q_tot − q) queda expuesta al spot."""
+        abierto = (st - spot) * (q_tot - q) / 1e6
         if estrategia == "Sin cobertura":
-            return (st - spot) * q / 1e6
+            return (st - spot) * q_tot / 1e6
         if estrategia == "Swap":
-            return (p_swap - spot) * q / 1e6
+            return (p_swap - spot) * q / 1e6 + abierto
         if estrategia == "Collar":
-            return (min(max(st, k_put), k_call) - spot) * q / 1e6
+            return (min(max(st, k_put), k_call) - spot) * q / 1e6 + abierto
         if estrategia == "Mixto":
             return reparto * neto(st, "Swap") + (1 - reparto) * neto(st, "Collar")
-        return ((max(st, k_put) - spot) - prima) * q / 1e6  # solo put
+        return ((max(st, k_put) - spot) - prima) * q / 1e6 + abierto  # solo put
 
     etiquetas = {
         "Sin cobertura": "Sin cobertura",
@@ -557,15 +565,16 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> None:
         f"{EEFF}, Nota 10; {NYMEX}",
         "tab:e2-escenarios",
         decimales=1,
-        nota="Variación del WTI respecto del precio del 28-sep-2026. Signo negativo = pérdida.",
+        nota="Inventario total; las coberturas se aplican al 80 \\% (el 20 \\% queda abierto). Variación del WTI respecto del 28-sep-2026. Negativo = pérdida.",
     )
     m.set("PerdidaSinCobTreinta", abs(neto(spot * 0.7, "Sin cobertura")), 1)
-    m.set("PerdidaMaxCollar", abs(neto(0.0, "Collar")), 1)
-    m.set("GananciaMaxCollar", neto(1e6, "Collar"), 1)
-    m.set("CostoSwap", abs(neto(spot, "Swap")), 1)
+    # Con 20 % abierto la pérdida no tiene piso: se compara en el mismo escenario de −30 %
+    m.set("PerdidaMaxCollar", abs(neto(spot * 0.7, "Collar")), 1)
+    m.set("GananciaMaxCollar", neto(spot * 1.3, "Collar"), 1)
+    m.set("CostoSwap", (spot - p_swap) * q * reparto / 1e6, 1)  # solo el volumen del swap, frente al precio de hoy
     m.set("PerdidaSinCobForward", abs(neto(f3, "Sin cobertura")), 1)
-    m.set("PerdidaMaxMixto", abs(neto(0.0, "Mixto")), 1)
-    m.set("GananciaMaxMixto", neto(1e6, "Mixto"), 1)
+    m.set("PerdidaMaxMixto", abs(neto(spot * 0.7, "Mixto")), 1)
+    m.set("GananciaMaxMixto", neto(spot * 1.3, "Mixto"), 1)
 
     # NIIF 9: valor razonable ante un choque instantáneo de ±10 % de la curva de futuros
     q_col, q_swap = q * (1 - reparto), q * reparto
@@ -594,7 +603,8 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> None:
 def tasa_refinanciacion(mk: dict, m: Macros) -> None:
     w = lambda k: mk[k].valor  # noqa: E731
     c_usd = curva_sofr(mk)
-    m.set("FwdSwapRate", swaps.forward_starting_rate(c_usd, inicio=1.0, anios=4.0), 2, pct=True)
+    # Refinanciación del CESCE: de 2027 a su vencimiento contractual (2030), 3 años
+    m.set("FwdSwapRate", swaps.forward_starting_rate(c_usd, inicio=1.0, anios=3.0), 2, pct=True)
     m.set("USDCincoAnios", w("tasas.usd_5a"), 2, pct=True)
 
 

@@ -17,31 +17,32 @@
   & \cellcolor{prioMedia}\encab{Tasa de interés}{\textit{No recomendada hoy}} \\
 \midrule
 Exposición cubierta & \CoberturaFX\ de la posición en S/
-  & \InvCrudoMMbl\ MMbl \newline (US\$~\InvValorHoy\ MM)
+  & \InvCubiertoMMbl\ MMbl, \CoberturaCrudoPct\ del inventario \newline (US\$~\InvCubiertoValor\ MM)
   & Tasa base de la refinanciación del CESCE (US\$~\CESCESaldo\ MM) \\ \filasep
 Reducción del riesgo \newline {\normalfont (US\$ MM)}
   & Pérdida si el TC cae 10\,\%: \newline Sin cobertura: (\EscSinCobMenosDiez) \newline Con cobertura: (\EscConCobMenosDiez)
-  & Pérdida máxima: \newline Sin cobertura: (\PerdidaSinCobTreinta) \newline Con cobertura: (\PerdidaMaxMixto)
+  & Pérdida si el WTI cae 30\,\%: \newline Sin cobertura: (\PerdidaSinCobTreinta) \newline Con cobertura: (\PerdidaMaxMixto)
   & Baja: no cubre el spread de crédito \\ \filasep
-Costo inicial & Cero (CVA incluido en la tasa) & Cero (swap y collar) & Cero (swap de inicio diferido) \\ \filasep
+Costo inicial & Cero; la tasa no incluye el CVA & Cero (swap y collar) & Cero (swap de inicio diferido) \\ \filasep
 Costo económico & Diferencial implícito del NDF: \NDFCostoAnual\ anual
-  & Swap: US\$~\CostoSwap\ MM por \emph{backwardation}
+  & Swap: US\$~\CostoSwap\ MM frente al spot (nulo frente al forward)
   & Pagos si la tasa baja \\ \filasep
 Efecto en liquidez & Bajo: CSA con umbral & Bajo: sin márgenes de bolsa & Bajo \\ \filasep
 Tratamiento NIIF~9 & Cobertura de flujos de efectivo (ORI)
   & Cobertura de valor razonable del inventario
-  & Cobertura de flujos de efectivo \\
+  & Flujos de efectivo, solo si la refinanciación es altamente probable \\
 \bottomrule
 \end{tabularx}
 \fuente{Cuadros~\ref{tab:e1-param} a \ref{tab:e2-escenarios}; \textcite{ifrs9}. Elaboración propia.}
 \end{table}
 
 \textbf{Riesgo de tasa.} No se recomienda contratar hoy un swap de tasa. La deuda ya es fija, y pasarla a variable
-añadiría riesgo sin reducir el costo de crédito, que es lo que encarece la deuda. La herramienta adecuada es un swap
-de inicio diferido (\emph{forward-starting}) o un \emph{rate lock}, que se activaría cuando se defina la
-refinanciación del CESCE: hoy fijaría una tasa swap de \FwdSwapRate\ para cuatro años a partir de 2027 (cálculo propio con la curva SOFR
-\parencite{bluegamma2026}), frente al
-\CESCETasa\ vigente del préstamo.
+añadiría riesgo sin reducir el costo de crédito, que es lo que encarece la deuda. Queda como opción a evaluar un swap
+de inicio diferido (\emph{forward-starting}) para la refinanciación del CESCE, solo cuando esta sea altamente probable
+(NIIF~9, 6.3.3); hoy no lo es por el incumplimiento del covenant. Fijaría una tasa swap de \FwdSwapRate\ de 2027 al
+vencimiento de 2030 (cálculo propio con la curva SOFR \parencite{bluegamma2026}); sumado el spread de crédito de la
+Compañía (\SpreadBonosPb~pb), el costo superaría con holgura el \CESCETasa\ vigente. Las líneas revolventes de corto
+plazo sí se reprecian en cada renovación, pero su plazo no justifica un derivado.
 
 \textbf{Condiciones de implementación.} (i) Aprobar en el Directorio una Política de Cobertura con límites
 (\LimiteFX\ de la posición en soles y \LimiteCrudo\ del inventario de crudo), prohibición expresa de especular
