@@ -47,17 +47,17 @@ condición previa a la ejecución**, no inventando el dato.
 
 | # | Estado | Fase |
 |---|---|---|
-| C1 | 🟡 sensibilidad hecha; falta reformular la NIIF 9 (Fase 3) y el EEFF de jun-2026 (Fase 4) | 2, 4 |
+| C1 | 🟡 sensibilidad y NIIF 9 resueltas; falta contrastar con el EEFF de jun-2026 (Fase 4) | 2, 4 |
 | C2 | ✅ levantado | 2 |
 | C3 | ✅ levantado | 1, 2 |
 | C4 | ✅ levantado | 2 |
-| C5 | ⬜ pendiente | 3 |
+| C5 | ✅ levantado ((a) queda declarado: inventario al cierre de 2025) | 3 |
 | C6 | ✅ levantado | 1 |
-| M1 | ⬜ pendiente | 3 |
+| M1 | ✅ levantado | 3 |
 | M2 | ✅ levantado (salvo el skew, que queda declarado) | 2, 4 |
-| M3 | ⬜ pendiente | 3, 4 |
-| M4 | ⬜ pendiente | 3 |
-| M5 | ⬜ pendiente | 3 |
+| M3 | 🟡 declarado en el texto; falta actualizar con el EEFF de jun-2026 (Fase 4) | 3, 4 |
+| M4 | ✅ levantado | 3 |
+| M5 | ✅ levantado | 3 |
 | M6 | ✅ levantado (VaR + vega; ES y backtesting quedan fuera de alcance) | 2 |
 | M7 | ✅ levantado | 1 |
 | M8 | ✅ levantado | 1 |
@@ -161,7 +161,7 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
     deben **reemplazar** texto, no agregarlo.
 
 ### Fase 3 — Rediseño de la exposición y de la contabilidad (prosa + parámetros)
-- [ ] **C5 + M5 Exposición de crudo.** Recomendación: redefinir la partida cubierta como el **desfase de precio
+- [x] **C5 + M5 Exposición de crudo.** Recomendación: redefinir la partida cubierta como el **desfase de precio
       entre la compra de crudo y la fijación del precio de venta** (paridad de importación). La exposición pasa a ser
       el inventario que rota en ~1 mes, renovado cada mes. Opciones:
       - (recomendada) mantener el horizonte de 3 meses como **cobertura por capas mensuales** (1/3 del volumen por
@@ -172,16 +172,35 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
       - (d): explicar el signo, en una oración de la sección 2. Las compras futuras sin precio fijado quedan **largas**
         en el precio y su traslación a ventas las neutraliza; solo el desfase queda expuesto.
       - (a): queda como ➖ limitación declarada.
-- [ ] **M4 Contabilidad E1.** NDF como cobertura económica a VR con cambios en resultados, compensando la diferencia de
+- [x] **M4 Contabilidad E1.** NDF como cobertura económica a VR con cambios en resultados, compensando la diferencia de
       cambio de la NIC 21 en el mismo estado. CCS como cobertura de flujos con fuentes de inefectividad (basis,
       CVA, diferencias de cronograma) y opción de excluir el basis (NIIF 9 6.5.16). Quitar "coinciden" y "se
       neutraliza".
-- [ ] **M1 Curvas.** Conciliar el forward NDF teórico con el implícito en la curva sintética US$ de la SBS
+- [x] **M1 Curvas.** Conciliar el forward NDF teórico con el implícito en la curva sintética US$ de la SBS
       (`tasas.usd_sintetica_1a`) y reportar la diferencia como proxy del basis. Citar la fuente de la tasa S/ a
       3 meses en el Cuadro 3. Oración: "tasa indicativa; la ejecutable requiere cotización bancaria".
-- [ ] **M3 Posición.** Oración sobre los swaps de Citibank: vencidos o a integrar en la PND según su vencimiento. Si
+- [x] **M3 Posición.** Oración sobre los swaps de Citibank: vencidos o a integrar en la PND según su vencimiento. Si
       la Fase 4 consigue EEFF de jun-2026, actualizar la PCC.
-- [ ] Commit "Fase 3".
+- [x] Commit "Fase 3".
+
+  **Resultado de la Fase 3:**
+  - **C5 + M5:** la exposición se redefinió como el **desfase entre la compra y la fijación del precio de venta**.
+    Las compras sin precio no suman exposición, porque las ventas que financian fijan su precio en el mismo mercado.
+    La rotación es de 33 días (macro `\RotacionDias`). El collar pasó a **3 capas mensuales** (CLX26, CLZ26 y CLF27,
+    con vencimientos de 21, 52 y 81 días; puts 83.30 / 80.10 / 77.90; calls 103.80 / 100.42 / 98.08). El swap liquida
+    mensualmente. Cada capa se designa por su mes y se discontinúa al venderse (6.5.6), y el Cuadro 9 se aclara como
+    económico (NIC 2). El inventario de productos no se cubre y se dice por qué. Nuevas cifras: pérdida con WTI −30 %
+    de 34.0 con la propuesta y 44.4 con el collar; colateral en el estrés conjunto de 148.9.
+    Se agregaron los vencimientos de nov/dic a `mercado.yaml` como `supuesto` (por confirmar en la Fase 4).
+  - **M4:** el CCS se designa como cobertura de flujos, con sus fuentes de inefectividad y la opción de excluir el
+    basis (6.5.16). El NDF queda a VR con cambios en resultados, compensando la NIC 21 sin contabilidad de coberturas.
+    Se eliminaron "coinciden" y "se neutraliza" (esto también cierra la parte NIIF 9 de C1).
+  - **M1:** con la curva sintética US$ de la SBS (CSBCRD), el forward es 3.4346 (0.6 pips de diferencia) y la tasa del
+    CCS 5.92 % (frente a 5.88 %): el basis local es de ~4 pb. Se cita la fuente de la tasa a 3 meses (SBS, 91 días).
+  - **M3:** una oración sobre la antigüedad de la posición y sobre los swaps de Citibank (se suponen vencidos; si no,
+    se restan del NDF).
+  - **Páginas: cuerpo 10/10**; termina hacia la línea 32 de 55 de la página 10, así que quedan **~0.4 páginas** para
+    la Fase 5.
 
 ### Fase 4 — Datos a buscar (lanzar en paralelo desde el inicio con `investigador-mercado`)
 - [ ] EEFF intermedios de PETROPERÚ a jun-2026 (SMV): saldo del préstamo BN (¿amortizó en 2026? para validar C1),
@@ -216,3 +235,4 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 | 2026-10-03 | Fase 1: C6, M7, M8, B1, B2, B4 levantados; C3 y B3 parciales | 91a725a |
 | 2026-10-03 | Referencias fuera del límite de 10 páginas; el verificador mide solo el cuerpo (9/10) | ffdfc4d |
 | 2026-10-03 | Fase 2: C2, C3, C4, M2 y M6 levantados; C1 parcial; cuerpo 10/10 | 184a824 |
+| 2026-10-03 | Fase 3: C5, M1, M4 y M5 levantados; C1 y M3 a la espera de la Fase 4 | (este commit) |

@@ -409,6 +409,14 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     m.set("USDTresMeses", r_usd_3m, 2, pct=True)
     m.set("NDFForward", f_ndf, 4)
     m.set("NDFPuntos", (f_ndf - bid) * 1e4, 1)
+    # M1: conciliación con el mercado local. La curva sintética US$ de la SBS (CSBCRD) es la tasa US$ implícita en los
+    # forwards USD/PEN locales: el único proxy público del basis cross-currency.
+    c_sint = curva_sbs("sbs_curva_CSBCRD_2026-09-28.csv")
+    r_sint_3m = float(np.interp(dias, *pd.read_csv(MERCADO / "sbs_curva_CSBCRD_2026-09-28.csv").to_numpy().T) / 100)
+    f_sbs = fx.forward_paridad(bid, r_pen_3m, r_sint_3m, dias)
+    m.set("NDFForwardSBS", f_sbs, 4)
+    m.set("NDFDifSBSPips", abs(f_sbs - f_ndf) * 1e4, 1)
+    m.set("CCSTasaSBS", swaps.CrossCurrencySwap(rem, bid, 0.0).tasa_usd_justa(c_pen, c_sint), 2, pct=True)
     # (F/S)^(360/d) − 1 < 0: comprar S/ a plazo cuesta (F < S), mismo origen que el costo del CCS
     m.set("NDFCostoAnual", -fx.diferencial_implicito(f_ndf, bid, dias / 360), 2, pct=True)
     m.set("NDFCostoUSD", ndf_nocional / f_ndf / 1e3 - ndf_nocional / bid / 1e3, 2)  # costo (> 0)
@@ -530,7 +538,8 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     w = lambda k: mk[k].valor  # noqa: E731
     spot = w("crudo.wti_spot")
     f1, f2, f3 = w("crudo.wti_fut_1m"), w("crudo.wti_fut_2m"), w("crudo.wti_fut_3m")
-    # Opciones sobre CLF27: T hasta su vencimiento real; r continua desde SOFR 3M (simple ACT/360)
+    # Cobertura por capas mensuales (C5/M5): un tercio del volumen por contrato CLX26, CLZ26 y CLF27, cada capa
+    # sobre el inventario que se vende ese mes. El collar de enero (CLF27) es la capa de referencia del texto.
     dias_op = w("crudo.dias_venc_opciones")
     T, sig = dias_op / 365, w("crudo.vol_implicita")
     r = fx.tasa_continua_desde_simple(w("tasas.usd_3m"), dias_op)
@@ -538,9 +547,15 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     q_tot = v("crudo.inventario_crudo_mbl") * 1e3  # barriles en inventario
     q = q_tot * v("crudo.cobertura_objetivo")  # barriles cubiertos (límite de la política)
     p_swap = (f1 + f2 + f3) / 3  # swap de precio promedio de los 3 próximos meses
-    k_put = round(f3 * v("crudo.put_pct_forward"), 1)
-    k_call = opciones.strike_collar_costo_cero(f3, k_put, T, r, sig, fijo="put")
-    prima = opciones.black76(f3, k_put, T, r, sig, "put")
+    capas = []
+    for f_i, clave in ((f1, "crudo.dias_venc_opciones_nov"), (f2, "crudo.dias_venc_opciones_dic"), (f3, "crudo.dias_venc_opciones")):
+        t_i = w(clave) / 365
+        kp = round(f_i * v("crudo.put_pct_forward"), 1)
+        kc = opciones.strike_collar_costo_cero(f_i, kp, t_i, r, sig, fijo="put")
+        capas.append({"F": f_i, "T": t_i, "kp": kp, "kc": kc, "prima": opciones.black76(f_i, kp, t_i, r, sig, "put"),
+                      "delta": opciones.delta_black76(f_i, kp, t_i, r, sig, "put")})
+    k_put, k_call, prima = capas[-1]["kp"], capas[-1]["kc"], capas[-1]["prima"]  # capa de enero
+    n_capas = len(capas)
 
     m.set("WTISpot", spot, 2)
     m.set("WTIFutUno", f1, 2)
@@ -560,15 +575,20 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     m.set("CollarPut", k_put, 2)
     m.set("CollarCall", k_call, 2)
     m.set("PutPctFwd", v("crudo.put_pct_forward"), 0, pct=True)
-    m.set("PrimaPut", prima, 2)
-    m.set("DeltaPutAbs", abs(opciones.delta_black76(f3, k_put, T, r, sig, "put")), 2)
-    m.set("CostoPutTotal", prima * q / 1e6, 1)
+    m.set("CollarPutsCapas", " / ".join(f"{c['kp']:.2f}" for c in capas))
+    m.set("CollarCallsCapas", " / ".join(f"{c['kc']:.2f}" for c in capas))
+    m.set("PlazoDiasCapas", " / ".join(f"{round(c['T'] * 365)}" for c in capas))
+    m.set("PrimaPut", np.mean([c["prima"] for c in capas]), 2)
+    m.set("DeltaPutAbs", abs(np.mean([c["delta"] for c in capas])), 2)
+    m.set("CostoPutTotal", sum(c["prima"] for c in capas) * q / n_capas / 1e6, 1)
+    m.set("NCapas", n_capas, 0)
     m.set("CoberturaCrudoPct", v("crudo.cobertura_objetivo"), 0, pct=True)
     m.set("ContratosEquiv", f"{round(q / w('crudo.tamano_contrato')):,}")
     m.set("RepartoSwap", reparto, 0, pct=True)
     m.set("RepartoCollar", 1 - reparto, 0, pct=True)
     m.set("InvValorHoy", q_tot * spot / 1e6, 1)
     m.set("InvCubiertoMMbl", q / 1e6, 2)
+    m.set("RotacionDias", q_tot / (v("crudo.compras_mbdc") * 1e3), 0)  # días de compras que representa el inventario
     m.set("InvCubiertoValor", q * spot / 1e6, 1)
 
     def neto(st: float, estrategia: str) -> float:
@@ -579,15 +599,15 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
         if estrategia == "Swap":
             return (p_swap - spot) * q / 1e6 + abierto
         if estrategia == "Collar":
-            return (min(max(st, k_put), k_call) - spot) * q / 1e6 + abierto
+            return sum(min(max(st, c["kp"]), c["kc"]) - spot for c in capas) * q / n_capas / 1e6 + abierto
         if estrategia == "Mixto":
             return reparto * neto(st, "Swap") + (1 - reparto) * neto(st, "Collar")
-        return ((max(st, k_put) - spot) - prima) * q / 1e6 + abierto  # solo put
+        return sum(max(st, c["kp"]) - spot - c["prima"] for c in capas) * q / n_capas / 1e6 + abierto  # solo put
 
     etiquetas = {
         "Sin cobertura": "Sin cobertura",
         "Swap": f"Swap (venta a {p_swap:.2f})",
-        "Collar": f"Collar {k_put:.2f} / {k_call:.2f}",
+        "Collar": f"Collar en {n_capas} capas mensuales",
         "Put": "Solo put (prima pagada)",
         "Mixto": f"Propuesta: {reparto:.0%} swap + {1 - reparto:.0%} collar".replace("%", "\\%"),
     }
@@ -618,17 +638,23 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
 
     # NIIF 9: valor razonable ante un choque instantáneo de ±10 % de la curva de futuros
     q_col, q_swap = q * (1 - reparto), q * reparto
-    def valor_collar(fn: float) -> float:
-        return (opciones.black76(fn, k_put, T, r, sig, "put") - opciones.black76(fn, k_call, T, r, sig, "call")) * q_col / 1e6
+    def valor_collar(choque: float) -> float:
+        """Valor de las capas del collar ante un choque proporcional de toda la curva de futuros (US$ MM)."""
+        return sum(
+            opciones.black76(c["F"] * (1 + choque), c["kp"], c["T"], r, sig, "put")
+            - opciones.black76(c["F"] * (1 + choque), c["kc"], c["T"], r, sig, "call")
+            for c in capas
+        ) * q_col / n_capas / 1e6
 
     df_swap = np.exp(-r * T)
-    m.set("CollarValMenosDiez", valor_collar(f3 * 0.9), 1)
-    m.set("CollarValMasDiez", abs(valor_collar(f3 * 1.1)), 1)  # pasivo
+    m.set("CollarValMenosDiez", valor_collar(-0.10), 1)
+    m.set("CollarValMasDiez", abs(valor_collar(0.10)), 1)  # pasivo
     m.set("SwapValDiez", 0.10 * p_swap * q_swap * df_swap / 1e6, 1)
 
     # M6: vega del collar (put comprado − call vendido), US$ MM por punto de volatilidad
-    vega = opciones.vega_black76(f3, k_put, T, r, sig) - opciones.vega_black76(f3, k_call, T, r, sig)
-    m.set("VegaCollar", vega * q_col / 100 / 1e6, 2)
+    vega = sum(opciones.vega_black76(c["F"], c["kp"], c["T"], r, sig) - opciones.vega_black76(c["F"], c["kc"], c["T"], r, sig)
+               for c in capas)
+    m.set("VegaCollar", vega * q_col / n_capas / 100 / 1e6, 2)
     # M2: strike del call de costo cero según la volatilidad supuesta
     for nombre, s_alt in (("Baja", 0.35), ("Media", 0.45)):
         m.set(f"VolSens{nombre}", s_alt, 0, pct=True)
@@ -638,9 +664,7 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     fig, ax = plt.subplots(figsize=(6.2, 2.4))
     ax.plot(xs, [neto(x, "Sin cobertura") for x in xs], color=NARANJA, label="Inventario sin cobertura")
     ax.plot(xs, [neto(x, "Swap") for x in xs], color=AZUL, label=f"Inventario + swap WTI ({p_swap:.2f})")
-    ax.plot(xs, [neto(x, "Collar") for x in xs], color=VERDE, lw=2.2, label=f"Inventario + collar {k_put:.1f}/{k_call:.1f}")
-    for k in (k_put, k_call):
-        ax.axvline(k, color=GRIS, lw=0.8, ls="--")
+    ax.plot(xs, [neto(x, "Collar") for x in xs], color=VERDE, lw=2.2, label=f"Inventario + collar en {n_capas} capas")
     ax.axhline(0, color=GRIS, lw=0.8)
     ax.set_xlabel("Precio WTI al vencimiento (US\\$/bbl)")
     ax.set_ylabel("US\\$ millones")
@@ -653,7 +677,7 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
         "resultado_sin": lambda x: neto(x, "Sin cobertura"),
         "resultado_con": lambda x: neto(x, "Mixto"),
         # valor de mercado de swap + collar ante un choque proporcional de la curva de futuros (US$ MM)
-        "valor": lambda p: valor_collar(f3 * (1 + p)) - p * p_swap * q_swap * df_swap / 1e6,
+        "valor": lambda p: valor_collar(p) - p * p_swap * q_swap * df_swap / 1e6,
     }
 
 

@@ -9,7 +9,9 @@ préstamo del BN. PETROPERÚ \textbf{recibe} cada mes, en soles, la cuota del pr
 \textbf{paga} una cuota en dólares a tasa fija sobre un nocional de US\$~\CCSNocionalUSD\ millones. Así la deuda en
 soles se convierte sintéticamente en deuda en la moneda funcional (Figura~\ref{fig:ccs}). El resto de la posición en
 soles (S/~\RestoPEN\ millones, sobre todo cuentas por pagar) se cubre en un \NDFPct\ con NDF de compra de soles a
-\NDFDias\ días, renovables, que se liquidan por diferencias en dólares sin entregar el principal.
+\NDFDias\ días, renovables, que se liquidan por diferencias en dólares sin entregar el principal. Esa posición usa
+saldos de diciembre de 2025 (salvo el BN) y debe actualizarse antes de pactar; los swaps de corto plazo con Citibank
+(Nota~9(g)) se suponen vencidos y, si siguen vigentes, se restan del nocional del NDF.
 Como el EEFF no detalla el cronograma, se supone que el saldo se amortiza en \BNCuotasSup\ cuotas francesas desde
 enero de 2026 (en 2025 solo se pagaron intereses, Nota~14(c)); a la fecha de valorización quedan \BNCuotasRem\ cuotas
 y un saldo de S/~\BNSaldoRem\ millones. La tasa mensual es la TEA convertida, $(1+\text{TEA})^{1/12}-1$ (con la TNA
@@ -79,8 +81,10 @@ años) está por encima de la soberana en soles (\PENDosAnios), y el cupón del 
 que la pata en soles vale US\$~\CCSVPPataPEN\ millones frente a un nocional de US\$~\CCSNocionalUSD\ millones; esa
 prima se traslada a la tasa en dólares. El costo de cubrirse lo mide el diferencial de tasas implícito en el forward.
 El NDF se pacta a \NDFForward, \NDFPuntos~pips por debajo del spot de compra, porque la tasa en soles a tres meses
-(\PENTresMeses) es menor que la de dólares (\USDTresMeses). Como PETROPERÚ compra soles a plazo, recibe menos soles
-por dólar: la cobertura le cuesta \NDFCostoAnual\ anual, unos US\$~\NDFCostoUSD\ millones por trimestre. Aun así la
+(\PENTresMeses, curva SBS a 91 días) es menor que la de dólares (\USDTresMeses). Como PETROPERÚ compra soles a plazo, recibe menos soles
+por dólar: la cobertura le cuesta \NDFCostoAnual\ anual, unos US\$~\NDFCostoUSD\ millones por trimestre. Con la curva sintética en dólares de la SBS, implícita en los
+forwards locales, el forward sería \NDFForwardSBS\ (\NDFDifSBSPips~pips de diferencia) y la tasa del CCS \CCSTasaSBS: el
+basis local es pequeño, aunque la tasa ejecutable requiere cotizaciones bancarias. Aun así la
 tasa del CCS queda muy por debajo del rendimiento que el mercado exige a los bonos de la Compañía (\YTMBonos). Dada
 la calificación B-/Caa1, el banco cobrará un ajuste por riesgo de crédito (CVA). Con la exposición esperada del banco
 (máximo de US\$~\CCSEPEMax\ millones, volatilidad del TC de \VolTC), el spread de \SpreadBonosPb~pb y una LGD de \LGD,
@@ -123,26 +127,29 @@ estabilizar resultados y flujos, no especular \parencite{stulz1996}.
 \textbf{Registro contable.} Ambos derivados se pactan a valor cero y luego se miden a valor razonable: como activo si
 el valor es favorable y como pasivo si no. Ante una caída instantánea de 10\,\% del TC, el CCS sería un activo de
 US\$~\CCSValMenosDiez\ millones y el NDF uno de US\$~\NDFValMenosDiez\ millones; si el TC sube 10\,\%, serían pasivos
-de US\$~\CCSValMasDiez\ y \NDFValMasDiez\ millones. Se designan como cobertura de flujos de efectivo según la NIIF~9:
-como nocional, fechas y tasa del CCS coinciden con los del préstamo, la relación económica es prácticamente perfecta;
-la parte efectiva del cambio de valor se lleva a otro resultado integral y se reclasifica a resultados cuando la
-diferencia de cambio de la partida cubierta los afecta, con lo que la volatilidad contable se neutraliza
-\parencite{ifrs9}.
+de US\$~\CCSValMasDiez\ y \NDFValMasDiez\ millones. El CCS se designa como cobertura de flujos de efectivo del préstamo
+del BN: la parte efectiva va a otro resultado integral y se reclasifica cuando la diferencia de cambio del préstamo
+afecta resultados. La relación debe documentarse sobre el cronograma contractual; sus fuentes de inefectividad son las
+diferencias de cronograma, el CVA y el basis, que puede excluirse de la designación (NIIF~9, 6.5.16). El NDF no se
+designa: cubre partidas monetarias ya reconocidas, cuya diferencia de cambio va a resultados por la NIC~21, y medido a
+valor razonable con cambios en resultados la compensa en el mismo estado, sin contabilidad de coberturas \parencite{ifrs9}.
 
 \subsection{Estrategia 2: swap y collar de costo cero sobre WTI para el inventario de crudo}
 
-\textbf{Diseño.} La exposición es el valor del inventario de crudo: \InvCrudoMbl\ MBL, que al WTI de
-US\$~\WTISpot/bl valen US\$~\InvValorHoy\ millones, con una rotación que este informe supone de uno a tres meses. Se
-cubre el \CoberturaCrudoPct\ (\InvCubiertoMMbl\ MMbl), el tope de la política propuesta (sección~4). Se
-proponen dos instrumentos OTC en lugar de futuros NYMEX, porque los futuros exigen márgenes diarios que la liquidez no
-soporta. El \RepartoSwap\ del volumen cubierto se cubre con (a) un \textbf{swap de WTI a precio promedio}, en el que
-PETROPERÚ vende a precio fijo el promedio de los próximos \PlazoMeses\ meses (US\$~\SwapPrecio/bl, promedio de los
-futuros CL de noviembre a enero), para los cargamentos cuyo margen ya está definido. El \RepartoCollar\ restante se
-cubre con (b) un \textbf{collar de costo cero}: compra de un put con strike de US\$~\CollarPut\ (\PutPctFwd\ del
-futuro de enero, US\$~\WTIFut) financiada con la venta de un call cuyo strike (US\$~\CollarCall) iguala las primas.
-Las opciones sobre el futuro de enero vencerían en \PlazoDiasOpc\ días (18 de diciembre de 2026, fecha supuesta
-con la regla de vencimiento de CME, por confirmar) y se valorizan con el modelo de
-\textcite{black1976}:
+\textbf{Diseño.} Lo que está expuesto es el desfase de precios: el crudo se paga al precio de su embarque y los
+productos se venden por paridad de importación semanas después, así que el inventario pierde valor si el precio cae
+antes de trasladarse a ventas. Las compras aún sin precio no suman exposición, porque las ventas que financiarán
+fijarán su precio en el mismo mercado. Con compras de \ComprasMBDC\ MBDC, las \InvCrudoMbl\ MBL rotan en unos
+\RotacionDias\ días. Por eso la cobertura se arma en \NCapas\ \textbf{capas mensuales}: un tercio del volumen en los
+contratos de noviembre, diciembre y enero, cada capa sobre el inventario que se venderá ese mes. Se cubre el
+\CoberturaCrudoPct\ (\InvCubiertoMMbl\ MMbl), tope de la política propuesta, del inventario al cierre de 2025, que al
+WTI de US\$~\WTISpot/bl vale US\$~\InvValorHoy\ millones. No se cubre el inventario de productos
+(US\$~\InvRefinadosUSD\ millones), cuyo precio ya sigue la paridad con menor desfase. Se usan instrumentos OTC, porque
+los futuros NYMEX exigen márgenes diarios. El \RepartoSwap\ del volumen va a (a) un \textbf{swap de WTI} con
+liquidaciones mensuales a US\$~\SwapPrecio/bl (promedio de los futuros de noviembre a enero), para cargamentos con
+margen ya definido; el resto, a (b) un \textbf{collar de costo cero} por capa: un put comprado al \PutPctFwd\ del
+futuro de cada mes (US\$~\CollarPutsCapas) financiado con un call vendido (US\$~\CollarCallsCapas). Las opciones
+vencen en \PlazoDiasCapas\ días y se valorizan con el modelo de \textcite{black1976}:
 \begin{equation}
   P = e^{-rT}\left[K\,N(-d_2) - F\,N(-d_1)\right],\qquad
   d_1 = \frac{\ln(F/K) + \sigma^2T/2}{\sigma\sqrt{T}},\quad d_2 = d_1 - \sigma\sqrt{T}.
@@ -157,16 +164,15 @@ con la regla de vencimiento de CME, por confirmar) y se valorizan con el modelo 
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Fuente / supuesto} \\
 \midrule
 \grupo{Insumos de mercado}
-WTI, contrato frente (US\$/bl) & \WTIFutUno & NYMEX CL, noviembre de 2026 \\
-Futuro de enero, $F$ (US\$/bl) & \WTIFut & NYMEX CL, enero de 2027 (subyacente) \\
+Futuros $F$ nov / dic / ene (US\$/bl) & \WTIFutUno\ / \WTIFutDos\ / \WTIFut & NYMEX CL, 28-sep-2026 \\
 Volatilidad implícita, $\sigma$ & \VolCrudo & Índice OVX; realizada a un año: \VolRealCL \\
-Plazo al vencimiento, $T$ (días) & \PlazoDiasOpc & Vencimiento supuesto: 18 de diciembre de 2026 \\
+Plazo al vencimiento, $T$ (días) & \PlazoDiasCapas & Regla de vencimiento de CME (por confirmar) \\
 Tasa libre de riesgo, $r$ & \RUSDCont & SOFR, capitalización continua \\
-\grupo{Estructura del collar (costo cero)}
+\grupo{Estructura del collar (costo cero, por capa nov / dic / ene)}
 Volumen cubierto (MMbl) & \InvCubiertoMMbl & \CoberturaCrudoPct\ del inventario; \ContratosEquiv\ contratos (1:1) \\
-Put comprado: strike (US\$/bl) & \CollarPut & \PutPctFwd\ de $F$ \\
-Put comprado: prima (US\$/bl) & \PrimaPut & \textcite{black1976}; delta $-$\DeltaPutAbs \\
-Call vendido: strike (US\$/bl) & \CollarCall & Su prima iguala la del put: prima neta cero \\
+Put comprado: strike (US\$/bl) & \CollarPutsCapas & \PutPctFwd\ de $F$ \\
+Put comprado: prima media (US\$/bl) & \PrimaPut & \textcite{black1976}; delta medio $-$\DeltaPutAbs \\
+Call vendido: strike (US\$/bl) & \CollarCallsCapas & Su prima iguala la del put: prima neta cero \\
 \grupo{Resultado del inventario total si el WTI cae 30\,\% (US\$ MM)}
 Sin cobertura & (\PerdidaSinCobTreinta) & Valor del inventario a mercado \\
 Solo collar & (\PerdidaMaxCollar) & Piso del put sobre lo cubierto \\
@@ -193,14 +199,14 @@ cambio de US\$~\CostoSwap\ millones menos que el precio de hoy, pero su costo es
 ya descuenta, es nulo. Pero si el WTI converge al futuro (columna
 $=F$ del Cuadro~\ref{tab:e2-escenarios}), el inventario sin cobertura pierde US\$~\PerdidaSinCobForward\ millones, más
 que el swap. Si el WTI cae 30\,\%, el inventario pierde US\$~\PerdidaSinCobTreinta\ millones sin cobertura y
-US\$~\PerdidaMaxCollar\ millones con el collar, que conserva la ganancia hasta
-US\$~\CollarCall/bl y no requiere una prima que la caja no puede financiar; comprar solo el put costaría
+US\$~\PerdidaMaxCollar\ millones con el collar, que conserva la ganancia hasta el strike del call de cada capa y no
+requiere una prima que la caja no puede financiar; comprar solo el put costaría
 US\$~\CostoPutTotal\ millones por trimestre. En ese escenario la combinación propuesta reduce la pérdida a
 US\$~\PerdidaMaxMixto\ millones. Si el WTI sube, la Compañía renuncia a parte de la ganancia (con un alza de
 30\,\% gana US\$~\GananciaMaxMixto\ millones); aun así conviene, porque protege la caja de una empresa sin margen para absorber otra caída como la de 2025
 \parencite{froot1993}. El OVX mide opciones a 30 días sobre un ETF, pero coincide con la volatilidad realizada del CL en el último año
 (\VolRealCL); el \VolHistWTI\ de la sección~2 sale de promedios mensuales, que suavizan la serie. El strike del call
-es poco sensible a ese supuesto (US\$~\CollarCallVolBaja\ con $\sigma=$~\VolSensBaja\ y US\$~\CollarCallVolMedia\ con
+de enero es poco sensible a ese supuesto (US\$~\CollarCallVolBaja\ con $\sigma=$~\VolSensBaja\ y US\$~\CollarCallVolMedia\ con
 \VolSensMedia), y el collar es casi neutro a la volatilidad (vega de US\$~\VegaCollar\ millones por punto); el sesgo
 (\emph{skew}) no se modela, por lo que el strike debe confirmarse con cotizaciones bancarias.
 
@@ -216,6 +222,7 @@ alternativa si la serie interna de costos de compra se ajusta mejor a ese marcad
 \textbf{Registro contable.} El swap y el collar se pactan a valor cero. Ante una caída instantánea de 10\,\% de la
 curva de futuros, el collar sería un activo de US\$~\CollarValMenosDiez\ millones y el swap uno de
 US\$~\SwapValDiez\ millones; con un alza de 10\,\%, serían pasivos de US\$~\CollarValMasDiez\ y \SwapValDiez\
-millones. Se designan como cobertura de valor razonable del inventario: el cambio de valor del inventario cubierto se
-reconoce en resultados junto con el del derivado, de modo que la pérdida del inventario no aparece sin su
-compensación \parencite{ifrs9}.
+millones. Cada capa se designa como cobertura de valor razonable del inventario de su mes: el ajuste por el riesgo
+cubierto modifica el costo del inventario y va a resultados junto con el derivado. Al venderse la capa, la relación se
+discontinúa (NIIF~9, 6.5.6) y se designa la siguiente. El Cuadro~\ref{tab:e2-escenarios} es económico: la pérdida
+contable depende del costo y del valor neto de realización (NIC~2), no del spot \parencite{ifrs9}.
