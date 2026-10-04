@@ -5,20 +5,21 @@
 \subsection{Estrategia 1: \emph{cross currency swap} y NDF para el riesgo cambiario}
 
 \textbf{Diseño.} Se propone un CCS amortizable con un banco de primer nivel que replique el cronograma remanente del
-préstamo del BN. PETROPERÚ \textbf{recibe} cada mes, en soles, la cuota del préstamo (S/~\BNCuota\ millones) y
+préstamo del BN. PETROPERÚ \textbf{recibe} cada mes, en soles, la cuota del préstamo y
 \textbf{paga} una cuota en dólares a tasa fija sobre un nocional de US\$~\CCSNocionalUSD\ millones. Así la deuda en
 soles se convierte sintéticamente en deuda en la moneda funcional (Figura~\ref{fig:ccs}). El resto de la posición en
 soles (S/~\RestoPEN\ millones, sobre todo cuentas por pagar) se cubre en un \NDFPct\ con NDF de compra de soles a
 \NDFDias\ días, renovables, que se liquidan por diferencias en dólares sin entregar el principal. Esa posición usa
 saldos de diciembre de 2025 (salvo el BN) y debe actualizarse antes de pactar; los swaps de corto plazo con Citibank
-(Nota~9(g)) se suponen vencidos y, si siguen vigentes, se restan del nocional del NDF.
-Como el EEFF no detalla el cronograma, se supone que el saldo se amortiza en \BNCuotasSup\ cuotas francesas desde
-enero de 2026 (en 2025 solo se pagaron intereses, Nota~14(c)); a la fecha de valorización quedan \BNCuotasRem\ cuotas
-y un saldo de S/~\BNSaldoRem\ millones. La tasa mensual es la TEA convertida, $(1+\text{TEA})^{1/12}-1$ (con la TNA
-dividida entre 12, la cuota sería S/~\BNCuotaNominal\ millones). La fuente es ambigua (\BNCuotasTot\ cuotas en 48 meses),
-así que se probaron otros cronogramas (tasa nominal, amortización lineal y 2026 solo con intereses): la tasa del CCS
-varía entre \CCSTasaMin\ y \CCSTasaMax\ y el nocional entre US\$~\CCSNocionalMin\ y \CCSNocionalMax\ millones. Las
-cifras son indicativas: el CCS solo puede pactarse sobre el cronograma contractual.
+siguen vigentes (activo de US\$~\SwapCitiJunio\ millones a junio de 2026) sin que se revele su nocional, que debe
+restarse del NDF si cubre soles. El EEFF no publica el cronograma del BN (\BNCuotasTot\ cuotas en 48 meses), pero a
+junio de 2026 el saldo seguía en S/~\BNSaldoJunio\ millones y era íntegramente no corriente
+\parencite{petroperu2026eeffjun}: no vence principal antes de julio de 2027. Se supone entonces que se pagan solo
+intereses hasta junio de 2027 (S/~\BNCuota\ millones al mes) y \BNCuotasAmort\ cuotas francesas de S/~\BNCuotaAmort\
+millones hasta diciembre de 2028, con la TEA convertida a tasa mensual, $(1+\text{TEA})^{1/12}-1$ (con la TNA entre 12,
+la cuota sería S/~\BNCuotaNominal\ millones). Con tasa nominal, amortización lineal o 12 cuotas solo en 2028, la tasa
+del CCS varía entre \CCSTasaMin\ y \CCSTasaMax. Las cifras son indicativas: el CCS solo puede pactarse sobre el
+cronograma contractual.
 
 \begin{figure}[t]\centering\small
 \begin{tikzpicture}[caja/.style={draw,rounded corners,align=center,minimum width=2.9cm,minimum height=0.9cm,font=\small\bfseries},
@@ -26,8 +27,8 @@ cifras son indicativas: el CCS solo puede pactarse sobre el cronograma contractu
   \node[caja,fill=orange!12] (bn) {Banco de la Nación\\(acreedor en S/)};
   \node[caja,fill=blue!8,right=of bn] (pp) {PETROPERÚ};
   \node[caja,fill=green!10,right=of pp] (bk) {Banco contraparte\\(CCS)};
-  \draw[->] (pp) -- node[above,font=\footnotesize]{Cuotas S/~\BNCuota\ MM/mes} node[below,font=\footnotesize]{\BNTasa, \BNCuotasRem\ meses} (bn);
-  \draw[->] ([yshift=3mm]bk.west) -- node[above,font=\footnotesize]{Recibe S/~\BNCuota\ MM/mes} ([yshift=3mm]pp.east);
+  \draw[->] (pp) -- node[above,font=\footnotesize]{Cuotas en S/} node[below,font=\footnotesize]{\BNTasa, \BNCuotasRem\ meses} (bn);
+  \draw[->] ([yshift=3mm]bk.west) -- node[above,font=\footnotesize]{Recibe las cuotas en S/} ([yshift=3mm]pp.east);
   \draw[->] ([yshift=-3mm]pp.east) -- node[below,font=\footnotesize]{Paga US\$ al \CCSTasaUSD} ([yshift=-3mm]bk.west);
 \end{tikzpicture}
 \caption{Estructura de flujos del CCS propuesto}\label{fig:ccs}
@@ -59,12 +60,12 @@ Tipo de cambio: compra / venta (S/ por US\$) & \SpotBid\ / \SpotAsk & BCRP, inte
 Tasa cero en S/: 1 año / 3 años & \PENUnAnio\ / \PENTresAnios & SBS, curva soberana \\
 Tasa swap en US\$: 1 año / 3 años & \USDUnAnio\ / \USDTresAnios & Swaps SOFR \\
 \grupo{CCS amortizable: recibe S/, paga US\$}
-Saldo cubierto del préstamo del BN (S/ MM) & \BNSaldoRem & Cronograma supuesto, \BNCuotasRem\ cuotas \\
+Saldo cubierto del préstamo del BN (S/ MM) & \BNSaldoRem & Cronograma supuesto, \BNCuotasRem\ pagos \\
 Nocional (US\$ MM) & \CCSNocionalUSD & Saldo al tipo de cambio de compra \\
 VP de la pata en S/ (US\$ MM) & \CCSVPPataPEN & Descontada con la curva SBS \\
 Tasa fija de equilibrio de la pata en US\$ & \CCSTasaUSD & Antes del cargo por riesgo de crédito \\
 Tasa con CVA (\emph{all-in}) & \CCSTasaAllIn & CVA de \CCSCVApb~pb; LGD de \LGD \\
-Pagos totales de la pata en US\$ (US\$ MM) & \CCSTotalUSD & Suma de las \BNCuotasRem\ cuotas \\
+Pagos totales de la pata en US\$ (US\$ MM) & \CCSTotalUSD & Suma de los \BNCuotasRem\ pagos \\
 \grupo{NDF de compra de S/ a \NDFDias\ días}
 Nocional (S/ MM) & \NDFNocional & \NDFPct\ del resto de la posición en S/ \\
 Tipo de cambio forward (S/ por US\$) & \NDFForward & \NDFPuntos\ pips sobre el spot de compra \\
@@ -97,8 +98,7 @@ funcional.
 \input{generado/tablas/t_e1_flujos}
 
 \textbf{Posiciones y demostración de la cobertura.} A la fecha de valorización la posición de cambio contable (PCC)
-es pasiva en S/~\PosicionHoy\ millones, menor que al cierre de 2025 porque ya se pagaron \BNCuotasPagadas\ cuotas
-del BN. El CCS y el NDF crean una posición activa en derivados (PND), y la posición global (PCG) queda pasiva en solo
+es pasiva en S/~\PosicionHoy\ millones, igual que al cierre de 2025 porque el BN aún no amortiza. El CCS y el NDF crean una posición activa en derivados (PND), y la posición global (PCG) queda pasiva en solo
 S/~\ResiduoTotal\ millones (Cuadro~\ref{tab:e1-posiciones}). En el NDF, lo que pierden las cuentas por pagar cuando el
 sol se aprecia lo gana el derivado: el neto es constante en todo escenario e igual a $N(1/S_0-1/F)$, el costo de la
 cobertura (Cuadro~\ref{tab:e1-ndf}).
@@ -120,8 +120,7 @@ cobertura (Cuadro~\ref{tab:e1-ndf}).
 \SpotUSDPEN), una caída de 10\,\% del tipo de cambio (una apreciación del sol de \ApreciacionSolDiez) costaría
 US\$~\EscSinCobMenosDiez\ millones sin cobertura y solo US\$~\EscConCobMenosDiez\ millones con el CCS y los NDF: la
 sensibilidad cae en \ReduccionFX\ (Cuadro~\ref{tab:e1-escenarios} y Figura~\ref{fig:e1}). La pérdida sin cobertura
-es menor que los US\$~\SensApreciacion\ millones de la sección~2 porque aquella usa la posición del cierre de 2025,
-antes de amortizar el BN. A cambio, la Compañía renuncia a la ganancia si el sol se deprecia; el objetivo es
+difiere de los US\$~\SensApreciacion\ millones de la sección~2 porque aquella parte del TC de cierre de 2025. A cambio, la Compañía renuncia a la ganancia si el sol se deprecia; el objetivo es
 estabilizar resultados y flujos, no especular \parencite{stulz1996}.
 
 \textbf{Registro contable.} Ambos derivados se pactan a valor cero y luego se miden a valor razonable: como activo si
@@ -166,7 +165,7 @@ vencen en \PlazoDiasCapas\ días y se valorizan con el modelo de \textcite{black
 \grupo{Insumos de mercado}
 Futuros $F$ nov / dic / ene (US\$/bl) & \WTIFutUno\ / \WTIFutDos\ / \WTIFut & NYMEX CL, 28-sep-2026 \\
 Volatilidad implícita, $\sigma$ & \VolCrudo & Índice OVX; realizada a un año: \VolRealCL \\
-Plazo al vencimiento, $T$ (días) & \PlazoDiasCapas & Regla de vencimiento de CME (por confirmar) \\
+Plazo al vencimiento, $T$ (días) & \PlazoDiasCapas & NYMEX: 7 días hábiles antes del 26 del mes previo \\
 Tasa libre de riesgo, $r$ & \RUSDCont & SOFR, capitalización continua \\
 \grupo{Estructura del collar (costo cero, por capa nov / dic / ene)}
 Volumen cubierto (MMbl) & \InvCubiertoMMbl & \CoberturaCrudoPct\ del inventario; \ContratosEquiv\ contratos (1:1) \\

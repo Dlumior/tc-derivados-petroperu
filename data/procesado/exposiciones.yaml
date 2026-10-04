@@ -42,19 +42,24 @@ fx:  # Riesgo cambiario — Nota 3.1.a.i, p. 42
   ganancia_dif_cambio_2025: {valor: 13387, unidad: "US$000", fuente: "EEFF 2025, Nota 3.1.a.i, p. 42", estado: verificado}
   swap_citibank_activo: {valor: 14623, unidad: "US$000", fuente: "EEFF 2025, Nota 9(g), p. 59-60", estado: verificado,
                          nota: "Swaps de monedas de corto plazo con Citibank; contradice parcialmente la Nota 3 (sin derivados de cobertura FX)."}
+  swap_citibank_activo_jun26: {valor: 5866, unidad: "US$000", fuente: "EEFF intermedios al 30-jun-2026, Nota 8, p. 41 (Activos por instrumentos financieros - Swap)", estado: verificado,
+                               nota: "Los swaps con Citibank siguen vigentes a jun-2026; no se revela nocional ni sentido."}
 
 prestamo_bn:  # Préstamo Banco de la Nación con garantía soberana, en S/ — Nota 14(ii), p. 74
   saldo_usd: {valor: 1118041, unidad: "US$000", fuente: "EEFF 2025, Nota 14(ii), p. 74", estado: verificado}
   saldo_pen: {valor: 3765590, unidad: "S/000", fuente: "EEFF 2025, Nota 14(ii), p. 74", estado: verificado}
   tasa: {valor: 0.0555, fuente: "EEFF 2025, Nota 14(ii), p. 74", estado: verificado}
   cuotas_totales: {valor: 46, fuente: "EEFF 2025, Nota 14(ii), p. 74 (ene-2025 a 15-dic-2028)", estado: verificado}
-  cuotas_remanentes_dic25: {valor: 36, fuente: "Supuesto: cuotas mensuales ene-2026 a dic-2028", estado: supuesto,
-                            nota: "El EEFF indica 46 cuotas desde ene-2025, pero en 2025 solo se pagaron intereses (Nota 14(c), sin pagos de principal). Se supone amortización francesa (TEA) en 36 cuotas ene-2026 a dic-2028. Confirmar con EEFF intermedios 2026 (SMV)."}
-  cuotas_pagadas_a_valorizacion: {valor: 9, fuente: "Supuesto: cuotas del 15-ene al 15-sep-2026 pagadas según cronograma", estado: supuesto}
+  saldo_pen_jun26: {valor: 3765590, unidad: "S/000", fuente: "EEFF intermedios al 30-jun-2026, Nota 13(ii), p. 51 (data/raw/eeff_2026/estados-financieros-2026-ii-trimestre.pdf, inversionistas.petroperu.com.pe, consultado 2026-10-03)", estado: verificado,
+                   nota: "Mismo saldo que en dic-2025: sin pagos de principal en el 1S-2026 (Nota 13, movimiento: 'Pagos del principal' = 0 para el préstamo con garantía)."}
+  meses_solo_interes_desde_ene26: {valor: 18, fuente: "Inferido de EEFF al 30-jun-2026, Nota 13: el préstamo con garantía (US$1,102,678 miles) figura íntegro en pasivos NO corrientes, de modo que no vence principal antes del 1-jul-2027 (NIC 1). Solo intereses de ene-2026 a jun-2027.", estado: supuesto}
+  cuotas_amortizacion: {valor: 18, fuente: "Supuesto: amortización francesa (TEA) en 18 cuotas mensuales jul-2027 a 15-dic-2028 (vencimiento final, Nota 13(ii)). El cronograma contractual no se publica: el número de cuotas de amortización es el máximo compatible con la clasificación no corriente al 30-jun-2026.", estado: supuesto}
+  cuotas_pagadas_a_valorizacion: {valor: 9, fuente: "Cuotas de solo interés del 15-ene al 15-sep-2026 (EEFF jun-2026: 'la Compañía ha pagado los intereses devengados de acuerdo a cronograma')", estado: supuesto}
   dias_a_primera_cuota: {valor: 17, unidad: "días", fuente: "Del 28-sep-2026 (fecha de valorización) al 15-oct-2026 (vencimiento mensual, Nota 14(ii))", estado: supuesto}
 
 crudo:  # Riesgo de precio — Notas 3.1.a.iii, 10 y 23
   inventario_crudo_mbl: {valor: 2901, unidad: "miles bbl", fuente: "EEFF 2025, Nota 10, p. 61", estado: verificado}
+  inventario_crudo_usd_jun26: {valor: 204931, unidad: "US$000", fuente: "EEFF intermedios al 30-jun-2026, Nota 9, p. 43 (no revela MBL)", estado: verificado}
   inventario_crudo_usd: {valor: 168369, unidad: "US$000", fuente: "EEFF 2025, Nota 10, p. 60", estado: verificado}
   inventario_refinados_usd: {valor: 313490, unidad: "US$000", fuente: "EEFF 2025, Nota 10, p. 60 (en proceso + terminados + adquiridos)", estado: verificado}
   wti_cierre_2025: {valor: 57.42, unidad: "US$/bbl", fuente: "EEFF 2025, Nota 10, p. 61", estado: verificado}

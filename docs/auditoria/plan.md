@@ -47,7 +47,7 @@ condición previa a la ejecución**, no inventando el dato.
 
 | # | Estado | Fase |
 |---|---|---|
-| C1 | 🟡 sensibilidad y NIIF 9 resueltas; falta contrastar con el EEFF de jun-2026 (Fase 4) | 2, 4 |
+| C1 | ✅ levantado (cronograma inferido del EEFF de jun-2026; sigue siendo un supuesto declarado) | 2, 4 |
 | C2 | ✅ levantado | 2 |
 | C3 | ✅ levantado | 1, 2 |
 | C4 | ✅ levantado | 2 |
@@ -55,7 +55,7 @@ condición previa a la ejecución**, no inventando el dato.
 | C6 | ✅ levantado | 1 |
 | M1 | ✅ levantado | 3 |
 | M2 | ✅ levantado (salvo el skew, que queda declarado) | 2, 4 |
-| M3 | 🟡 declarado en el texto; falta actualizar con el EEFF de jun-2026 (Fase 4) | 3, 4 |
+| M3 | ✅ levantado en BN y Citibank; ➖ CxP y CxC en S/ a sep-2026 (los EEFF intermedios no traen la posición en S/) | 3, 4 |
 | M4 | ✅ levantado | 3 |
 | M5 | ✅ levantado | 3 |
 | M6 | ✅ levantado (VaR + vega; ES y backtesting quedan fuera de alcance) | 2 |
@@ -64,7 +64,7 @@ condición previa a la ejecución**, no inventando el dato.
 | M9 | ⬜ pendiente | 5 |
 | B1 | ✅ levantado | 1 |
 | B2 | ✅ levantado | 1 |
-| B3 | 🟡 falta el vencimiento de las opciones (Fase 4) | 1, 4 |
+| B3 | ✅ levantado | 1, 4 |
 | B4 | ✅ levantado | 1 |
 | B5 | ⬜ pendiente | 5 |
 
@@ -203,11 +203,33 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
     la Fase 5.
 
 ### Fase 4 — Datos a buscar (lanzar en paralelo desde el inicio con `investigador-mercado`)
-- [ ] EEFF intermedios de PETROPERÚ a jun-2026 (SMV): saldo del préstamo BN (¿amortizó en 2026? para validar C1),
-      posición en S/ (M3), inventario de crudo (C5a), swaps de Citibank.
-- [ ] Fecha exacta de vencimiento de las opciones LO sobre CLF27 en el calendario de CME (B3, M2). Si cambia,
-      actualizar `crudo.dias_venc_opciones` y cambiar `estado` a verificado.
-- [ ] (Opcional) Vol implícita ATM de CL a 3 meses de alguna fuente pública (M2).
+- [x] EEFF intermedios de PETROPERÚ a jun-2026 (sitio de inversionistas; copia en `data/raw/eeff_2026/`):
+      saldo del préstamo BN (¿amortizó en 2026? para validar C1), posición en S/ (M3), inventario de crudo (C5a),
+      swaps de Citibank.
+- [x] Fecha exacta de vencimiento de las opciones LO (B3, M2). La página de CME no respondió; se usó la regla
+      publicada por StoneX. Queda como `supuesto` con su fuente.
+- [x] (Opcional) Vol implícita ATM de CL a 3 meses (M2): no hay fuente pública. Se mantiene el OVX, ya respaldado
+      por la vol realizada (Fase 2).
+
+  **Resultado de la Fase 4:**
+  - **BN (C1):** al 30-jun-2026 el saldo sigue en **S/ 3,765.6 MM, sin pagos de principal**, e **íntegramente no
+    corriente** (Nota 13). Por la NIC 1, no vence principal antes de jul-2027. **Nuevo caso base:** solo intereses
+    hasta jun-2027 (S/ 17.0 MM/mes) y 18 cuotas francesas de S/ 218.3 MM (jul-2027 a dic-2028). El supuesto anterior
+    (36 cuotas desde ene-2026) quedaba refutado. Cifras E1 nuevas:
+    - nocional del CCS: US$ 1,095.7 MM;
+    - tasa: 5.87 %, o 5.98 % con CVA de 11 pb; rango por cronograma: 5.82 %-6.01 %;
+    - PCC hoy: S/ 4,704.0 MM, igual que en dic-2025;
+    - pérdida con TC −10 %: 152.0 sin cobertura y 6.1 con cobertura.
+  - **C2 recalculado:** colateral de **121.2 con TC +10 %** y **172.9 en el estrés conjunto**; el umbral CSA
+    necesario sube a **US$ 151 MM**.
+  - **Citibank (M3):** los swaps **siguen vigentes** (activo de US$ 5.9 MM al 30-jun-2026, Nota 8). El texto ahora
+    dice que su nocional debe restarse del NDF.
+  - **Posición en S/ a jun-2026:** los EEFF intermedios no traen la tabla de la Nota 3; queda como limitación.
+    Inventario de crudo a jun-2026: US$ 204.9 MM (sin MBL); registrado en el yaml.
+  - **Vencimientos LO (B3):** con la regla "7 días hábiles antes del 26 del mes previo" son **17 / 50 / 79 días**
+    (15-oct, 17-nov y 16-dic-2026). La regla anterior era errónea.
+  - Nueva referencia: `petroperu2026eeffjun`.
+  - **Páginas:** cuerpo 10/10, sin cambios (termina en la línea 32 de la p. 10).
 
 ### Fase 5 — Gobierno, revelaciones y cierre
 - [ ] **M9** En las condiciones de implementación, agregar como **condiciones previas**: opinión legal sobre el uso
@@ -235,4 +257,5 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 | 2026-10-03 | Fase 1: C6, M7, M8, B1, B2, B4 levantados; C3 y B3 parciales | 91a725a |
 | 2026-10-03 | Referencias fuera del límite de 10 páginas; el verificador mide solo el cuerpo (9/10) | ffdfc4d |
 | 2026-10-03 | Fase 2: C2, C3, C4, M2 y M6 levantados; C1 parcial; cuerpo 10/10 | 184a824 |
-| 2026-10-03 | Fase 3: C5, M1, M4 y M5 levantados; C1 y M3 a la espera de la Fase 4 | (este commit) |
+| 2026-10-03 | Fase 3: C5, M1, M4 y M5 levantados; C1 y M3 a la espera de la Fase 4 | 610b583 |
+| 2026-10-03 | Fase 4: EEFF jun-2026 (BN sin amortizar hasta jul-2027, swaps Citi vigentes) y vencimientos LO | (este commit) |

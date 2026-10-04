@@ -135,6 +135,7 @@ def riesgo_cambiario(ex: dict, m: Macros) -> None:
     m.set("DifCambioBN", v("fx.dif_cambio_prestamo_bn") / 1e3, 1)
     m.set("GananciaDifCambio", v("fx.ganancia_dif_cambio_2025") / 1e3, 1)
     m.set("SwapCiti", v("fx.swap_citibank_activo") / 1e3, 1)
+    m.set("SwapCitiJunio", v("fx.swap_citibank_activo_jun26") / 1e3, 1)
 
     # Variación del TC en 2025 con cierres BCRP (interbancario medio)
     tc_mid = (serie("usdpen_interbancario_compra") + serie("usdpen_interbancario_venta")) / 2
@@ -291,10 +292,10 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     m.set("SpotAsk", ask, 4)
     m.set("SpotUSDPEN", s0, 4)
 
-    # Partida cubierta: préstamo BN, cronograma francés (TEA) de 36 cuotas desde ene-2026 (supuesto)
-    cron = swaps.cronograma_cuota_constante(
-        v("prestamo_bn.saldo_pen"), v("prestamo_bn.tasa"), int(v("prestamo_bn.cuotas_remanentes_dic25"))
-    )
+    # Partida cubierta: préstamo BN. EEFF jun-2026: sin amortización y saldo íntegro no corriente ⇒ solo intereses
+    # hasta jun-2027 y 18 cuotas francesas (TEA) jul-2027 a dic-2028 (supuesto compatible con la NIC 1)
+    gracia, n_amort = int(v("prestamo_bn.meses_solo_interes_desde_ene26")), int(v("prestamo_bn.cuotas_amortizacion"))
+    cron = swaps.cronograma_cuota_constante(v("prestamo_bn.saldo_pen"), v("prestamo_bn.tasa"), n_amort, gracia=gracia)
     pagadas = int(v("prestamo_bn.cuotas_pagadas_a_valorizacion"))
     rem = swaps.cronograma_remanente(cron, pagadas, v("prestamo_bn.dias_a_primera_cuota"))
     saldo_rem = rem["saldo_inicial"].iloc[0]
@@ -302,10 +303,13 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     m.set("BNSaldoUSD", v("prestamo_bn.saldo_usd") / 1e3, 1)
     m.set("BNTasa", v("prestamo_bn.tasa"), 2, pct=True)
     m.set("BNCuotasTot", int(v("prestamo_bn.cuotas_totales")), 0)
-    m.set("BNCuotasSup", int(v("prestamo_bn.cuotas_remanentes_dic25")), 0)
+    m.set("BNMesesGracia", gracia, 0)
+    m.set("BNCuotasAmort", n_amort, 0)
+    m.set("BNSaldoJunio", v("prestamo_bn.saldo_pen_jun26") / 1e3, 1)
     m.set("BNCuotasPagadas", pagadas, 0)
     m.set("BNCuotasRem", len(rem), 0)
-    m.set("BNCuota", rem["cuota"].iloc[0] / 1e3, 1)
+    m.set("BNCuota", rem["cuota"].iloc[0] / 1e3, 1)  # cuota de solo interés (oct-2026)
+    m.set("BNCuotaAmort", rem["cuota"].iloc[-1] / 1e3, 1)  # cuota francesa desde jul-2027
     m.set("BNSaldoRem", saldo_rem / 1e3, 1)
 
     # Curvas a la fecha de valorización
@@ -332,16 +336,16 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     m.set("CCSVsBN", (t_usd - v("prestamo_bn.tasa")) * 1e4, 0)
 
     # C1: sensibilidad al cronograma del BN (el EEFF no lo detalla: 46 cuotas entre ene-2025 y dic-2028)
-    n_base, dias1 = int(v("prestamo_bn.cuotas_remanentes_dic25")), v("prestamo_bn.dias_a_primera_cuota")
+    dias1 = v("prestamo_bn.dias_a_primera_cuota")
     alternativos = {
-        "base": {},
-        "nominal": {"convencion": "nominal"},  # TNA/12 en lugar de TEA
-        "lineal": {"tipo": "lineal"},  # amortización constante de capital
-        "gracia 2026": {"gracia": 12, "n_cuotas": n_base - 12},  # 2026 solo intereses, 24 cuotas en 2027-2028
+        "base": {"gracia": gracia},
+        "nominal": {"gracia": gracia, "convencion": "nominal"},  # TNA/12 en lugar de TEA
+        "lineal": {"gracia": gracia, "tipo": "lineal"},  # amortización constante de capital
+        "solo 2028": {"gracia": gracia + 6, "n_cuotas": n_amort - 6},  # 12 cuotas en 2028
     }
     sens = {}
     for nombre, kw in alternativos.items():
-        n = kw.pop("n_cuotas", n_base)
+        n = kw.pop("n_cuotas", n_amort)
         r_alt = swaps.cronograma_remanente(
             swaps.cronograma_cuota_constante(v("prestamo_bn.saldo_pen"), v("prestamo_bn.tasa"), n, **kw), pagadas, dias1
         )
@@ -353,7 +357,8 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     m.set("CCSTasaMax", max(tasas_alt), 2, pct=True)
     m.set("CCSNocionalMin", min(nocionales_alt), 1)
     m.set("CCSNocionalMax", max(nocionales_alt), 1)
-    m.set("BNCuotaNominal", sens["nominal"][2], 1)
+    m.set("BNCuotaNominal", swaps.cronograma_cuota_constante(
+        v("prestamo_bn.saldo_pen"), v("prestamo_bn.tasa"), n_amort, gracia=gracia, convencion="nominal")["cuota"].iloc[-1] / 1e3, 1)
 
     # C3: CVA que el banco cargaría por el riesgo de crédito de PETROPERÚ (EPE analítica, Hull cap. 24)
     cva = riesgo.cva_ccs(rem, pata_usd, bid, c_pen, c_usd, w("usdpen.vol_implicita_1a"), spread, w("credito.lgd"))
