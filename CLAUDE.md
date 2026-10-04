@@ -40,12 +40,14 @@ data/raw/ (inmutable) ──► data/procesado/*.yaml (insumos con fuente+estado
 ## Estrategias en curso (línea del borrador del compañero, `data/raw/PETROPERU_Derivados.docx`)
 Exposiciones al 31-dic-2025 (EEFF); mercado a la **fecha de valorización 28-sep-2026**.
 - **E1 FX**: CCS amortizable recibe S/ – paga US$ sobre el saldo remanente del préstamo BN (Nota 14(ii)) + NDF de compra de S/ a 3 meses sobre el 80 % del resto de la posición en S/.
-- **E2 Crudo**: swap de WTI a precio promedio vs. collar de costo cero sobre el inventario de crudo (Nota 10). Solo OTC: **sin futuros** (márgenes diarios inviables por liquidez).
-- **Tasa**: no se recomienda hoy; solo se menciona el forward-starting swap para la refinanciación del CESCE.
+- **E2 Crudo**: 80 % del inventario de crudo (Nota 10): mitad swap de WTI con liquidaciones mensuales y mitad collar de costo cero en 3 capas mensuales (nov/dic/ene). Solo OTC: **sin futuros** (márgenes diarios inviables por liquidez).
+- **Tasa**: no se recomienda hoy; el forward-starting swap (2027-2030) queda como opción solo si la refinanciación del CESCE pasa a ser altamente probable.
+- **Condición de ejecución**: un umbral CSA de al menos `\UmbralNecesario` o la garantía del Estado (colateral bajo estrés conjunto, `docs/auditoria/plan.md`).
 
 ## Limitaciones conocidas
 - El .txt del dictamen **no incluye los estados primarios** (eran imágenes, folios 0010–0014).
-- `mercado.yaml`: solo `tasas.spread_credito_petroperu` sigue `PENDIENTE` (requiere Bloomberg); el informe ya no lo usa (el spread se calcula del valor razonable de los bonos, Nota 14(d)), pero bloquea `make final`.
+- `mercado.yaml`: `tasas.spread_credito_petroperu` pasó a `supuesto` (3-oct): el informe no lo usa, porque el spread se calcula del valor razonable de los bonos (Nota 14(d)). Ya no hay insumos `PENDIENTE` y `make final` pasa.
+- Préstamo BN: el cronograma (solo intereses hasta jun-2027 + 18 cuotas) se infiere de los EEFF a jun-2026 (`data/raw/eeff_2026/`); no es contractual.
 
 ## Auditoría en curso
 Dictamen externo (3-oct-2026) y plan de levantamiento con checklist: `docs/auditoria/plan.md`. Antes de editar el

@@ -61,12 +61,12 @@ condición previa a la ejecución**, no inventando el dato.
 | M6 | ✅ levantado (VaR + vega; ES y backtesting quedan fuera de alcance) | 2 |
 | M7 | ✅ levantado | 1 |
 | M8 | ✅ levantado | 1 |
-| M9 | ⬜ pendiente | 5 |
+| M9 | ✅ levantado | 5 |
 | B1 | ✅ levantado | 1 |
 | B2 | ✅ levantado | 1 |
 | B3 | ✅ levantado | 1, 4 |
 | B4 | ✅ levantado | 1 |
-| B5 | ⬜ pendiente | 5 |
+| B5 | ✅ levantado | 5 |
 
 Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como limitación (declarado en el informe)
 
@@ -232,16 +232,29 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
   - **Páginas:** cuerpo 10/10, sin cambios (termina en la línea 32 de la p. 10).
 
 ### Fase 5 — Gobierno, revelaciones y cierre
-- [ ] **M9** En las condiciones de implementación, agregar como **condiciones previas**: opinión legal sobre el uso
+- [x] **M9** En las condiciones de implementación, agregar como **condiciones previas**: opinión legal sobre el uso
       de los compromisos del D.U. 003-2026 para líneas de derivados, autorización del régimen aplicable a empresas
       del Estado (**verificar la norma** con `investigador-mercado` antes de citarla; no citar sin fuente) y
       verificación independiente de precios con jerarquía de VR Nivel 2 para los instrumentos propuestos.
-- [ ] **B5** Media línea: revelaciones NIIF 7 ¶21A-24G en los EEFF; reporte regulatorio a cargo del dealer.
-- [ ] Párrafo "Limitaciones" (en la sección 4 o como nota): cronograma BN supuesto, posición a dic-2025, curva
+- [x] **B5** Media línea: revelaciones NIIF 7 ¶21A-24G en los EEFF; reporte regulatorio a cargo del dealer.
+- [x] Párrafo "Limitaciones" (en la sección 4 o como nota): cronograma BN supuesto, posición a dic-2025, curva
       soberana como proxy, OVX como proxy, sin cotizaciones bancarias. Esto convierte los hallazgos parciales en ➖.
-- [ ] Ajustar las conclusiones (05): tasa all-in, condición de liquidez y volumen al 80 %.
-- [ ] `make final` (cero avisos, ≤ 10 páginas) y `/revisar`.
-- [ ] Actualizar el tablero de la sección 2 y hacer el commit final.
+- [x] Ajustar las conclusiones (05): tasa all-in, condición de liquidez y volumen al 80 %.
+- [x] `make final` (cero avisos, ≤ 10 páginas) y `/revisar`.
+- [x] Actualizar el tablero de la sección 2 y hacer el commit final.
+
+  **Resultado de la Fase 5:**
+  - **M9:** se agregó la condición previa (iii): opinión de la Gerencia Legal y autorización del régimen de
+    endeudamiento y tesorería de la empresa estatal, incluida la viabilidad de usar el D.U. 003-2026. La condición
+    (vi) agrega la verificación independiente de precios y el Nivel 2 de la NIIF 13. No se citó ninguna norma
+    específica de autorización sin verificarla.
+  - **B5:** revelaciones NIIF 7 ¶21A-24G y reporte regulatorio a cargo del banco.
+  - Nuevo párrafo **Limitaciones** en la sección 4. Conclusiones: el CCS se ejecuta una vez firmado el CSA con el
+    umbral requerido.
+  - `tasas.spread_credito_petroperu` pasó de PENDIENTE a `supuesto`, con la nota de que no se usa; ya no bloquea
+    `make final`. Se corrigieron las líneas desbordadas (`\emergencystretch`, ancho del minipage del NDF) y
+    `\headheight`.
+  - **`make final`: OK, 0 errores y 0 avisos; cuerpo 10/10** (termina en la línea 37 de la p. 10).
 
 ## 4. Decisiones abiertas (requieren al grupo)
 1. ~~Integrantes del grupo (B3).~~ Resuelto el 3-oct.
@@ -258,4 +271,5 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 | 2026-10-03 | Referencias fuera del límite de 10 páginas; el verificador mide solo el cuerpo (9/10) | ffdfc4d |
 | 2026-10-03 | Fase 2: C2, C3, C4, M2 y M6 levantados; C1 parcial; cuerpo 10/10 | 184a824 |
 | 2026-10-03 | Fase 3: C5, M1, M4 y M5 levantados; C1 y M3 a la espera de la Fase 4 | 610b583 |
-| 2026-10-03 | Fase 4: EEFF jun-2026 (BN sin amortizar hasta jul-2027, swaps Citi vigentes) y vencimientos LO | (este commit) |
+| 2026-10-03 | Fase 4: EEFF jun-2026 (BN sin amortizar hasta jul-2027, swaps Citi vigentes) y vencimientos LO | ec98d53 |
+| 2026-10-03 | Fase 5: M9, B5, limitaciones; make final OK | (este commit) |
