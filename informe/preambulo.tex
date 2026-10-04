@@ -43,6 +43,7 @@
 \usepackage[backend=biber,style=apa]{biblatex}
 \DefineBibliographyStrings{spanish}{september={setiembre}}  % español del Perú, como en el texto
 \addbibresource{referencias.bib}
+\AtEveryBibitem{\clearfield{urlyear}\clearfield{urlmonth}\clearfield{urlday}}  % sin fecha de consulta (se conserva en el .bib)
 \renewcommand*{\bibfont}{\small}\setlength{\bibitemsep}{0pt}   % referencias en letra menor (ahorra espacio para el límite de 10 p.)
 
 \usepackage[hidelinks]{hyperref}
