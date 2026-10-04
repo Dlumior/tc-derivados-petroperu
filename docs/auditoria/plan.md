@@ -256,6 +256,28 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
     `\headheight`.
   - **`make final`: OK, 0 errores y 0 avisos; cuerpo 10/10** (termina en la línea 37 de la p. 10).
 
+### Revisión independiente (`/revisar`, 3-oct-2026)
+El **validador cuantitativo** recalculó unas 50 cifras sin la librería: **0 errores aritméticos**. Su hallazgo de
+"11 páginas" no aplica, porque las referencias no cuentan; ya se actualizó su definición. El **revisor de rúbrica**
+estimó **17.4/20**. El grupo aprobó aplicar todo:
+- [x] **A (consistencia):**
+  - colateral sobre el MtM total a TC medio: 121.6 con TC +10 %, **173.4** en el estrés conjunto, umbral **151**;
+  - spread y rendimiento rotulados "a dic-2025", con un CVA de **6 pb** usando el spread de ago-2026 (318 pb);
+  - swap de inicio diferido con pago anual (**4.91 %**);
+  - rótulos de volumen en E2 ("Solo swap/collar/put (80 %)", collar de 1.16 MMbl);
+  - crudo con WTI −20 % a precio de cierre (33.3) y al de hoy (53.7);
+  - explicación de la brecha entre la compensación nominal y el valor razonable (inefectividad);
+  - volatilidad del TC con su fuente; repricing de las líneas en el Cuadro 1; canal wrong-way; columna "=F ene".
+- [x] **B (forma):** "setiembre" también en la bibliografía; fuentes de los Cuadros 11 y 12; supuestos rotulados
+  (umbral cero, estrés conjunto); se quitó "importador neto" (sin fuente); la primera conclusión ahora es una
+  recomendación; "cayó 19.9 %" sin doble signo.
+- [x] **C3:** la Fig. 6 traza la propuesta 50/50.
+- [x] **C1:** demostración del neto constante del swap y Cuadro de posiciones en barriles (físico / derivados /
+  global: 2.90 → 1.12 MMbl).
+- [x] **C2:** el Cuadro 6 pasó a Inicio/Vencimiento con fila Total y valor por S/ 1,000.
+- [x] **C4:** se recortaron a una frase la sensibilidad del BN y el párrafo OVX/skew.
+- `make final`: OK, 0 errores y 0 avisos; cuerpo 10/10 (termina en la línea 50 de la p. 10).
+
 ## 4. Decisiones abiertas (requieren al grupo)
 1. ~~Integrantes del grupo (B3).~~ Resuelto el 3-oct.
 2. ~~Volumen de E2~~: el grupo eligió **80 %** (3-oct).
@@ -272,4 +294,5 @@ Estados: ⬜ pendiente · 🟡 en curso · ✅ levantado · ➖ aceptado como li
 | 2026-10-03 | Fase 2: C2, C3, C4, M2 y M6 levantados; C1 parcial; cuerpo 10/10 | 184a824 |
 | 2026-10-03 | Fase 3: C5, M1, M4 y M5 levantados; C1 y M3 a la espera de la Fase 4 | 610b583 |
 | 2026-10-03 | Fase 4: EEFF jun-2026 (BN sin amortizar hasta jul-2027, swaps Citi vigentes) y vencimientos LO | ec98d53 |
-| 2026-10-03 | Fase 5: M9, B5, limitaciones; make final OK | (este commit) |
+| 2026-10-03 | Fase 5: M9, B5, limitaciones; make final OK | 840c8b1 |
+| 2026-10-03 | /revisar: correcciones A, B y C del validador y del revisor de rúbrica | (este commit) |

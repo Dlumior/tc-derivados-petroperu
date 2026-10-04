@@ -21,3 +21,6 @@ Procedimiento:
 
 Entrega una tabla: `Cifra | Informe | Recalculado | Δ | Veredicto (OK / ERROR / REVISAR) | Comentario`,
 seguida de los problemas de lógica encontrados, ordenados por gravedad. No edites archivos.
+
+El límite de 10 páginas aplica solo al cuerpo: las referencias no cuentan (decisión del 3-oct-2026) y `make check`
+ya lo controla hasta `\label{fin-cuerpo}`. No cuentes las páginas del PDF completo.

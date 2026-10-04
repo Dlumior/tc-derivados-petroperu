@@ -95,7 +95,7 @@ def contexto(ex: dict, mk: dict, m: Macros) -> None:
                 "Menor precio del crudo",
                 "Pérdida menor que en 2024",
                 "Pasivo corriente > activo corriente",
-                "100% a tasa fija",
+                "Tasa fija; las líneas se reprecian al renovar",
                 "Mayor apalancamiento",
             ],
         },
@@ -207,11 +207,13 @@ def riesgo_crudo(ex: dict, mk: dict, m: Macros) -> None:
     m.set("WTIcierreVeinticinco", v("crudo.wti_cierre_2025"), 2)
     m.set("WTIcierreVeinticuatro", v("crudo.wti_cierre_2024"), 2)
     m.set("WTIvarVeinticinco", v("crudo.wti_cierre_2025") / v("crudo.wti_cierre_2024") - 1, 1, pct=True)
+    m.set("WTICaidaVeinticinco", 1 - v("crudo.wti_cierre_2025") / v("crudo.wti_cierre_2024"), 1, pct=True)
     m.set("ComprasUSD", v("crudo.compras_usd") / 1e3, 1)
     m.set("ComprasMBDC", v("crudo.compras_mbdc"), 0)
     m.set("PrecioCompras", v("crudo.precio_prom_compras"), 2)
     perd20 = inv * v("crudo.wti_cierre_2025") * 0.20 / 1e6
     m.set("PerdidaInvVeinte", perd20, 1)
+    m.set("PerdidaInvVeinteHoy", inv * mk["crudo.wti_spot"].valor * 0.20 / 1e6, 1)  # mismo volumen al WTI de hoy
     m.set("PerdidaInvVeinteXUB", perd20 / (v("empresa.utilidad_bruta_2025") / 1e3), 1)
     # Revaluación del inventario de crudo del cierre 2025 a precios de la fecha de valorización
     m.set("GananciaInvHoy", inv * (mk["crudo.wti_spot"].valor - v("crudo.wti_cierre_2025")) / 1e6, 1)
@@ -366,6 +368,11 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     m.set("CCSCVAUSD", cva["cva"] / 1e3, 1)
     m.set("CCSEPEMax", cva["epe_max"] / 1e3, 1)
     m.set("CCSTasaAllIn", t_usd + cva["pb"] / 1e4, 2, pct=True)
+    # Sensibilidad: spread proxy de ago-2026 (bono 2032 a 86.8, ver mercado.yaml)
+    cva_proxy = riesgo.cva_ccs(rem, pata_usd, bid, c_pen, c_usd, w("usdpen.vol_implicita_1a"),
+                               w("tasas.spread_credito_petroperu"), w("credito.lgd"))
+    m.set("CCSCVApbProxy", cva_proxy["pb"], 0)
+    m.set("SpreadProxyPb", w("tasas.spread_credito_petroperu") * 1e4, 0)
     m.set("LGD", w("credito.lgd"), 0, pct=True)
     m.set("VolTC", w("usdpen.vol_implicita_1a"), 2, pct=True)
 
@@ -427,11 +434,13 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     m.set("NDFCostoUSD", ndf_nocional / f_ndf / 1e3 - ndf_nocional / bid / 1e3, 2)  # costo (> 0)
 
     # Tabla de resultados al vencimiento del NDF (patrón Inicio/Vencimiento: neto constante)
-    fix = {f"{bid * (1 + p):.3f} ({p:+.0%})".replace("%", "\\%") if p else f"{bid:.3f} (spot)": bid * (1 + p)
-           for p in (-0.10, 0.0, 0.10)}
+    fix = {f"TC {p:+.0%}".replace("%", "\\%") if p else "Spot": bid * (1 + p) for p in (-0.10, 0.0, 0.10)}
     t_ndf = fx.resultados_ndf_pasivo_pen(ndf_nocional / 1e3, bid, f_ndf, fix)
-    t_ndf = t_ndf.drop(index="TC fixing")
-    t_ndf.index = ["Cuentas por pagar en S/", "NDF compra S/", "Neto", "Verificación N/S0 − N/F"]
+    t_ndf.loc["NDF por S/ 1,000 (US\\$)"] = [1e3 * (1 / x - 1 / f_ndf) for x in fix.values()]
+    t_ndf = t_ndf.drop(index=["TC fixing", "Neto (alterno) N(1/S0−1/F)"])
+    t_ndf.index = ["Cuentas por pagar en S/", "NDF: N(1/S − 1/F)", "Total", "NDF por S/ 1,000 (US\\$)"]
+    t_ndf.insert(0, "Inicio", 0.0)
+    m.set("NDFPorMilMenosDiez", 1e3 * (1 / (bid * 0.9) - 1 / f_ndf), 2)
     tabla_latex(
         t_ndf,
         "t_e1_ndf",
@@ -439,7 +448,7 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
         f"{EEFF}, Nota 3; {SBS}; {SOFR}",
         "tab:e1-ndf",
         decimales=2,
-        nota="TC compra (al que PETROPERÚ pacta). Inicio: valor cero, sin flujo. Vencimiento: se liquida la diferencia en US\\$.",
+        nota=f"TC compra (al que PETROPERÚ pacta); S de liquidación: {bid * 0.9:.3f} / {bid:.3f} / {bid * 1.1:.3f}. Inicio: valor cero, sin flujo. Total constante = N(1/S0 − 1/F).",
         flotante=False,
     )
 
@@ -609,16 +618,17 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
             return reparto * neto(st, "Swap") + (1 - reparto) * neto(st, "Collar")
         return sum(max(st, c["kp"]) - spot - c["prima"] for c in capas) * q / n_capas / 1e6 + abierto  # solo put
 
+    cob = v("crudo.cobertura_objetivo")
     etiquetas = {
         "Sin cobertura": "Sin cobertura",
-        "Swap": f"Swap (venta a {p_swap:.2f})",
-        "Collar": f"Collar en {n_capas} capas mensuales",
-        "Put": "Solo put (prima pagada)",
+        "Swap": f"Solo swap a {p_swap:.2f} ({cob:.0%})",
+        "Collar": f"Solo collar en {n_capas} capas ({cob:.0%})",
+        "Put": f"Solo put, prima pagada ({cob:.0%})",
         "Mixto": f"Propuesta: {reparto:.0%} swap + {1 - reparto:.0%} collar".replace("%", "\\%"),
     }
     # Escenarios alrededor del precio de hoy + el escenario "WTI converge al futuro" (F, backwardation)
     precios = {f"{p:+.0%}".replace("%", "\\%") if p else "0\\%": spot * (1 + p) for p in (-0.30, -0.20, -0.10)}
-    precios["$=F$"] = f3
+    precios["$=F$ ene"] = f3
     precios |= {f"{p:+.0%}".replace("%", "\\%") if p else "0\\%": spot * (1 + p) for p in (0.0, 0.10, 0.20, 0.30)}
     tabla = pd.DataFrame({c: {etiquetas[e]: neto(x, e) for e in etiquetas} for c, x in precios.items()})
     tabla.loc["WTI (US\\$/bbl)"] = list(precios.values())
@@ -630,7 +640,7 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
         f"{EEFF}, Nota 10; {NYMEX}",
         "tab:e2-escenarios",
         decimales=1,
-        nota="Inventario total; las coberturas se aplican al 80 \\% (el 20 \\% queda abierto). Variación del WTI respecto del 28-sep-2026. Negativo = pérdida.",
+        nota="Inventario total; las coberturas se aplican al 80 \\% (el 20 \\% queda abierto). Variación del WTI respecto del 28-sep-2026; $=F$ ene: WTI igual al futuro de enero, para todas las capas. Negativo = pérdida.",
     )
     m.set("PerdidaSinCobTreinta", abs(neto(spot * 0.7, "Sin cobertura")), 1)
     # Con 20 % abierto la pérdida no tiene piso: se compara en el mismo escenario de −30 %
@@ -652,6 +662,29 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
         ) * q_col / n_capas / 1e6
 
     df_swap = np.exp(-r * T)
+    m.set("InvCollarMMbl", q_col / 1e6, 2)
+    m.set("InvSwapMMbl", q_swap / 1e6, 2)
+
+    # C1 (checklist): posiciones en barriles, análogo de PCC / PND / PCG (equivalentes delta)
+    delta_collar = sum(opciones.delta_black76(c["F"], c["kp"], c["T"], r, sig, "put")
+                       - opciones.delta_black76(c["F"], c["kc"], c["T"], r, sig, "call") for c in capas) / n_capas
+    pos = {"Físico: inventario de crudo": q_tot, "Swap (vende a precio fijo)": -q_swap,
+           "Collar (equivalente delta)": delta_collar * q_col}
+    pos["Global (físico + derivados)"] = sum(pos.values())
+    t_pos2 = pd.DataFrame({"MMbl": {k: x / 1e6 for k, x in pos.items()},
+                           "WTI $-10$\\,\\% (US\\$)": {k: -0.10 * spot * x / 1e6 for k, x in pos.items()}})
+    tabla_latex(
+        t_pos2,
+        "t_e2_posiciones",
+        "E2: Posiciones en barriles (millones)",
+        f"{EEFF}, Nota 10; {NYMEX}",
+        "tab:e2-posiciones",
+        decimales=2,
+        nota="Positivo = largo en crudo. Collar: delta medio de las capas. Efecto lineal de una caída de 10 \\% del WTI.",
+        flotante=False,
+    )
+    m.set("PosGlobalMMbl", pos["Global (físico + derivados)"] / 1e6, 2)
+    m.set("PosGlobalPct", pos["Global (físico + derivados)"] / q_tot, 0, pct=True)
     m.set("CollarValMenosDiez", valor_collar(-0.10), 1)
     m.set("CollarValMasDiez", abs(valor_collar(0.10)), 1)  # pasivo
     m.set("SwapValDiez", 0.10 * p_swap * q_swap * df_swap / 1e6, 1)
@@ -669,7 +702,8 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     fig, ax = plt.subplots(figsize=(6.2, 2.4))
     ax.plot(xs, [neto(x, "Sin cobertura") for x in xs], color=NARANJA, label="Inventario sin cobertura")
     ax.plot(xs, [neto(x, "Swap") for x in xs], color=AZUL, label=f"Inventario + swap WTI ({p_swap:.2f})")
-    ax.plot(xs, [neto(x, "Collar") for x in xs], color=VERDE, lw=2.2, label=f"Inventario + collar en {n_capas} capas")
+    ax.plot(xs, [neto(x, "Collar") for x in xs], color=VERDE, label=f"Inventario + collar en {n_capas} capas")
+    ax.plot(xs, [neto(x, "Mixto") for x in xs], color="#6b3fa0", lw=2.4, label="Propuesta: 50 % swap + 50 % collar")
     ax.axhline(0, color=GRIS, lw=0.8)
     ax.set_xlabel("Precio WTI al vencimiento (US\\$/bbl)")
     ax.set_ylabel("US\\$ millones")
@@ -737,7 +771,7 @@ def riesgo_residual(ex: dict, mk: dict, m: Macros, e1: dict, e2: dict) -> None:
         t_var,
         "t_var",
         "VaR al 95\\,\\% al vencimiento de la cobertura (US\\$ MM)",
-        f"{BCRP}; {NYMEX}. Volatilidad realizada de un año",
+        f"{EEFF}, Notas 3 y 10; {BCRP}; {NYMEX}. Volatilidad realizada de un año",
         "tab:var",
         decimales=1,
         nota="Horizonte: 91 días (E1) y vencimiento de las opciones (E2). La E2 incluye el 20 \\% no cubierto.",
@@ -759,7 +793,7 @@ def riesgo_residual(ex: dict, mk: dict, m: Macros, e1: dict, e2: dict) -> None:
     }
     filas = {}
     for nombre, (p_tc, p_wti) in choques.items():
-        v1 = e1["valor"](s0 * (1 + p_tc)) - e1["valor"](s0)  # cambio desde el inicio (sin el bid-ask del día uno)
+        v1 = e1["valor"](s0 * (1 + p_tc))  # MtM total a TC medio: el CSA colateraliza el valor completo
         v2 = e2["valor"](p_wti)
         col = riesgo.colateral_exigible(v1 + v2)
         filas[nombre] = {"E1": -v1, "E2": -v2, "Colat.": col, "Déficit": max(col - libres, 0.0)}
@@ -768,7 +802,7 @@ def riesgo_residual(ex: dict, mk: dict, m: Macros, e1: dict, e2: dict) -> None:
         t_col,
         "t_colateral",
         "Colateral exigible con umbral cero (US\\$ MM)",
-        f"{EEFF}, Nota 3.1(c)",
+        f"{EEFF}, Nota 3.1(c); {BCRP}; {NYMEX}",
         "tab:colateral",
         decimales=1,
         nota=f"E1 y E2: pasivo de los derivados. Déficit: colateral menos líneas libres (US\\$ {libres:.1f} MM).",
@@ -788,7 +822,8 @@ def tasa_refinanciacion(mk: dict, m: Macros) -> None:
     w = lambda k: mk[k].valor  # noqa: E731
     c_usd = curva_sofr(mk)
     # Refinanciación del CESCE: de 2027 a su vencimiento contractual (2030), 3 años
-    m.set("FwdSwapRate", swaps.forward_starting_rate(c_usd, inicio=1.0, anios=3.0), 2, pct=True)
+    # Pago fijo anual, la misma convención de los swaps SOFR con que se construye la curva
+    m.set("FwdSwapRate", swaps.forward_starting_rate(c_usd, inicio=1.0, anios=3.0, freq=1), 2, pct=True)
     m.set("USDCincoAnios", w("tasas.usd_5a"), 2, pct=True)
 
 
