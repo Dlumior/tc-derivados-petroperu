@@ -30,7 +30,7 @@ from derivados.reporte import Macros, estilo_figuras, guardar_figura, tabla_late
 RAIZ = Path(__file__).resolve().parents[1]
 MERCADO = RAIZ / "data" / "mercado"
 
-EEFF = "PETROPERÚ, EEFF auditados al 31.12.2025 (Gaveglio, Aparicio y Asociados, 2026)"
+EEFF = "\\textcite{petroperu2026eeff}"  # mismo autor que la bibliografía (APA 7)
 BCRP = "BCRP, series estadísticas"
 SBS = "SBS, curva cupón cero soberana en soles (28-sep-2026)"
 SOFR = "BlueGamma, swaps SOFR (28-sep-2026)"
@@ -433,6 +433,7 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     m.set("USDTresMeses", r_usd_3m, 2, pct=True)
     m.set("NDFForward", f_ndf, 4)
     m.set("NDFPuntos", (f_ndf - bid) * 1e4, 1)
+    m.set("NDFPuntosAbs", abs(f_ndf - bid) * 1e4, 1)  # prosa: "x pips bajo el spot"
     # M1: conciliación con el mercado local. La curva sintética US$ de la SBS (CSBCRD) es la tasa US$ implícita en los
     # forwards USD/PEN locales: el único proxy público del basis cross-currency.
     c_sint = curva_sbs("sbs_curva_CSBCRD_2026-09-28.csv")
@@ -446,7 +447,7 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     m.set("NDFCostoUSD", ndf_nocional / f_ndf / 1e3 - ndf_nocional / bid / 1e3, 2)  # costo (> 0)
 
     # Tabla de resultados al vencimiento del NDF (patrón Inicio/Vencimiento: neto constante)
-    fix = {f"TC {p:+.0%}".replace("%", "\\%") if p else "Spot": bid * (1 + p) for p in (-0.10, 0.0, 0.10)}
+    fix = {f"TC {p:+.0%}".replace("%", "\\%") if p else "TC sin cambio": bid * (1 + p) for p in (-0.10, 0.0, 0.10)}
     t_ndf = fx.resultados_ndf_pasivo_pen(ndf_nocional / 1e3, bid, f_ndf, fix)
     t_ndf.loc["NDF por S/ 1,000 (US\\$)"] = [1e3 * (1 / x - 1 / f_ndf) for x in fix.values()]
     t_ndf = t_ndf.drop(index=["TC fixing", "Neto (alterno) N(1/S0−1/F)"])
@@ -517,11 +518,11 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     tabla_latex(
         t_pos,
         "t_e1_posiciones",
-        "E1: Posiciones de cambio en S/ (millones)",
+        "E1: posiciones de cambio (S/ MM)",
         f"{EEFF}, Notas 3 y 14",
         "tab:e1-posiciones",
         decimales=1,
-        nota="Negativo = posición pasiva en S/ (o pérdida).",
+        nota="Negativo = posición pasiva en S/ (o pérdida). Efecto a TC medio; el Cuadro~\\ref{tab:e1-ndf} usa el TC de compra pactado.",
         flotante=False,
     )
 
@@ -554,6 +555,7 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
         "resultado_sin": lambda s: resultado(pos, s),
         "resultado_con": lambda s: resultado(residuo_total, s),
         "valor": lambda s: (ccs.valor_usd(c_pen, c_usd, spot_hoy=s) + valor_ndf(s) * 1e3) / 1e3,  # US$ MM
+        "valor_ccs": lambda s: ccs.valor_usd(c_pen, c_usd, spot_hoy=s) / 1e3,
     }
 
 
@@ -615,7 +617,7 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     m.set("CobSinReposUno", v("crudo.cobertura_objetivo") * (n_capas - 1) / n_capas, 0, pct=True)
     m.set("CobSinReposDos", v("crudo.cobertura_objetivo") * (n_capas - 2) / n_capas, 0, pct=True)
     m.set("CoberturaCrudoPct", v("crudo.cobertura_objetivo"), 0, pct=True)
-    m.set("ContratosEquiv", f"{round(q / w('crudo.tamano_contrato')):,}")
+    m.set("ContratosEquiv", f"{n_capas * round(q / n_capas / w('crudo.tamano_contrato')):,}")  # = capas × contratos por capa
     m.set("RepartoSwap", reparto, 0, pct=True)
     m.set("RepartoCollar", 1 - reparto, 0, pct=True)
     m.set("InvValorHoy", q_tot * spot / 1e6, 1)
@@ -694,11 +696,27 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     tabla_latex(
         t_pos2,
         "t_e2_posiciones",
-        "E2: Posiciones en barriles (millones)",
+        "E2: posiciones en barriles (MM)",
         f"{EEFF}, Nota 10; {NYMEX}",
         "tab:e2-posiciones",
         decimales=2,
         nota="Positivo = largo en crudo. Collar: delta medio de las capas. Efecto lineal de una caída de 10 \\% del WTI.",
+        flotante=False,
+    )
+    # Checklist: demostración Inicio/Vencimiento del swap (neto constante = (P_swap − S0)·Q_swap)
+    fix_wti = {"WTI $-30$\\,\\%": spot * 0.7, "$=F$ ene": f3, "WTI $+30$\\,\\%": spot * 1.3}
+    t_sw = pd.DataFrame({c: {"Inventario (vol. del swap)": (x - spot) * q_swap / 1e6,
+                             "Swap: $(P - S)\\,Q$": (p_swap - x) * q_swap / 1e6} for c, x in fix_wti.items()})
+    t_sw.loc["Total"] = t_sw.sum()
+    t_sw.insert(0, "Inicio", 0.0)
+    tabla_latex(
+        t_sw,
+        "t_e2_swap",
+        "E2: swap al vencimiento (US\\$ MM)",
+        f"{EEFF}, Nota 10; {NYMEX}",
+        "tab:e2-swap",
+        decimales=1,
+        nota=f"{q_swap / 1e6:.2f} MMbl a P = {p_swap:.2f}; S$_0$ = {spot:.2f}. Inicio: valor cero, sin flujo. Total constante = (P $-$ S$_0$)\\,Q.",
         flotante=False,
     )
     m.set("PosGlobalMMbl", pos["Global (físico + derivados)"] / 1e6, 2)
@@ -842,7 +860,7 @@ def riesgo_residual(ex: dict, mk: dict, m: Macros, e1: dict, e2: dict) -> None:
     tabla_latex(
         t_var,
         "t_var",
-        "VaR al 95\\,\\% al vencimiento de la cobertura (US\\$ MM)",
+        "VaR al 95\\,\\% al vencimiento (US\\$ MM)",
         f"{EEFF}, Notas 3 y 10; {BCRP}; {NYMEX}. Volatilidad realizada de un año",
         "tab:var",
         decimales=1,
@@ -884,7 +902,8 @@ def riesgo_residual(ex: dict, mk: dict, m: Macros, e1: dict, e2: dict) -> None:
     m.set("LineasLibres", libres, 1)
     m.set("ColateralTC", t_col.iloc[0]["Colat."], 1)
     m.set("ColateralWTI", t_col.iloc[1]["Colat."], 1)
-    m.set("ColateralTCMitad", t_col.iloc[0]["Colat."] / 2, 1)  # plan B: contratar primero 50 % del CCS (colateral lineal en el nocional)
+    # plan B: contratar primero 50 % del CCS (su valor es lineal en el nocional); el NDF se mantiene completo
+    m.set("ColateralTCMitad", riesgo.colateral_exigible(e1["valor"](s0 * 1.1) - e1["valor_ccs"](s0 * 1.1) / 2), 1)
     m.set("ColateralConjunto", peor["Colat."], 1)
     m.set("DeficitConjunto", peor["Déficit"], 1)
     m.set("UmbralNecesario", float(np.ceil(peor["Déficit"])), 0)  # umbral (redondeado hacia arriba) que haría el colateral ≤ líneas libres

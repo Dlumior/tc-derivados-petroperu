@@ -31,7 +31,7 @@ a junio de 2026), si cubren soles.
   \node[caja,fill=green!10,right=of pp] (bk) {Banco contraparte\\(CCS)};
   \draw[->] (pp) -- node[above,font=\footnotesize]{Cuotas en S/} node[below,font=\footnotesize]{\BNTasa, \BNCuotasRem\ meses} (bn);
   \draw[->] ([yshift=3mm]bk.west) -- node[above,font=\footnotesize]{Recibe las cuotas en S/} ([yshift=3mm]pp.east);
-  \draw[->] ([yshift=-3mm]pp.east) -- node[below,font=\footnotesize]{Paga US\$ al \CCSTasaUSD} ([yshift=-3mm]bk.west);
+  \draw[->] ([yshift=-3mm]pp.east) -- node[below,font=\footnotesize]{Paga US\$ al \CCSTasaAllIn} ([yshift=-3mm]bk.west);
 \end{tikzpicture}
 \caption{E1: con el CCS, PETROPERÚ solo paga dólares}\label{fig:ccs}
 \fuente{\textcite{petroperu2026eeff}, Nota 14(ii), p.~74. Elaboración propia.}
@@ -42,12 +42,14 @@ lo que pagará en dólares; así el contrato nace con valor cero. La pata en sol
 soberana de la SBS (supuesto: no hay curva swap en soles pública) y la de dólares con la curva SOFR obtenida por
 \emph{bootstrap} \parencite{sbs2026curvas,bluegamma2026,hull2022}. Se usa el TC de compra, porque PETROPERÚ vende
 dólares. El forward del NDF se obtiene por paridad cubierta de tasas: es el TC a plazo que iguala endeudarse en
-una moneda e invertir en la otra, por lo que depende solo del spot y de las tasas de ambas monedas a tres meses.
+una moneda e invertir en la otra, por lo que depende solo del spot y de las tasas de ambas monedas a tres meses:
+\[\textstyle\sum_k C^{\text{S/}}_k P^{\text{S/}}_k/S=\sum_k C^{\text{US\$}}_k(c)\,P^{\text{US\$}}_k;\qquad
+F=S\Big(\frac{1+r_{\text{S/}}}{1+r_{\text{US\$}}}\Big)^{d/360}=\SpotBid\Big(\frac{1+\text{\PENTresMeses}}{1+\text{\USDTresMeses}}\Big)^{\NDFDias/360}=\NDFForward\]
 El resultado es una tasa de equilibrio de \CCSTasaUSD\ en dólares (Cuadro~\ref{tab:e1-param}). Esa tasa no es
 comparable con el \BNTasa\ del BN, porque son tasas en monedas distintas. Es algo mayor por dos razones: a dos años la
 curva en dólares (\USDDosAnios) supera a la soberana en soles (\PENDosAnios), y el cupón del BN supera a esa curva. Por
 eso la pata en soles vale US\$~\CCSVPPataPEN\ millones, más que el nocional, y esa prima se traslada a la tasa en
-dólares. El NDF se pacta a \NDFForward, \NDFPuntos~pips bajo el spot de compra, porque la tasa en soles a tres meses
+dólares. El NDF se pacta a \NDFForward, \NDFPuntosAbs~pips bajo el spot de compra, porque la tasa en soles a tres meses
 (\PENTresMeses) es menor que la de dólares (\USDTresMeses). Al comprar soles a plazo, PETROPERÚ recibe menos soles por
 dólar: el costo es de \NDFCostoAnual\ anual, unos US\$~\NDFCostoUSD\ millones por trimestre.
 
@@ -143,7 +145,7 @@ efectivo.
 
 \textbf{Qué se cubre.} Se cubre el desfase de precios descrito en la sección~2. Con compras de \ComprasMBDC\ MBDC,
 el inventario rota en unos \RotacionDias\ días, así que lo cubierto es un \textbf{saldo estructural}: el
-\CoberturaCrudoPct\ (\InvCubiertoMMbl\ MMbl, US\$~\InvValorHoy\ millones al WTI de hoy). El 20\,\% restante queda
+\CoberturaCrudoPct\ (\InvCubiertoMMbl\ MMbl, US\$~\InvCubiertoValor\ millones al WTI de hoy). El 20\,\% restante queda
 abierto para no sobrecubrir si el inventario baja. El saldo se cubre con un \textbf{programa rodante} de \NCapas\
 \textbf{capas} que vencen en noviembre, diciembre y enero, cada una de \CapaMMbl\ MMbl (\CapaContratos\ contratos).
 Al vencer, cada capa se repone a tres meses; sin reposición, la cobertura caería a \CobSinReposUno\ y luego a
@@ -205,33 +207,31 @@ Comprar solo el put costaría US\$~\CostoPutTotal\ millones de prima, que la caj
   \fuente{\textcite{petroperu2026eeff}, Nota 10; \textcite{yahoo2026cl}; \textcite{fred2026}. Elaboración propia.}
 \end{figure}
 
-Podría pensarse que el swap es caro, porque fija un precio menor que el de hoy y cede US\$~\CostoSwap\ millones frente
-al spot. No es una pérdida esperada; es el descuento que el mercado ya incluye en el precio futuro. El mercado está en
-\emph{backwardation}: el futuro de enero está \Backwardation\ bajo el contrato más cercano, porque en plena crisis de
-oferta se paga por tener crudo hoy. El modelo de costo de acarreo, $F=S\,e^{(r-y)T}$, lo traduce en un rendimiento de
-conveniencia implícito de \ConvenienciaImplicita\ anual \parencite{hull2022}. Frente al futuro, el costo esperado del
-swap es nulo. La prueba es la columna $=F$ del Cuadro~\ref{tab:e2-escenarios}: si el WTI converge al futuro, el
+Podría pensarse que el swap es caro: fija un precio menor que el de hoy y cede US\$~\CostoSwap\ millones frente al
+spot. Ese descuento ya está en el precio futuro: en \emph{backwardation} (enero, \Backwardation\ bajo el contrato más
+cercano), el costo de acarreo $F=S\,e^{(r-y)T}$ implica un rendimiento de conveniencia de \ConvenienciaImplicita\
+anual \parencite{hull2022}. Frente al futuro, su costo esperado es nulo: si el WTI converge a él (columna $=F$), el
 inventario sin cobertura pierde US\$~\PerdidaSinCobForward\ millones, más que el swap.
 
 \textbf{Sensibilidades.} La volatilidad usada (índice OVX, \VolCrudo) coincide con la realizada del futuro a un año
 (\VolRealCL). El collar casi no depende del nivel de volatilidad ($-$US\$~\VegaCollarMil\ mil por punto), pero sí del
 \emph{skew}: si los calls cotizaran 5 puntos bajo los puts, el techo de enero bajaría de \CollarCall\ a
-US\$~\CollarCallSkewCinco, y con 10 puntos a \CollarCallSkewDiez\ (Cuadro~\ref{tab:skew}). Por eso los strikes se fijan
+US\$~\CollarCallSkewCinco, y con 10 puntos a \CollarCallSkewDiez. Por eso los strikes se fijan
 con cotizaciones bancarias, no con el modelo. El riesgo residual principal es el de \emph{base}: se compran crudos
 referidos al Brent (US\$~\BrentWTI/bl sobre el WTI). El ratio de cobertura de mínima varianza,
 $h^*=\rho\,\sigma_S/\sigma_F$, del Brent frente al futuro de WTI es \RatioHBrent, con una efectividad $\rho^2$ de
 \EfectividadBrent\ (\SemanasH\ semanas; para el WTI: \RatioH\ y \EfectividadWTI). Se mantiene el WTI porque los precios
 de venta siguen la paridad de importación sobre el WTI (Nota~11(viii), p.~70; NIIF~9, 6.3.7).
 
-\input{generado/tablas/t_skew}
-
 \medskip\noindent
 \begin{minipage}[t]{0.5\linewidth}\footnotesize\setlength{\tabcolsep}{2.5pt}\input{generado/tablas/t_e2_posiciones}\end{minipage}\hfill
-\begin{minipage}[t]{0.47\linewidth}\textbf{Demostración de la cobertura.} Sobre su volumen (\InvSwapMMbl\ MMbl),
-inventario y swap suman $-$US\$~\CostoSwap\ millones en cualquier escenario: lo que pierde el crudo lo gana el swap.
-En barriles, los derivados reducen la posición larga de \InvCrudoMMbl\ a \PosGlobalMMbl\ MMbl equivalentes
-(\PosGlobalPct): queda el 20\,\% abierto y la zona entre strikes del collar.\end{minipage}
+\begin{minipage}[t]{0.47\linewidth}\footnotesize\setlength{\tabcolsep}{2.5pt}\input{generado/tablas/t_e2_swap}\end{minipage}
 \medskip
+
+\textbf{Demostración de la cobertura.} Lo que pierde el crudo lo gana el swap: inventario y swap suman
+$-$US\$~\CostoSwap\ millones en todo escenario (Cuadro~\ref{tab:e2-swap}). En barriles, los derivados reducen la
+posición larga de \InvCrudoMMbl\ a \PosGlobalMMbl\ MMbl equivalentes (\PosGlobalPct; Cuadro~\ref{tab:e2-posiciones}):
+queda el 20\,\% abierto y la zona entre strikes del collar.
 
 \textbf{Margen de refinación (fase~2).} La E2 fija el precio del crudo en inventario, no el margen. Quedan fuera el
 inventario de productos (US\$~\PerdidaInvProdDiez\ millones por cada 10\,\% de caída) y la variación del \emph{crack}

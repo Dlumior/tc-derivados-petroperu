@@ -278,6 +278,18 @@ estimó **17.4/20**. El grupo aprobó aplicar todo:
 - [x] **C4:** se recortaron a una frase la sensibilidad del BN y el párrafo OVX/skew.
 - `make final`: OK, 0 errores y 0 avisos; cuerpo 10/10 (termina en la línea 50 de la p. 10).
 
+### Revisión independiente (`/revisar`, 5-oct-2026)
+Validador: aritmética reproducida; 2 errores de interpretación. Revisor de rúbrica: **≈17.8/20**. Se aplicó lo recomendado:
+- [x] **A1:** el 80 % del inventario vale US$ 214.9 MM (`\InvCubiertoValor`), no 268.6 (total).
+- [x] **A2:** plan B (50 % del CCS, NDF completo): colateral con TC +10 % = **70.7**, no 60.8.
+- [x] **A3/A4:** la Fig. 2 rotula la tasa *all-in* (5.98 %); "20.5 pips bajo" con `\NDFPuntosAbs`.
+- [x] **A5/A6:** la base del TC está declarada en el Cuadro 4; `ContratosEquiv` = 3 × 774 = 2,322.
+- [x] **B1:** se repone en display la condición de valor cero del CCS y la paridad cubierta con sus valores.
+- [x] **B2:** nuevo Cuadro 10, Inicio/Vencimiento del swap de WTI (total constante (3.7)).
+- [x] **B4–B7:** la volatilidad de la Fig. 1 se aclara frente a la implícita; las fuentes usan `\textcite{petroperu2026eeff}`; la columna "TC sin cambio"; títulos cortos.
+- Recortes para caber: se quita el Cuadro de skew (las cifras siguen en la prosa) y se resume la objeción del swap. No se hizo B3 (Black-76 en fórmula) ni A7 (UST con duración de Macaulay; efecto ≈3 pb).
+- `make final`: OK, 0 errores y 0 avisos; cuerpo 10/10.
+
 ## 4. Decisiones abiertas (requieren al grupo)
 1. ~~Integrantes del grupo (B3).~~ Resuelto el 3-oct.
 2. ~~Volumen de E2~~: el grupo eligió **80 %** (3-oct).
@@ -298,3 +310,4 @@ estimó **17.4/20**. El grupo aprobó aplicar todo:
 | 2026-10-03 | /revisar: correcciones A, B y C del validador y del revisor de rúbrica | (este commit) |
 | 2026-10-05 | Reescritura con la skill informe-para-gerente-general: respuesta ejecutiva (memo Para/De/Asunto), conclusión al inicio de cada sección, definiciones operativas, objeciones respondidas, supuestos etiquetados, indicadores a vigilar y principio final; títulos de cuadros con la conclusión; macros `SensFXUnPct` y `SensWTIUnDolar`. make final OK, cuerpo 10/10 | (sin commit) |
 | 2026-10-05 | Sin recuadro ejecutivo y títulos simplificados (grupo); se quitan las fórmulas del CCS/NDF y de Black (método en prosa) y se agrega la Fig. `f_e2_collar` (armado del collar en 3 pasos). make final OK, cuerpo 10/10 | (sin commit) |
+| 2026-10-05 | /revisar: A1–A6, B1, B2, B4–B7 (inventario 214.9, plan B 70.7, ecuaciones de E1, Cuadro Inicio/Vencimiento del swap); se quita el Cuadro de skew. make final OK, cuerpo 10/10 | (sin commit) |
