@@ -14,6 +14,18 @@ def test_paridad_put_call_black76():
     assert c - p == pytest.approx(np.exp(-r * T) * (F - K), rel=1e-10)
 
 
+def test_collar_costo_cero_con_skew():
+    """Si el call se cotiza con menos volatilidad que el put, el techo de costo cero baja (y sigue siendo costo cero)."""
+    F, T, r, s = 60.0, 0.25, 0.04, 0.35
+    k0 = opciones.strike_collar_costo_cero(F, 54.0, T, r, s, fijo="put")
+    k5 = opciones.strike_collar_costo_cero(F, 54.0, T, r, s, fijo="put", sigma_otro=s - 0.05)
+    k10 = opciones.strike_collar_costo_cero(F, 54.0, T, r, s, fijo="put", sigma_otro=s - 0.10)
+    assert F < k10 < k5 < k0
+    assert opciones.black76(F, k5, T, r, s - 0.05, "call") == pytest.approx(
+        opciones.black76(F, 54.0, T, r, s, "put"), rel=1e-6
+    )
+
+
 def test_collar_costo_cero():
     F, T, r, s = 60.0, 0.25, 0.04, 0.35
     kc = opciones.strike_collar_costo_cero(F, 54.0, T, r, s, fijo="put")

@@ -150,6 +150,8 @@ def riesgo_cambiario(ex: dict, m: Macros) -> None:
     m.set("SensApreciacion", perdida / 1e3, 1)
     m.set("ApreciacionSolDiez", 1 / 0.9 - 1, 1, pct=True)
     m.set("SensDepreciacion", ganancia / 1e3, 1)
+    # Escala de decisión: pérdida por cada 1 % que baja el TC (US$ millones)
+    m.set("SensFXUnPct", (abs(pen) / (tc * 0.99) - abs(pen) / tc) / 1e3, 1)
 
     # Figura: composición de la posición en S/
     partidas = {
@@ -201,9 +203,13 @@ def riesgo_crudo(ex: dict, mk: dict, m: Macros) -> None:
     inv = v("crudo.inventario_crudo_mbl") * 1e3
     m.set("InvCrudoMbl", v("crudo.inventario_crudo_mbl"), 0)
     m.set("InvCrudoMMbl", inv / 1e6, 3)
+    # Escala de decisión: US$ millones por cada US$ 1/bl que cae el WTI
+    m.set("SensWTIUnDolar", inv / 1e6, 1)
     m.set("InvCrudoUSD", v("crudo.inventario_crudo_usd") / 1e3, 1)
     m.set("InvRefinadosUSD", v("crudo.inventario_refinados_usd") / 1e3, 1)
     m.set("InvHidroUSD", v("crudo.inventario_hidrocarburos_usd") / 1e3, 1)
+    # Margen (crack): el inventario de productos queda fuera de E2 y pierde valor si cae el precio de los productos
+    m.set("PerdidaInvProdDiez", 0.10 * v("crudo.inventario_refinados_usd") / 1e3, 1)
     m.set("WTIcierreVeinticinco", v("crudo.wti_cierre_2025"), 2)
     m.set("WTIcierreVeinticuatro", v("crudo.wti_cierre_2024"), 2)
     m.set("WTIvarVeinticinco", v("crudo.wti_cierre_2025") / v("crudo.wti_cierre_2024") - 1, 1, pct=True)
@@ -373,6 +379,9 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
                                w("tasas.spread_credito_petroperu"), w("credito.lgd"))
     m.set("CCSCVApbProxy", cva_proxy["pb"], 0)
     m.set("SpreadProxyPb", w("tasas.spread_credito_petroperu") * 1e4, 0)
+    m.set("CCSTasaAllInProxy", t_usd + cva_proxy["pb"] / 1e4, 2, pct=True)  # tasa all-in con el spread de ago-2026
+    m.set("CCSDifSpreadPb", cva["pb"] - cva_proxy["pb"], 0)  # diferencia de tasa entre ambos spreads
+    m.set("YTMBonoAgo", w("tasas.ytm_bono2032_agosto"), 1, pct=True)
     m.set("LGD", w("credito.lgd"), 0, pct=True)
     m.set("VolTC", w("usdpen.vol_implicita_1a"), 2, pct=True)
 
@@ -394,6 +403,9 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
         "Paga US\\$": pata_usd["cuota"].sum() / 1e3,
         "Interés US\\$": pata_usd["interes"].sum() / 1e3,
     }
+    m.set("CCSTotalPEN", filas["Total"]["Recibe S/"], 1)
+    m.set("CCSIntPEN", filas["Total"]["Interés S/"], 1)
+    m.set("CCSIntUSD", filas["Total"]["Interés US\\$"], 1)
     tabla_latex(
         pd.DataFrame(filas).T,
         "t_e1_flujos",
@@ -478,7 +490,7 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     tabla_latex(
         esc,
         "t_e1_escenarios",
-        "E1: Resultado por diferencia de cambio según TC final (US\\$ millones)",
+        "E1: con CCS + NDF la pérdida cambiaria casi desaparece en todo escenario (US\\$ millones)",
         f"{EEFF}, Notas 3 y 14; {BCRP} (TC interbancario 28-sep-2026)",
         "tab:e1-escenarios",
         decimales=1,
@@ -523,6 +535,7 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
     m.set("NDFValMasDiez", abs(valor_ndf(s0 * 1.1)), 1)  # pasivo
     m.set("CCSValMenosDiez", ccs.valor_usd(c_pen, c_usd, spot_hoy=s0 * 0.9) / 1e3, 1)
     m.set("CCSValMasDiez", abs(ccs.valor_usd(c_pen, c_usd, spot_hoy=s0 * 1.1)) / 1e3, 1)  # pasivo
+    m.set("CCSValPct", ccs.valor_usd(c_pen, c_usd, spot_hoy=s0 * 0.9) / (saldo_rem / bid), 1, pct=True)  # valor por unidad de nocional
 
     xs = np.linspace(s0 * 0.88, s0 * 1.12, 100)
     fig, ax = plt.subplots(figsize=(6.2, 2.3))
@@ -596,6 +609,11 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     m.set("DeltaPutAbs", abs(np.mean([c["delta"] for c in capas])), 2)
     m.set("CostoPutTotal", sum(c["prima"] for c in capas) * q / n_capas / 1e6, 1)
     m.set("NCapas", n_capas, 0)
+    # Programa rodante: cada capa cubre 1/n del volumen; sin reposición la cobertura cae al vencer cada capa
+    m.set("CapaMMbl", q / n_capas / 1e6, 3)
+    m.set("CapaContratos", f"{round(q / n_capas / w('crudo.tamano_contrato')):,}")
+    m.set("CobSinReposUno", v("crudo.cobertura_objetivo") * (n_capas - 1) / n_capas, 0, pct=True)
+    m.set("CobSinReposDos", v("crudo.cobertura_objetivo") * (n_capas - 2) / n_capas, 0, pct=True)
     m.set("CoberturaCrudoPct", v("crudo.cobertura_objetivo"), 0, pct=True)
     m.set("ContratosEquiv", f"{round(q / w('crudo.tamano_contrato')):,}")
     m.set("RepartoSwap", reparto, 0, pct=True)
@@ -636,7 +654,7 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     tabla_latex(
         tabla,
         "t_e2_escenarios",
-        "E2: Resultado sobre el inventario de crudo al vencimiento (US\\$ millones)",
+        "E2: la propuesta limita la pérdida del inventario si el WTI cae y cede parte de la ganancia si sube (US\\$ millones)",
         f"{EEFF}, Nota 10; {NYMEX}",
         "tab:e2-escenarios",
         decimales=1,
@@ -688,6 +706,11 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     m.set("CollarValMenosDiez", valor_collar(-0.10), 1)
     m.set("CollarValMasDiez", abs(valor_collar(0.10)), 1)  # pasivo
     m.set("SwapValDiez", 0.10 * p_swap * q_swap * df_swap / 1e6, 1)
+    m.set("SwapValBl", 0.10 * p_swap * df_swap, 2)  # US$ por barril ante un choque de 10 % de la curva
+    # Casos extremos de cada instrumento solo (para sustentar el reparto 50/50)
+    m.set("PerdidaSwapTreinta", abs(neto(spot * 0.7, "Swap")), 1)
+    m.set("GananciaSwapTreinta", neto(spot * 1.3, "Swap"), 1)
+    m.set("CostoSwapTotal", (spot - p_swap) * q / 1e6, 1)  # swap sobre todo el volumen cubierto, frente al precio de hoy
 
     # M6: vega del collar (put comprado − call vendido), US$ MM por punto de volatilidad
     vega = sum(opciones.vega_black76(c["F"], c["kp"], c["T"], r, sig) - opciones.vega_black76(c["F"], c["kc"], c["T"], r, sig)
@@ -697,6 +720,27 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     for nombre, s_alt in (("Baja", 0.35), ("Media", 0.45)):
         m.set(f"VolSens{nombre}", s_alt, 0, pct=True)
         m.set(f"CollarCallVol{nombre}", opciones.strike_collar_costo_cero(f3, k_put, T, r, s_alt, fijo="put"), 2)
+
+    # Skew: el call vendido se cotiza con menos volatilidad que el put comprado => el techo de costo cero baja
+    skew = {"Misma volatilidad": 0.0, "Call 5 puntos más barato": 0.05, "Call 10 puntos más barato": 0.10}
+    t_skew = pd.DataFrame(
+        {f"Call {mes}": {k: opciones.strike_collar_costo_cero(c["F"], c["kp"], c["T"], r, sig, fijo="put", sigma_otro=sig - d)
+                         for k, d in skew.items()}
+         for mes, c in zip(("nov", "dic", "ene"), capas)}
+    )
+    tabla_latex(
+        t_skew,
+        "t_skew",
+        "E2: Sensibilidad del collar al \\emph{skew}: strikes de costo cero (US\\$/bl)",
+        f"{NYMEX}; \\textcite{{black1976}}",
+        "tab:skew",
+        decimales=2,
+        nota="Put comprado a " + " / ".join(f"{c['kp']:.2f}" for c in capas)
+        + " (nov / dic / ene); \\emph{skew}: puntos de volatilidad que el call se cotiza por debajo del put.",
+    )
+    m.set("VegaCollarMil", abs(vega) * q_col / n_capas / 100 / 1e3, 0)
+    m.set("CollarCallSkewCinco", t_skew.loc["Call 5 puntos más barato", "Call ene"], 2)
+    m.set("CollarCallSkewDiez", t_skew.loc["Call 10 puntos más barato", "Call ene"], 2)
 
     xs = np.linspace(spot * 0.6, spot * 1.4, 200)
     fig, ax = plt.subplots(figsize=(6.2, 2.4))
@@ -709,6 +753,34 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     ax.set_ylabel("US\\$ millones")
     ax.legend(fontsize=8, loc="upper left")
     guardar_figura(fig, "f_e2_payoff")
+
+    # Figura: cómo se arma el collar de costo cero (capa de enero, por barril)
+    st = np.linspace(k_put * 0.7, k_call * 1.25, 300)
+    put_l, call_c = opciones.payoff_put(st, k_put), -opciones.payoff_call(st, k_call)
+    fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.3), sharey=False)
+    paneles = (
+        ("1. Compra un put (piso)", put_l, AZUL, "Cobra si el WTI\ncae bajo el piso", (0.62, 0.5)),
+        ("2. Vende un call (techo)", call_c, NARANJA, "Paga si el WTI\nsupera el techo;\nsu prima paga el put", (0.36, 0.3)),
+    )
+    for ax, (tit, y, col, txt, xy) in zip(axs[:2], paneles):
+        ax.plot(st, y, color=col, lw=2)
+        ax.axhline(0, color=GRIS, lw=0.8)
+        ax.set_title(tit, fontsize=8.5)
+        ax.text(*xy, txt, transform=ax.transAxes, fontsize=7, ha="center", color=col)
+    axs[0].set_ylabel("US\\$/bl")
+    ax = axs[2]
+    ax.plot(st, st, color=GRIS, ls="--", lw=1.2, label="Sin cobertura")
+    ax.plot(st, st + put_l + call_c, color=VERDE, lw=2.2, label="Con collar")
+    ax.axvspan(k_put, k_call, color=VERDE, alpha=0.08)
+    ax.annotate(f"Piso {k_put:.1f}", (st[0], k_put), xytext=(0, 3), textcoords="offset points", fontsize=7)
+    ax.annotate(f"Techo {k_call:.1f}", (k_call, k_call), xytext=(-6, 5), textcoords="offset points", fontsize=7)
+    ax.set_title("3. Inventario + put + call", fontsize=8.5)
+    ax.legend(fontsize=6.5, loc="lower right")
+    for ax in axs:
+        ax.set_xlabel("WTI al vencimiento (US\\$/bl)", fontsize=7.5)
+        ax.tick_params(labelsize=7)
+    fig.tight_layout()
+    guardar_figura(fig, "f_e2_collar")
 
     return {
         "spot": spot,
@@ -805,16 +877,17 @@ def riesgo_residual(ex: dict, mk: dict, m: Macros, e1: dict, e2: dict) -> None:
         f"{EEFF}, Nota 3.1(c); {BCRP}; {NYMEX}",
         "tab:colateral",
         decimales=1,
-        nota=f"E1 y E2: pasivo de los derivados. Déficit: colateral menos líneas libres (US\\$ {libres:.1f} MM).",
+        nota=f"E1 y E2: pasivo de los derivados, a TC medio; el 0.4 de E1 con TC sin cambio es la diferencia entre el TC de compra pactado y el medio. Déficit: colateral menos líneas libres (US\\$ {libres:.1f} MM).",
         flotante=False,
     )
     peor = t_col.iloc[-1]
     m.set("LineasLibres", libres, 1)
     m.set("ColateralTC", t_col.iloc[0]["Colat."], 1)
     m.set("ColateralWTI", t_col.iloc[1]["Colat."], 1)
+    m.set("ColateralTCMitad", t_col.iloc[0]["Colat."] / 2, 1)  # plan B: contratar primero 50 % del CCS (colateral lineal en el nocional)
     m.set("ColateralConjunto", peor["Colat."], 1)
     m.set("DeficitConjunto", peor["Déficit"], 1)
-    m.set("UmbralNecesario", peor["Déficit"], 0)  # umbral que haría el colateral ≤ líneas libres
+    m.set("UmbralNecesario", float(np.ceil(peor["Déficit"])), 0)  # umbral (redondeado hacia arriba) que haría el colateral ≤ líneas libres
     m.set("PrestamoPuente", w("credito.prestamo_puente") / 1e3, 0)
 
 

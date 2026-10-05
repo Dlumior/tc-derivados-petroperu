@@ -296,3 +296,5 @@ estimó **17.4/20**. El grupo aprobó aplicar todo:
 | 2026-10-03 | Fase 4: EEFF jun-2026 (BN sin amortizar hasta jul-2027, swaps Citi vigentes) y vencimientos LO | ec98d53 |
 | 2026-10-03 | Fase 5: M9, B5, limitaciones; make final OK | 840c8b1 |
 | 2026-10-03 | /revisar: correcciones A, B y C del validador y del revisor de rúbrica | (este commit) |
+| 2026-10-05 | Reescritura con la skill informe-para-gerente-general: respuesta ejecutiva (memo Para/De/Asunto), conclusión al inicio de cada sección, definiciones operativas, objeciones respondidas, supuestos etiquetados, indicadores a vigilar y principio final; títulos de cuadros con la conclusión; macros `SensFXUnPct` y `SensWTIUnDolar`. make final OK, cuerpo 10/10 | (sin commit) |
+| 2026-10-05 | Sin recuadro ejecutivo y títulos simplificados (grupo); se quitan las fórmulas del CCS/NDF y de Black (método en prosa) y se agrega la Fig. `f_e2_collar` (armado del collar en 3 pasos). make final OK, cuerpo 10/10 | (sin commit) |

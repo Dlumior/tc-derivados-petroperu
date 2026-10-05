@@ -44,18 +44,23 @@ def delta_black76(F: float, K: float, T: float, r: float, sigma: float, tipo: st
     return exp(-r * T) * (N(d1) if tipo == "call" else N(d1) - 1)
 
 
-def strike_collar_costo_cero(F: float, K_fijo: float, T: float, r: float, sigma: float, fijo: str = "put") -> float:
+def strike_collar_costo_cero(
+    F: float, K_fijo: float, T: float, r: float, sigma: float, fijo: str = "put", sigma_otro: float | None = None
+) -> float:
     """Encuentra el strike de la otra pata para que prima neta = 0.
+
+    sigma_otro: volatilidad con que se cotiza la otra pata (skew); por defecto, la misma `sigma`.
 
     fijo='put': se compra put a K_fijo (piso) y se busca el call vendido (techo) — protege inventario (largo crudo).
     fijo='call': se compra call a K_fijo (techo) y se busca el put vendido (piso) — protege compras (corto crudo).
     """
     otro = "call" if fijo == "put" else "put"
+    sigma_otro = sigma if sigma_otro is None else sigma_otro
     prima = black76(F, K_fijo, T, r, sigma, fijo)
     lo, hi = (F, F * 5) if otro == "call" else (1e-6, F)
     for _ in range(200):
         mid = (lo + hi) / 2
-        p = black76(F, mid, T, r, sigma, otro)
+        p = black76(F, mid, T, r, sigma_otro, otro)
         if otro == "call":
             lo, hi = (mid, hi) if p > prima else (lo, mid)
         else:

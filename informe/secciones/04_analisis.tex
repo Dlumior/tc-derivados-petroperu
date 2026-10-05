@@ -1,8 +1,12 @@
-% ~1 página. Comparación de estrategias, riesgo de tasa (no recomendado hoy) y condiciones de implementación.
+% Comparación de estrategias, riesgo residual, liquidez (colateral), tasa (no recomendada hoy), condiciones y límites.
 \section{Análisis comparativo e implementación}
 
+Ambas estrategias reducen el riesgo en la magnitud que importa y no exigen pago inicial. Lo que puede impedir
+ejecutarlas no es su costo, sino el colateral que pediría el banco. El Cuadro~\ref{tab:comparacion} las compara con
+los mismos criterios.
+
 \begin{table}[htbp]\centering\small
-\caption{Comparación de las estrategias propuestas}\label{tab:comparacion}
+\caption{Comparación: E1 y E2 reducen el riesgo sin costo inicial; el límite es el colateral}\label{tab:comparacion}
 \renewcommand{\arraystretch}{1.25}
 \newcommand{\filasep}{\arrayrulecolor{gray!45}\specialrule{0.3pt}{1pt}{1pt}\arrayrulecolor{black}}
 \newcommand{\encab}[2]{\textbf{#1}\newline #2}
@@ -33,45 +37,55 @@ Tratamiento NIIF~9 & CCS: flujos de efectivo (ORI); NDF: valor razonable en resu
   & Flujos de efectivo, solo si la refinanciación es altamente probable \\
 \bottomrule
 \end{tabularx}
-\fuente{Cuadros~\ref{tab:e1-param} a \ref{tab:e2-escenarios}; \textcite{ifrs9}. Elaboración propia.}
+\fuente{Cuadros~\ref{tab:e1-param} a \ref{tab:e2-escenarios}; \textcite{ifrs9}. Elaboración propia. El inventario cubierto se valora al WTI de la fecha de valorización; al cierre de 2025 el inventario de crudo valía US\$~\InvCrudoUSD\ MM (Cuadro~\ref{tab:matriz}).}
 \end{table}
 
-\textbf{Riesgo residual y liquidez.} El VaR al 95\,\% al vencimiento de cada cobertura cae de
-US\$~\VaRFXSin\ a \VaRFXCon\ millones en la E1 y de \VaRCrudoSin\ a \VaRCrudoCon\ millones en la E2, que conserva el
-20\,\% no cubierto (Cuadro~\ref{tab:var}). La restricción real es la liquidez. Los derivados OTC no tienen márgenes de
-bolsa, pero un banco exigirá colateral a una contraparte B-/Caa1, con umbral cero (supuesto). En un estrés conjunto
-(supuesto: TC $+10$\,\% y WTI $+30$\,\% a la vez) el colateral llegaría a US\$~\ColateralConjunto\
-millones, frente a solo US\$~\LineasLibres\ millones de líneas libres (Cuadro~\ref{tab:colateral}); el préstamo puente
-de US\$~\PrestamoPuente\ millones tiene otro destino. Por eso la ejecución se condiciona a
-un umbral de al menos US\$~\UmbralNecesario\ millones o a la garantía del Estado sobre la línea de derivados: sin ello,
-la cobertura agravaría el riesgo de liquidez que busca mitigar \parencite{moodys2026petroperu}.
+\textbf{Riesgo residual.} El VaR al 95\,\% es la pérdida que solo se supera en uno de cada veinte casos. Al
+vencimiento de cada cobertura, baja de US\$~\VaRFXSin\ a \VaRFXCon\ millones en la E1 y de \VaRCrudoSin\ a
+\VaRCrudoCon\ millones en la E2 (Cuadro~\ref{tab:var}). La E2 conserva más riesgo porque deja abierto el 20\,\% del
+inventario y la zona entre los strikes del collar.
+
+\textbf{Liquidez: la restricción que decide.} Los derivados OTC no tienen márgenes de bolsa, pero el banco pedirá
+colateral a una contraparte B-/Caa1. El \emph{umbral} del anexo CSA es la pérdida que el banco tolera antes de pedir
+garantías en efectivo; se supone umbral cero, el caso más exigente. En un estrés conjunto (supuesto: TC $+10$\,\% y
+WTI $+30$\,\% a la vez), el colateral llegaría a US\$~\ColateralConjunto\ millones, frente a solo
+US\$~\LineasLibres\ millones de líneas libres (Cuadro~\ref{tab:colateral}). El préstamo puente de
+US\$~\PrestamoPuente\ millones tiene otro destino. Por eso la ejecución exige un umbral de al menos
+US\$~\UmbralNecesario\ millones o la garantía del Estado sobre la línea de derivados. Sin ello, la cobertura
+agravaría el riesgo de liquidez que busca mitigar \parencite{moodys2026petroperu}.
 
 \medskip\noindent
 \begin{minipage}[t]{0.42\linewidth}\footnotesize\setlength{\tabcolsep}{2.5pt}\input{generado/tablas/t_var}\end{minipage}\hfill
 \begin{minipage}[t]{0.55\linewidth}\footnotesize\setlength{\tabcolsep}{2.5pt}\input{generado/tablas/t_colateral}\end{minipage}
 \medskip
 
-\textbf{Riesgo de tasa.} No se recomienda contratar hoy un swap de tasa. La deuda ya es fija, y pasarla a variable
-añadiría riesgo sin reducir el costo de crédito, que es lo que encarece la deuda. Queda como opción a evaluar un swap
-de inicio diferido (\emph{forward-starting}) para la refinanciación del CESCE, solo cuando esta sea altamente probable
-(NIIF~9, 6.3.3); hoy no lo es por el incumplimiento del covenant. Fijaría una tasa swap de \FwdSwapRate\ de 2027 al
-vencimiento de 2030 (cálculo propio con la curva SOFR \parencite{bluegamma2026}); sumado el spread de crédito de la
-Compañía (\SpreadBonosPb~pb), el costo superaría con holgura el \CESCETasa\ vigente. Las líneas revolventes de corto
-plazo sí se reprecian en cada renovación, pero su plazo no justifica un derivado.
+\textbf{Plan B si el banco no concede el umbral.} (a) Escalonar: contratar primero el 50\,\% del CCS, con lo que el
+colateral ante un TC $+10$\,\% baja a US\$~\ColateralTCMitad\ millones. (b) Comprar opciones, que solo exigen prima y
+ningún colateral; el put de WTI sobre el \CoberturaCrudoPct\ cuesta US\$~\CostoPutTotal\ millones, por lo que se
+limitaría al tramo más expuesto. (c) Pactar un umbral escalonado según la calificación y un reajuste semanal del
+colateral, en lugar de diario. (d) Obtener la garantía del Estado sobre la línea de derivados.
 
-\textbf{Condiciones de implementación.} (i) Aprobar en el Directorio una Política de Cobertura con límites
-(\LimiteFX\ de la posición en soles y \LimiteCrudo\ del inventario de crudo), prohibición expresa de especular
-y métricas mensuales de seguimiento. (ii) Firmar contratos marco ISDA con anexos CSA con un umbral de colateral de al menos US\$~\UmbralNecesario\ millones.
-(iii) Antes de pactar, obtener la opinión de la Gerencia Legal y la autorización que exija el régimen de endeudamiento
-y tesorería aplicable a una empresa del Estado, incluida la viabilidad de que los compromisos contingentes que el
-D.U.~\DUCrisis\ autoriza al MINEM (hasta US\$~\DUCrisisMonto\ millones, Nota~1, p.~25) respalden las líneas de
-derivados. (iv) Documentar cada relación de cobertura según la NIIF~9 y preparar las revelaciones de la NIIF~7,
-¶21A--24G \parencite{ifrs9}. (v) Incorporar a la política los swaps con Citibank. (vi) Separar funciones: Finanzas
-contrata; Riesgos controla límites y verifica de forma independiente los precios de los bancos (valor razonable de
-Nivel~2); Contabilidad registra \parencite{humala2026}. El reporte regulatorio de las operaciones se coordina con cada banco.
+\textbf{Riesgo de tasa: no se recomienda cubrirlo hoy.} La deuda ya es fija; pasarla a variable añadiría riesgo sin
+bajar el costo de crédito, que lo domina el spread. Queda como opción un swap de inicio diferido para la
+refinanciación del CESCE (tasa de \FwdSwapRate\ con pago anual), solo cuando esa refinanciación sea altamente probable
+(NIIF~9, 6.3.3). Hoy no lo es, por el incumplimiento del covenant.
 
-\textbf{Limitaciones.} Las cifras son indicativas: el cronograma del BN se infiere de los EEFF a junio de 2026; la
-posición en soles distinta del BN y el volumen de inventario son de diciembre de 2025; la curva soberana en soles y el
-OVX sustituyen a la curva swap y a la superficie de volatilidad, que no son públicas; y el CVA usa el spread de los
-bonos y una LGD supuesta. Antes de pactar se requieren el cronograma contractual, la posición actualizada y
-cotizaciones de al menos tres bancos.
+\textbf{Condiciones de implementación.} (i) El Directorio aprueba una Política de Cobertura con límites (\LimiteFX\
+de la posición en soles y \LimiteCrudo\ del inventario de crudo), prohibición expresa de especular y métricas
+mensuales. (ii) Se firman contratos ISDA con anexo CSA y un umbral de al menos US\$~\UmbralNecesario\ millones, o se
+aplica el plan B. Se negocia además que la rebaja de calificación, la opinión con salvedades o la incertidumbre de
+empresa en marcha no causen el cierre inmediato sin un período de cura. También una cláusula de prepago: si el BN
+prepaga el préstamo, el CCS debe poder cancelarse a valor de mercado. (iii) Antes de pactar, la Gerencia Legal opina y
+se obtiene la autorización que exija el régimen de endeudamiento y tesorería de una empresa del Estado. Se evalúa si
+los compromisos contingentes que el D.U.~\DUCrisis\ autoriza al MINEM (hasta US\$~\DUCrisisMonto\ millones, Nota~1,
+p.~25) pueden respaldar las líneas de derivados. (iv) Las coberturas se documentan según la NIIF~9 y se revelan según la NIIF~7, ¶21A--24G
+\parencite{ifrs9}; los swaps con Citibank entran a la política. (v) Se separan funciones: Finanzas contrata; Riesgos controla límites y verifica de forma independiente los
+precios de los bancos (valor razonable de Nivel~2); Contabilidad registra \parencite{humala2026}. El reporte
+regulatorio se coordina con cada banco.
+
+\textbf{Supuestos que limitan el resultado.} Las cifras son indicativas. El cronograma del BN es inferido (tasa
+del CCS entre \CCSTasaMin\ y \CCSTasaMax). La posición en soles distinta del BN y el inventario son de diciembre de
+2025: si cambiaron, cambian los nocionales, no el diseño. La curva soberana y el OVX sustituyen a la curva swap y a la
+superficie de volatilidad, que no son públicas. Las tasas ejecutables vendrán de los bancos, no de BlueGamma ni de
+Yahoo Finance. Antes de pactar se requieren el cronograma contractual, la posición actualizada y cotizaciones de al menos
+tres bancos.

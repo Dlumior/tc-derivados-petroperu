@@ -1,24 +1,31 @@
-% [1.5 pts] ~0.6 páginas. Recomendación concreta y accionable; no repetir el análisis.
+% [1.5 pts] Decisión + condición + indicadores a vigilar + próximos pasos. No repetir el análisis.
 \section{Conclusiones y recomendaciones}
+
+\textbf{Decisión.} Se recomienda aprobar las dos estrategias. PETROPERÚ asume hoy, sin cobertura, una deuda neta de
+S/~\PenNetoAbs\ millones y un inventario de crudo expuesto a un WTI que cayó \WTICaidaVeinticinco\ en 2025 y hoy
+cotiza en US\$~\WTISpot/bl. Con una utilidad bruta casi nula y liquidez restringida, una mala racha en cualquiera de
+ellos compromete la continuidad operativa.
+
 \begin{itemize}
-  \item Se recomienda cubrir con derivados los dos riesgos de mercado que hoy se asumen sin cobertura y que, con
-  utilidad bruta casi nula y liquidez restringida, comprometen la continuidad operativa: la posición pasiva neta de
-  S/~\PenNetoAbs\ millones, sin amortizaciones del BN hasta 2027, y el inventario de crudo, expuesto a un WTI que cayó
-  \WTICaidaVeinticinco\ en 2025 y hoy cotiza en US\$~\WTISpot/bl con una volatilidad implícita de \VolCrudo.
-  \item \textbf{Estrategia 1:} el CCS amortizable sobre el préstamo del BN, pagando en dólares al \CCSTasaAllIn\ (con
-  CVA), junto con NDF de compra de soles, cubre el \CoberturaFX\ de la exposición en soles y reduce la pérdida ante
-  una caída de 10\,\% del tipo de cambio de US\$~\EscSinCobMenosDiez\ millones a US\$~\EscConCobMenosDiez\ millones, sin
-  costo inicial y con contabilidad de coberturas para el CCS; su costo es el diferencial de tasas (\NDFCostoAnual\ anual).
-  \item \textbf{Estrategia 2:} cubrir el \CoberturaCrudoPct\ del inventario de crudo, por partes iguales con un swap de WTI a
-  US\$~\SwapPrecio/bl y con collares de costo cero en tres capas mensuales (puts al \PutPctFwd\ de cada futuro), reduce la
-  pérdida ante una caída de 30\,\% del WTI a US\$~\PerdidaMaxMixto\ millones (frente a US\$~\PerdidaSinCobTreinta\
-  millones) sin pagar prima.
-  \item La restricción de liquidez obliga a preferir instrumentos OTC sin costo inicial en lugar de futuros con
-  márgenes diarios; aun así, en un estrés conjunto el colateral llegaría a US\$~\ColateralConjunto\ millones, por lo que
-  la ejecución se condiciona a un umbral CSA de al menos US\$~\UmbralNecesario\ millones o a la garantía del Estado. Para el riesgo de tasa conviene esperar al diseño de la refinanciación
-  y evaluar entonces un swap de inicio diferido, solo si la refinanciación es altamente probable.
-  \item Se recomienda a la Gerencia General: (1) presentar la Política de Cobertura al Directorio; (2) iniciar la
-  negociación ISDA/CSA con al menos tres bancos; (3) obtener la opinión legal y gestionar el respaldo del Estado (MINEM, D.U.~\DUCrisis) para las líneas de
-  derivados; y (4) ejecutar primero el CCS, que cubre el riesgo de mayor impacto, una vez firmado el CSA con el umbral
-  requerido.
+  \item \textbf{Estrategia~1.} El CCS sobre el préstamo del BN, pagando en dólares al \CCSTasaAllIn\
+  (\CCSTasaAllInProxy\ con el spread de agosto de 2026), más NDF de compra de soles, cubre el \CoberturaFX\ de la
+  posición en soles. Ante una caída de 10\,\% del TC, la pérdida baja de US\$~\EscSinCobMenosDiez\ a
+  \EscConCobMenosDiez\ millones, sin pago inicial.
+  \item \textbf{Estrategia~2.} Un programa rodante sobre el \CoberturaCrudoPct\ del inventario de crudo, mitad swap y
+  mitad collar de costo cero, reduce la pérdida ante una caída de 30\,\% del WTI de US\$~\PerdidaSinCobTreinta\ a
+  \PerdidaMaxMixto\ millones, sin pagar prima. El margen de refinación queda para una fase~2. La tasa de interés no se
+  cubre hasta que la refinanciación del CESCE sea altamente probable.
+  \item \textbf{Condición.} Se ejecuta solo con un umbral CSA de al menos US\$~\UmbralNecesario\ millones o con la
+  garantía del Estado, porque un estrés conjunto exigiría US\$~\ColateralConjunto\ millones de colateral. Sin esa
+  condición se aplica el plan~B o se pospone.
+  \item \textbf{Cuándo revisar.} Si el BN prepaga su préstamo; si el CVA, el FVA o el \emph{basis} superan el
+  beneficio de estabilizar la caja; o si el marcador de venta resulta ser el Brent (la E2 pasa a swaps de Brent).
+  \item \textbf{Indicadores a vigilar cada mes.} Colateral exigido frente a líneas libres; posición neta en soles
+  frente a lo cubierto; diferencial Brent--WTI; y calificación crediticia, que activa los umbrales del CSA.
+  \item \textbf{Próximos pasos.} (1) Presentar la Política de Cobertura al Directorio; (2) negociar ISDA/CSA con al
+  menos tres bancos; (3) obtener la opinión legal y el respaldo del Estado (MINEM, D.U.~\DUCrisis); y (4) ejecutar
+  primero el CCS, que cubre el riesgo de mayor impacto.
 \end{itemize}
+
+\noindent\textbf{Principio.} Cubrirse no es apostar contra el mercado; es decidir no depender de él cuando la caja no
+permite equivocarse.

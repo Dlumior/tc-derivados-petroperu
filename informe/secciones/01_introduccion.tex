@@ -1,29 +1,29 @@
-% [1.5 pts] ~0.8 páginas. Qué es la empresa, por qué importa, objetivo del informe.
+% [1.5 pts] Respuesta ejecutiva + qué está en juego + objetivo. Estilo CFO → CEO (skill informe-para-gerente-general).
 % Cifras solo con macros de generado/valores.tex.
-\section{Introducción y objetivo}
 
-PETROPERÚ es la empresa estatal que refina y comercializa combustibles en el Perú: opera la Nueva Refinería
-Talara (NRT), las refinerías de Iquitos y Conchán y el Oleoducto Norperuano. Reporta a la SMV y su moneda
-funcional es el dólar estadounidense. En 2025 registró ingresos por US\$~\IngresosVeinticinco\ millones,
-una pérdida neta de US\$~\PerdidaVeinticincoAbs\ millones y un capital de trabajo de US\$~\CapTrabajoVeinticinco\ millones;
-el auditor incluyó una incertidumbre material sobre la continuidad como empresa en marcha
-(Cuadro~\ref{tab:indicadores}) \parencite{petroperu2026eeff}. La calificación internacional sigue en grado
-especulativo: S\&P la rebajó a B- en diciembre de 2025 y la reafirmó en mayo de 2026 con perspectiva negativa;
-Moody's la reafirmó en Caa1 en setiembre de 2026 y cambió su perspectiva a positiva, y Fitch retiró sus calificaciones
-en enero de 2026 \parencite{sp2026petroperu,moodys2026petroperu,petroperu2026clasif}.
+\section{Introducción}
 
-En este contexto la volatilidad de mercado ya no es un tema secundario: cada dólar que se pierde por tipo de cambio
-o por el precio del crudo reduce una liquidez escasa \parencite{froot1993}. La Nota~3 confirma que la Compañía
-no usa derivados para cubrir el riesgo cambiario y asume ese riesgo; el único derivado revelado son swaps de monedas
-de corto plazo con Citibank (activo de US\$~\SwapCiti\ millones, Nota~9(g)), sin una política de cobertura
-que los enmarque. El precio del crudo tampoco se cubre: solo se amortigua en parte con el Fondo de Estabilización
-de Precios (FEPC).
+PETROPERÚ no tiene colchón para absorber pérdidas de mercado. Es la empresa estatal que refina y comercializa
+combustibles en el Perú: opera la Nueva Refinería Talara, las refinerías de Iquitos y Conchán y el Oleoducto
+Norperuano. En 2025 vendió US\$~\IngresosVeinticinco\ millones, perdió US\$~\PerdidaVeinticincoAbs\ millones y cerró
+con un capital de trabajo de US\$~\CapTrabajoVeinticinco\ millones (Cuadro~\ref{tab:indicadores}). El auditor señaló
+una incertidumbre material sobre su continuidad como empresa en marcha \parencite{petroperu2026eeff}. Su calificación
+es especulativa: B- según S\&P (perspectiva negativa) y Caa1 según Moody's, que en setiembre de 2026 pasó la
+perspectiva a positiva; Fitch retiró sus calificaciones en enero de 2026
+\parencite{sp2026petroperu,moodys2026petroperu,petroperu2026clasif}.
 
-\textbf{Objetivo.} Sustentar ante la Gerencia General el uso de instrumentos derivados para gestionar los riesgos
-financieros del negocio. Para ello: (i) se identifican y cuantifican los riesgos con los estados financieros
-auditados 2025; (ii) se diseñan y valorizan dos estrategias con uso intensivo de derivados, un \emph{cross currency
-swap} (CCS) con forwards sin entrega (NDF) para el riesgo cambiario y un swap y un collar de opciones sobre WTI para
-el precio del crudo; y (iii) se proponen las condiciones de implementación. Las exposiciones corresponden al cierre
-de 2025 y los precios de mercado al \FechaValorizacion, fecha de valorización de este informe.
+En esta situación, cada dólar que se pierde por el tipo de cambio o por el crudo sale de una caja que ya no alcanza.
+Por eso cubrirse crea valor: reduce la probabilidad de que una mala racha de precios obligue a dejar de pagar o de
+operar \parencite{froot1993}. Hoy la Compañía asume ambos riesgos. La Nota~3 declara que no usa derivados para el
+riesgo cambiario; el único derivado revelado son swaps de monedas de corto plazo con Citibank (activo de
+US\$~\SwapCiti\ millones, Nota~9(g)), sin una política que los enmarque. El precio del crudo tampoco se cubre: el
+Fondo de Estabilización de Precios (FEPC) solo lo amortigua en parte.
+
+\textbf{Objetivo y preguntas.} Este informe sustenta ante la Gerencia General el uso de derivados y responde tres
+preguntas: (i) ¿qué riesgos financieros son grandes y pueden cubrirse con derivados? (sección~2); (ii) ¿qué
+estrategias los cubren y cuánto reducen la pérdida? (sección~3); y (iii) ¿cuánto cuestan, qué riesgo queda y qué
+condiciones exige su ejecución? (secciones~4 y~5). \textbf{Convenciones:} las exposiciones son las de los estados
+financieros (EEFF) auditados al cierre de 2025; los precios de mercado, los del \FechaValorizacion. Las cifras están
+en millones de dólares, la moneda funcional de la empresa, y las pérdidas van entre paréntesis.
 
 \input{generado/tablas/t_indicadores}

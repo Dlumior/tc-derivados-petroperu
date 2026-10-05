@@ -46,7 +46,7 @@ Exposiciones al 31-dic-2025 (EEFF); mercado a la **fecha de valorización 28-sep
 
 ## Limitaciones conocidas
 - El .txt del dictamen **no incluye los estados primarios** (eran imágenes, folios 0010–0014).
-- `mercado.yaml`: `tasas.spread_credito_petroperu` pasó a `supuesto` (3-oct): el informe no lo usa, porque el spread se calcula del valor razonable de los bonos (Nota 14(d)). Ya no hay insumos `PENDIENTE` y `make final` pasa.
+- `mercado.yaml`: `tasas.spread_credito_petroperu` (318 pb, `supuesto`) es solo la **sensibilidad** de agosto-2026 (`CCSCVApbProxy`, `CCSTasaAllInProxy`); el caso base es 569 pb, calculado del valor razonable de los bonos (Nota 14(d)). No hay cotización pública al 28-sep. Ya no hay insumos `PENDIENTE` y `make final` pasa.
 - Préstamo BN: el cronograma (solo intereses hasta jun-2027 + 18 cuotas) se infiere de los EEFF a jun-2026 (`data/raw/eeff_2026/`); no es contractual.
 
 ## Auditoría en curso
