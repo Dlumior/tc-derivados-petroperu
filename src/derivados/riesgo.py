@@ -39,6 +39,27 @@ def colateral_exigible(mtm: float, umbral: float = 0.0, mta: float = 0.0) -> flo
     return exceso if exceso >= mta else 0.0
 
 
+def _flujos_futuros(
+    cron_pen: pd.DataFrame, cron_usd: pd.DataFrame, spot: float, curva_pen: Curva, curva_usd: Curva
+) -> list[tuple[float, float, float, float, float]]:
+    """(t_k, A_k en S/, B_k en US$, F_k, DF_US$(t_k)) tras cada pago: valor en t_k de los flujos restantes con las
+    curvas forward de hoy y forward de paridad F_k (S/ por US$)."""
+    t = cron_pen["t"].to_numpy()
+    c_pen, c_usd = cron_pen["cuota"].to_numpy(), cron_usd["cuota"].to_numpy()
+    df_pen = np.array([curva_pen(x) for x in t])
+    df_usd = np.array([curva_usd(x) for x in t])
+    return [
+        (
+            float(t[k]),
+            float((c_pen[k + 1 :] * df_pen[k + 1 :]).sum() / df_pen[k]),
+            float((c_usd[k + 1 :] * df_usd[k + 1 :]).sum() / df_usd[k]),
+            spot * df_usd[k] / df_pen[k],
+            float(df_usd[k]),
+        )
+        for k in range(len(t))
+    ]
+
+
 def epe_ccs(
     cron_pen: pd.DataFrame,
     cron_usd: pd.DataFrame,
@@ -53,23 +74,45 @@ def epe_ccs(
     descontados con las curvas forward de hoy. 1/S_k es lognormal con media 1/F_k (F_k forward de paridad),
     así que E[max(B − A/S, 0)] es un put de Black sobre 1/S.
     """
-    t = cron_pen["t"].to_numpy()
-    c_pen, c_usd = cron_pen["cuota"].to_numpy(), cron_usd["cuota"].to_numpy()
-    df_pen = np.array([curva_pen(x) for x in t])
-    df_usd = np.array([curva_usd(x) for x in t])
     filas = []
-    for k in range(len(t)):
-        a = float((c_pen[k + 1 :] * df_pen[k + 1 :]).sum() / df_pen[k])
-        b = float((c_usd[k + 1 :] * df_usd[k + 1 :]).sum() / df_usd[k])
-        fwd = spot * df_usd[k] / df_pen[k]  # S/ por US$ a plazo t_k
+    for t, a, b, fwd, df in _flujos_futuros(cron_pen, cron_usd, spot, curva_pen, curva_usd):
         if a <= 0 or b <= 0:
             epe = 0.0
         else:
-            v = sigma * sqrt(t[k])
+            v = sigma * sqrt(t)
             d1 = (log(a / (fwd * b)) + v * v / 2) / v
             epe = b * N(-(d1 - v)) - a / fwd * N(-d1)
-        filas.append({"t": t[k], "epe": epe, "df_usd": df_usd[k]})
+        filas.append({"t": t, "epe": epe, "df_usd": df})
     return pd.DataFrame(filas)
+
+
+def pfe_ccs(
+    cron_pen: pd.DataFrame,
+    cron_usd: pd.DataFrame,
+    spot: float,
+    curva_pen: Curva,
+    curva_usd: Curva,
+    sigma: float,
+    confianza: float = 0.99,
+) -> pd.DataFrame:
+    """Exposición potencial futura (PFE): pasivo de PETROPERÚ en el CCS en el cuantil `confianza` del TC, tras cada pago.
+
+    El valor B_k − A_k/S_k crece con S, así que su cuantil es el valor en S_k = F_k·e^{z·σ·√t_k} (lognormal con
+    mediana en el forward, la misma convención que `var_monotono`). Es lo que el banco pediría de colateral con
+    umbral cero en ese cuantil, a lo largo de toda la vida del swap.
+    """
+    z = Z[confianza]
+    filas = [
+        {"t": t, "pfe": max(b - a / (fwd * exp(z * sigma * sqrt(t))), 0.0)}
+        for t, a, b, fwd, _ in _flujos_futuros(cron_pen, cron_usd, spot, curva_pen, curva_usd)
+    ]
+    return pd.DataFrame(filas)
+
+
+def agregar_exposiciones(e1: float, e2: float, rho: float) -> float:
+    """Exposición conjunta de dos posiciones casi lineales en factores con correlación rho (varianza-covarianza):
+    √(e1² + e2² + 2ρ·e1·e2). Con rho = 1 es la suma; con rho = 0, la raíz de la suma de cuadrados."""
+    return sqrt(max(e1 * e1 + e2 * e2 + 2 * rho * e1 * e2, 0.0))
 
 
 def cva_ccs(

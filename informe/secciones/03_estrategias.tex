@@ -81,16 +81,16 @@ Tipo de cambio forward (S/ por US\$) & \NDFForward & \NDFPuntos\ pips sobre el s
 \fuente{\textcite{petroperu2026eeff}, Notas 3 y 14; \textcite{bcrpseries2026}; \textcite{sbs2026curvas}; \textcite{bluegamma2026}. Elaboración propia.}
 \end{table}
 
-\emph{Verificación independiente.} Con la curva en dólares implícita en los forwards locales de la SBS, el forward
-sería \NDFForwardSBS\ (\NDFDifSBSPips~pips de diferencia) y la tasa del CCS \CCSTasaSBS. Las dos rutas coinciden. \emph{Riesgo de crédito.} Con calificación B-/Caa1, el banco cobrará
-el CVA: el costo esperado de que PETROPERÚ no pague cuando le debe. Con una exposición máxima del banco de
-US\$~\CCSEPEMax\ millones, el spread de \SpreadBonosPb~pb de diciembre de 2025 y una pérdida en caso de impago de
+\emph{Contraste con el mercado local.} Con la curva en dólares implícita en los forwards locales de la SBS, el forward
+sería \NDFForwardSBS\ (\NDFDifSBSPips~pips de diferencia) y la tasa del CCS \CCSTasaSBS; la validación independiente
+corresponde a Riesgos, con cotizaciones de los bancos. \emph{Riesgo de crédito.} Con calificación B-/Caa1, el banco cobrará
+el CVA: el costo esperado de que PETROPERÚ no pague cuando le debe. Con la exposición esperada del banco sin
+colateral (EPE, pico de US\$~\CCSEPEMax\ millones; coherente con un umbral CSA alto), el spread de \SpreadBonosPb~pb de diciembre de 2025 y una pérdida en caso de impago de
 \LGD, el CVA es de US\$~\CCSCVAUSD\ millones, unos \CCSCVApb~pb anuales; la tasa \emph{all-in} es \CCSTasaAllIn\
-\parencite{hull2022}. Con el spread más reciente (\SpreadProxyPb~pb, estimado del rendimiento de \YTMBonoAgo\ del bono
-2032 en agosto de 2026; \cite{debtwire2026petroperu}) la tasa sería \CCSTasaAllInProxy: \CCSDifSpreadPb~pb menos, sin
-efecto en la decisión. Es un mínimo, porque excluye el costo de fondeo del banco (FVA) y el riesgo \emph{wrong-way}:
-lo que PETROPERÚ debe al banco por el swap crece si el sol se deprecia, justo cuando un crudo caro o un deterioro soberano
-puede presionar su caja. En total, la pata en soles recibe S/~\CCSTotalPEN\ millones, igual al servicio de deuda al
+\parencite{hull2022}; con el spread de agosto de 2026 (\SpreadProxyPb~pb, rendimiento de \YTMBonoAgo\ del bono
+2032; \cite{debtwire2026petroperu}) sería \CCSTasaAllInProxy. Es un mínimo: excluye el fondeo y el capital del banco
+(FVA, KVA), el desfase de plazo entre el swap y los bonos, y el riesgo \emph{wrong-way} (el pasivo del swap crece si
+el sol se deprecia, cuando la caja ya está presionada). En total, la pata en soles recibe S/~\CCSTotalPEN\ millones, igual al servicio de deuda al
 BN, y la pata en dólares paga US\$~\CCSTotalUSD\ millones: la empresa solo desembolsa dólares.
 
 \textbf{Demostración de la cobertura.} Una cobertura funciona si lo que pierde la partida lo gana el derivado. La
@@ -117,7 +117,7 @@ ganancia. Es cierto, y es el propósito: la cobertura no busca adivinar el TC, s
 \input{generado/tablas/t_e1_escenarios}
 
 \begin{figure}[t]\centering
-  \includegraphics[width=0.8\linewidth]{f_e1_escenarios}
+  \includegraphics[width=0.68\linewidth]{f_e1_escenarios}
   \caption{E1: con cobertura, el resultado cambiario casi no depende del TC al cierre}\label{fig:e1}
   \fuente{\textcite{petroperu2026eeff}, Notas 3 y 14; \textcite{bcrpseries2026}. Elaboración propia.}
 \end{figure}
@@ -128,7 +128,9 @@ de US\$~\NDFValMenosDiez; si subiera 10\,\%, serían pasivos de \CCSValMasDiez\ 
 con la compensación nominal es la inefectividad esperada: el cupón del BN supera la curva y el NDF aún no vence. El
 CCS se designa como cobertura de flujos de efectivo del préstamo: la parte efectiva va a otro resultado integral y
 pasa a resultados cuando lo hace la diferencia de cambio del préstamo. Sus fuentes de inefectividad son el
-cronograma, el CVA y el \emph{basis}, que puede excluirse (NIIF~9, 6.5.16). El NDF no se designa: la diferencia de
+cronograma, el CVA y el \emph{basis}, que puede excluirse (NIIF~9, 6.5.16); se miden con un derivado hipotético
+que replica el préstamo, y se documenta que el riesgo de crédito no domina la relación (NIIF~9, 6.4.1(c)(ii)). El valor
+razonable incluye el riesgo de crédito propio (DVA; NIIF~13, ¶42). El NDF no se designa: la diferencia de
 cambio de las cuentas por pagar va a resultados (NIC~21) y el NDF la compensa en el mismo estado \parencite{ifrs9}.
 
 \subsection{Estrategia 2: swap y collar de costo cero sobre WTI para el inventario de crudo}\label{sec:e2}
@@ -179,7 +181,7 @@ Plazo al vencimiento, $T$ (días) & \PlazoDiasCapas & NYMEX: 7 días hábiles an
 Tasa libre de riesgo, $r$ & \RUSDCont & SOFR, capitalización continua \\
 \grupo{Estructura del collar (costo cero, por capa nov / dic / ene)}
 Volumen cubierto: total / en collar (MMbl) & \InvCubiertoMMbl\ / \InvCollarMMbl & \CoberturaCrudoPct\ del inventario; \ContratosEquiv\ contratos (1:1) \\
-Put comprado: strike (US\$/bl) & \CollarPutsCapas & \PutPctFwd\ de $F$ \\
+Put comprado: strike (US\$/bl) & \CollarPutsCapas & \PutPctFwd\ de $F$, redondeado a 0.10 \\
 Put comprado: prima media (US\$/bl) & \PrimaPut & \textcite{black1976}; delta medio $-$\DeltaPutAbs \\
 Call vendido: strike (US\$/bl) & \CollarCallsCapas & Su prima iguala la del put: prima neta cero \\
 \grupo{Resultado del inventario total si el WTI cae 30\,\% (US\$ MM)}
@@ -197,12 +199,11 @@ proyección). Si el WTI cae 30\,\%, el inventario pierde US\$~\PerdidaSinCobTrei
 US\$~\PerdidaMaxCollar\ con solo collar y US\$~\PerdidaMaxMixto\ con la propuesta. El reparto 50/50 equilibra los
 extremos: solo con swap la pérdida sería de US\$~\PerdidaSwapTreinta\ millones, pero con un alza de 30\,\% la
 ganancia se reduciría a US\$~\GananciaSwapTreinta; solo con collar serían \PerdidaMaxCollar\ y \GananciaMaxCollar.
-Comprar solo el put costaría US\$~\CostoPutTotal\ millones de prima, que la caja no puede financiar.
 
 \input{generado/tablas/t_e2_escenarios}
 
 \begin{figure}[t]\centering
-  \includegraphics[width=0.8\linewidth]{f_e2_payoff}
+  \includegraphics[width=0.68\linewidth]{f_e2_payoff}
   \caption{E2: la propuesta limita la pérdida si el WTI cae y conserva parte de la ganancia si sube}\label{fig:e2}
   \fuente{\textcite{petroperu2026eeff}, Nota 10; \textcite{yahoo2026cl}; \textcite{fred2026}. Elaboración propia.}
 \end{figure}
@@ -218,10 +219,11 @@ inventario sin cobertura pierde US\$~\PerdidaSinCobForward\ millones, más que e
 \emph{skew}: si los calls cotizaran 5 puntos bajo los puts, el techo de enero bajaría de \CollarCall\ a
 US\$~\CollarCallSkewCinco, y con 10 puntos a \CollarCallSkewDiez. Por eso los strikes se fijan
 con cotizaciones bancarias, no con el modelo. El riesgo residual principal es el de \emph{base}: se compran crudos
-referidos al Brent (US\$~\BrentWTI/bl sobre el WTI). El ratio de cobertura de mínima varianza,
+referidos al Brent (US\$~\BrentWTI/bl sobre el WTI, frente a un promedio de \BrentWTIProm\ en dos años).
+Los escenarios suponen que el inventario sigue al WTI, por lo que sobrestiman la reducción del riesgo. El ratio de cobertura de mínima varianza,
 $h^*=\rho\,\sigma_S/\sigma_F$, del Brent frente al futuro de WTI es \RatioHBrent, con una efectividad $\rho^2$ de
-\EfectividadBrent\ (\SemanasH\ semanas; para el WTI: \RatioH\ y \EfectividadWTI). Se mantiene el WTI porque los precios
-de venta siguen la paridad de importación sobre el WTI (Nota~11(viii), p.~70; NIIF~9, 6.3.7).
+\EfectividadBrent\ (\SemanasH\ semanas; para el WTI: \RatioH\ y \EfectividadWTI). Se mantiene el WTI por su liquidez y
+porque los precios de venta siguen la paridad de importación sobre el WTI (Nota~11(viii), p.~70).
 
 \medskip\noindent
 \begin{minipage}[t]{0.5\linewidth}\footnotesize\setlength{\tabcolsep}{2.5pt}\input{generado/tablas/t_e2_posiciones}\end{minipage}\hfill
@@ -230,18 +232,21 @@ de venta siguen la paridad de importación sobre el WTI (Nota~11(viii), p.~70; N
 
 \textbf{Demostración de la cobertura.} Lo que pierde el crudo lo gana el swap: inventario y swap suman
 $-$US\$~\CostoSwap\ millones en todo escenario (Cuadro~\ref{tab:e2-swap}). En barriles, los derivados reducen la
-posición larga de \InvCrudoMMbl\ a \PosGlobalMMbl\ MMbl equivalentes (\PosGlobalPct; Cuadro~\ref{tab:e2-posiciones}):
-queda el 20\,\% abierto y la zona entre strikes del collar.
+posición larga de \InvCrudoMMbl\ a \PosGlobalMMbl\ MMbl equivalentes, un \PosReduccionPct\ menos
+(Cuadro~\ref{tab:e2-posiciones}): queda el 20\,\% abierto y la zona entre strikes del collar.
 
 \textbf{Margen de refinación (fase~2).} La E2 fija el precio del crudo en inventario, no el margen. Quedan fuera el
 inventario de productos (US\$~\PerdidaInvProdDiez\ millones por cada 10\,\% de caída) y la variación del \emph{crack}
-entre compra y venta. Luego se evaluarían swaps de productos y de \emph{crack}, que no se cuantifican
-por falta de series de márgenes.
+entre compra y venta. Para ellos existen swaps líquidos de diésel y gasolina (NYMEX HO y RBOB); no se
+cuantifican aquí porque el EEFF no revela la composición del inventario de productos.
 
 \textbf{Registro contable.} El swap y el collar nacen con valor cero. Si la curva de futuros cayera 10\,\% de
 inmediato, el collar sería un activo de US\$~\CollarValMenosDiez\ millones y el swap uno de US\$~\SwapValDiez\
 (US\$~\SwapValBl/bl por \InvSwapMMbl\ MMbl); con un alza de 10\,\%, serían pasivos de \CollarValMasDiez\ y
-\SwapValDiez\ millones. Cada capa se designa como cobertura de valor razonable del inventario de su mes: el ajuste por
-el riesgo cubierto modifica el costo del inventario y va a resultados junto con el derivado. Al venderse la capa, se
-discontinúa (NIIF~9, 6.5.6). El Cuadro~\ref{tab:e2-escenarios} es económico:
+\SwapValDiez\ millones. Las tres capas suman el \CoberturaCrudoPct\ del inventario que \emph{existe hoy} y se
+designan como cobertura de valor razonable de ese inventario, por su riesgo de precio total y en ratio 1:1 (no como
+componente WTI, porque el crudo se compra referido al Brent). Al venderse un lote, la relación se discontinúa
+(NIIF~9, 6.5.6) y el derivado se redesigna sobre el lote que lo reemplaza; su valor a esa fecha y la base Brent--WTI
+son inefectividad. En el collar se excluye el valor temporal como costo de la cobertura (NIIF~9, 6.5.15). El
+Cuadro~\ref{tab:e2-escenarios} es económico:
 la pérdida contable depende del costo y del valor neto de realización (NIC~2), no del spot \parencite{ifrs9}.

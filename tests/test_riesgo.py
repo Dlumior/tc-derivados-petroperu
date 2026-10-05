@@ -70,3 +70,25 @@ def test_epe_analitica_coincide_con_montecarlo():
     v = 0.07 * np.sqrt(t)
     inv_s = (1 / fwd) * np.exp(-v * v / 2 + v * z)  # E[1/S] = 1/F
     assert perfil["epe"].iloc[k] == pytest.approx(np.maximum(b - a * inv_s, 0).mean(), rel=0.01)
+
+
+def test_pfe_es_el_cuantil_montecarlo_y_supera_la_epe():
+    cron, cron_usd, cp, cu = _ccs_plano()
+    k = 11
+    pfe = riesgo.pfe_ccs(cron, cron_usd, 3.44, cp, cu, 0.07, confianza=0.99)["pfe"].iloc[k]
+    epe = riesgo.epe_ccs(cron, cron_usd, 3.44, cp, cu, 0.07)["epe"].iloc[k]
+    assert pfe > epe > 0
+    t = cron["t"].iloc[k]
+    a = (cron["cuota"].iloc[k + 1 :] * [cp(x) for x in cron["t"].iloc[k + 1 :]]).sum() / cp(t)
+    b = (cron_usd["cuota"].iloc[k + 1 :] * [cu(x) for x in cron["t"].iloc[k + 1 :]]).sum() / cu(t)
+    fwd = 3.44 * cu(t) / cp(t)
+    s = fwd * np.exp(0.07 * np.sqrt(t) * np.random.default_rng(1).standard_normal(400_000))
+    assert pfe == pytest.approx(np.quantile(b - a / s, 0.99), rel=0.02)
+    p95 = riesgo.pfe_ccs(cron, cron_usd, 3.44, cp, cu, 0.07, confianza=0.95)["pfe"].iloc[k]
+    assert p95 < pfe
+
+
+def test_agregar_exposiciones():
+    assert riesgo.agregar_exposiciones(3.0, 4.0, 0.0) == pytest.approx(5.0)
+    assert riesgo.agregar_exposiciones(3.0, 4.0, 1.0) == pytest.approx(7.0)
+    assert riesgo.agregar_exposiciones(3.0, 4.0, -1.0) == pytest.approx(1.0)

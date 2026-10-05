@@ -42,7 +42,7 @@ Exposiciones al 31-dic-2025 (EEFF); mercado a la **fecha de valorización 28-sep
 - **E1 FX**: CCS amortizable recibe S/ – paga US$ sobre el saldo remanente del préstamo BN (Nota 14(ii)) + NDF de compra de S/ a 3 meses sobre el 80 % del resto de la posición en S/.
 - **E2 Crudo**: 80 % del inventario de crudo (Nota 10): mitad swap de WTI con liquidaciones mensuales y mitad collar de costo cero en 3 capas mensuales (nov/dic/ene). Solo OTC: **sin futuros** (márgenes diarios inviables por liquidez).
 - **Tasa**: no se recomienda hoy; el forward-starting swap (2027-2030) queda como opción solo si la refinanciación del CESCE pasa a ser altamente probable.
-- **Condición de ejecución**: un umbral CSA de al menos `\UmbralNecesario` o la garantía del Estado (colateral bajo estrés conjunto, `docs/auditoria/plan.md`).
+- **Condición de ejecución**: un umbral CSA de al menos `\UmbralNecesario` o la garantía del Estado (PFE conjunta al 99 % en la vida del CCS menos el 75 % de las líneas libres, `docs/auditoria/plan.md` §6), más dispensa del *cross-default* por el CESCE.
 
 ## Limitaciones conocidas
 - El .txt del dictamen **no incluye los estados primarios** (eran imágenes, folios 0010–0014).
@@ -50,5 +50,5 @@ Exposiciones al 31-dic-2025 (EEFF); mercado a la **fecha de valorización 28-sep
 - Préstamo BN: el cronograma (solo intereses hasta jun-2027 + 18 cuotas) se infiere de los EEFF a jun-2026 (`data/raw/eeff_2026/`); no es contractual.
 
 ## Auditoría en curso
-Dictamen externo (3-oct-2026) y plan de levantamiento con checklist: `docs/auditoria/plan.md`. Antes de editar el
+Dictámenes externos (3-oct y 5-oct-2026, `docs/auditoria/dictamen*.md`) y plan de levantamiento con checklist: `docs/auditoria/plan.md`. Antes de editar el
 informe, revisar qué fase sigue y marcar `[x]` / actualizar el tablero al cerrar cada tarea.

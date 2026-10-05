@@ -33,7 +33,7 @@ Costo económico & Diferencial implícito del NDF: \NDFCostoAnual\ anual
   & Pagos si la tasa baja \\ \filasep
 Colateral con umbral cero \newline {\normalfont (US\$ MM)} & \ColateralTC\ si el TC sube 10\,\% & \ColateralWTI\ si el WTI sube 30\,\% & Bajo \\ \filasep
 Tratamiento NIIF~9 & CCS: flujos de efectivo (ORI); NDF: valor razonable en resultados
-  & Valor razonable del inventario, por capas mensuales
+  & Valor razonable del inventario existente; se redesigna al rotar
   & Flujos de efectivo, solo si la refinanciación es altamente probable \\
 \bottomrule
 \end{tabularx}
@@ -47,11 +47,13 @@ inventario y la zona entre los strikes del collar.
 
 \textbf{Liquidez: la restricción que decide.} Los derivados OTC no tienen márgenes de bolsa, pero el banco pedirá
 colateral a una contraparte B-/Caa1. El \emph{umbral} del anexo CSA es la pérdida que el banco tolera antes de pedir
-garantías en efectivo; se supone umbral cero, el caso más exigente. En un estrés conjunto (supuesto: TC $+10$\,\% y
-WTI $+30$\,\% a la vez), el colateral llegaría a US\$~\ColateralConjunto\ millones, frente a solo
-US\$~\LineasLibres\ millones de líneas libres (Cuadro~\ref{tab:colateral}). El préstamo puente de
-US\$~\PrestamoPuente\ millones tiene otro destino. Por eso la ejecución exige un umbral de al menos
-US\$~\UmbralNecesario\ millones o la garantía del Estado sobre la línea de derivados. Sin ello, la cobertura
+garantías en efectivo; se supone umbral cero, el caso más exigente. Un choque instantáneo conjunto (TC $+10$\,\% y
+WTI $+30$\,\%) exigiría US\$~\ColateralConjunto\ millones, pero el CCS vive 27 meses: lo relevante es la
+exposición potencial futura (PFE) al 99\,\% en toda su vida. Con el NDF y la E2 (correlación TC--WTI de \CorrTCWTI)
+llega a US\$~\PFENoventaNueve\ millones, frente a US\$~\LineasLibres\ millones de líneas libres
+(Cuadro~\ref{tab:colateral}); el préstamo puente (US\$~\PrestamoPuente\ millones) tiene otro destino. La ejecución
+exige un umbral total de al menos US\$~\UmbralNecesario\ millones (unos \UmbralPorBanco\ por banco, con
+\NContrapartes), que deja libre el \ColchonLineas\ de las líneas, o la garantía del Estado; sin ello, la cobertura
 agravaría el riesgo de liquidez que busca mitigar \parencite{moodys2026petroperu}.
 
 \medskip\noindent
@@ -65,7 +67,7 @@ ningún colateral; el put de WTI sobre el \CoberturaCrudoPct\ cuesta US\$~\Costo
 limitaría al tramo más expuesto. (c) Pactar un umbral escalonado según la calificación y un reajuste semanal del
 colateral, en lugar de diario. (d) Obtener la garantía del Estado sobre la línea de derivados.
 
-\textbf{Riesgo de tasa: no se recomienda cubrirlo hoy.} La deuda ya es fija; pasarla a variable añadiría riesgo sin
+\textbf{Riesgo de tasa: no se recomienda cubrirlo hoy.} La deuda de largo plazo ya es fija; pasarla a variable añadiría riesgo sin
 bajar el costo de crédito, que lo domina el spread. Queda como opción un swap de inicio diferido para la
 refinanciación del CESCE (tasa de \FwdSwapRate\ con pago anual), solo cuando esa refinanciación sea altamente probable
 (NIIF~9, 6.3.3). Hoy no lo es, por el incumplimiento del covenant.
@@ -73,19 +75,22 @@ refinanciación del CESCE (tasa de \FwdSwapRate\ con pago anual), solo cuando es
 \textbf{Condiciones de implementación.} (i) El Directorio aprueba una Política de Cobertura con límites (\LimiteFX\
 de la posición en soles y \LimiteCrudo\ del inventario de crudo), prohibición expresa de especular y métricas
 mensuales. (ii) Se firman contratos ISDA con anexo CSA y un umbral de al menos US\$~\UmbralNecesario\ millones, o se
-aplica el plan B. Se negocia además que la rebaja de calificación, la opinión con salvedades o la incertidumbre de
+aplica el plan B, con período de reposición del colateral y monto mínimo de transferencia. Como el covenant del
+CESCE ya está incumplido, el incumplimiento cruzado del ISDA (§5(a)(vi)) se limita a deudas efectivamente aceleradas
+(\emph{cross-acceleration}), con umbral alto y dispensa expresa para el CESCE; sin ella, no se firma. Se negocia además que la rebaja de calificación, la opinión con salvedades o la incertidumbre de
 empresa en marcha no causen el cierre inmediato sin un período de cura. También una cláusula de prepago: si el BN
 prepaga el préstamo, el CCS debe poder cancelarse a valor de mercado. (iii) Antes de pactar, la Gerencia Legal opina y
 se obtiene la autorización que exija el régimen de endeudamiento y tesorería de una empresa del Estado. Se evalúa si
 los compromisos contingentes que el D.U.~\DUCrisis\ autoriza al MINEM (hasta US\$~\DUCrisisMonto\ millones, Nota~1,
 p.~25) pueden respaldar las líneas de derivados. (iv) Las coberturas se documentan según la NIIF~9 y se revelan según la NIIF~7, ¶21A--24G
 \parencite{ifrs9}; los swaps con Citibank entran a la política. (v) Se separan funciones: Finanzas contrata; Riesgos controla límites y verifica de forma independiente los
-precios de los bancos (valor razonable de Nivel~2); Contabilidad registra \parencite{humala2026}. El reporte
+precios de los bancos; Contabilidad registra \parencite{humala2026}. La política fija límites por contraparte y de pérdida, y Riesgos
+aprueba los modelos; con insumos proxy y el CVA, el nivel de valor razonable (2 o 3; NIIF~13, ¶73) se determina por
+instrumento. El reporte
 regulatorio se coordina con cada banco.
 
 \textbf{Supuestos que limitan el resultado.} Las cifras son indicativas. El cronograma del BN es inferido (tasa
 del CCS entre \CCSTasaMin\ y \CCSTasaMax). La posición en soles distinta del BN y el inventario son de diciembre de
-2025: si cambiaron, cambian los nocionales, no el diseño. La curva soberana y el OVX sustituyen a la curva swap y a la
-superficie de volatilidad, que no son públicas. Las tasas ejecutables vendrán de los bancos, no de BlueGamma ni de
-Yahoo Finance. Antes de pactar se requieren el cronograma contractual, la posición actualizada y cotizaciones de al menos
-tres bancos.
+2025: si cambiaron, cambian los nocionales (nunca por encima de la exposición al pactar), no el diseño. La curva soberana y el OVX sustituyen a la curva swap y a la
+superficie de volatilidad, que no son públicas. Antes de pactar se requieren el cronograma contractual, la posición
+actualizada y cotizaciones ejecutables de al menos tres bancos (no BlueGamma ni Yahoo Finance).

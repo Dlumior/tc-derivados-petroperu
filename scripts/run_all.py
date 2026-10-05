@@ -256,6 +256,9 @@ def riesgo_tasa(ex: dict, m: Macros) -> float:
     m.set("LineasRev", v("deuda.lineas_revolventes") / 1e3, 1)
     m.set("LineasUsadas", v("deuda.lineas_utilizadas") / 1e3, 1)
     m.set("LineasPct", v("deuda.lineas_utilizadas") / v("deuda.lineas_revolventes"), 0, pct=True)
+    # M9 (dictamen 5-oct): las líneas usadas se reprecian al renovarse; costo anual de +100 pb en la tasa base
+    m.set("LineasUsadas", v("deuda.lineas_utilizadas") / 1e3, 1)
+    m.set("CostoLineasCienPb", v("deuda.lineas_utilizadas") * 0.01 / 1e3, 1)
     m.set("VencMenosUnAnio", v("liquidez.venc_menos_1a_2025") / 1e3, 1)
 
     deuda = {
@@ -556,6 +559,8 @@ def e1_cambiario(ex: dict, mk: dict, m: Macros, spread: float) -> dict:
         "resultado_con": lambda s: resultado(residuo_total, s),
         "valor": lambda s: (ccs.valor_usd(c_pen, c_usd, spot_hoy=s) + valor_ndf(s) * 1e3) / 1e3,  # US$ MM
         "valor_ccs": lambda s: ccs.valor_usd(c_pen, c_usd, spot_hoy=s) / 1e3,
+        # C1 (dictamen 5-oct): pico de la PFE del CCS en toda su vida (US$ MM)
+        "pfe_ccs": lambda sig, conf: riesgo.pfe_ccs(rem, pata_usd, bid, c_pen, c_usd, sig, conf)["pfe"].max() / 1e3,
     }
 
 
@@ -594,6 +599,9 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     m.set("Backwardation", 1 - f3 / spot, 1, pct=True)
     m.set("BrentFut", w("crudo.brent_fut_1m"), 2)
     m.set("BrentWTI", w("crudo.brent_fut_1m") - f1, 1)
+    # M8 (dictamen 5-oct): diferencial Brent–WTI de hoy frente a su promedio de dos años (futuros frente, diarios)
+    dif = (serie("brent_front_yahoo") - serie("cl_front_yahoo")).loc["2024-09-28":"2026-09-28"].dropna()
+    m.set("BrentWTIProm", float(dif.mean()), 1)
     m.set("SwapPrecio", p_swap, 2)
     m.set("VolCrudo", sig, 1, pct=True)
     m.set("RUSDCont", r, 2, pct=True)
@@ -721,6 +729,7 @@ def e2_crudo(ex: dict, mk: dict, m: Macros) -> dict:
     )
     m.set("PosGlobalMMbl", pos["Global (físico + derivados)"] / 1e6, 2)
     m.set("PosGlobalPct", pos["Global (físico + derivados)"] / q_tot, 0, pct=True)
+    m.set("PosReduccionPct", 1 - pos["Global (físico + derivados)"] / q_tot, 0, pct=True)  # B4: lo que se reduce
     m.set("CollarValMenosDiez", valor_collar(-0.10), 1)
     m.set("CollarValMasDiez", abs(valor_collar(0.10)), 1)  # pasivo
     m.set("SwapValDiez", 0.10 * p_swap * q_swap * df_swap / 1e6, 1)
@@ -878,7 +887,6 @@ def riesgo_residual(ex: dict, mk: dict, m: Macros, e1: dict, e2: dict) -> None:
     choques = {
         "TC $+10$\\,\\%": (0.10, 0.0),
         "WTI $+30$\\,\\%": (0.0, 0.30),
-        "TC $+5$\\,\\% y WTI $+10$\\,\\%": (0.05, 0.10),
         "TC $+10$\\,\\% y WTI $+30$\\,\\%": (0.10, 0.30),
     }
     filas = {}
@@ -887,6 +895,23 @@ def riesgo_residual(ex: dict, mk: dict, m: Macros, e1: dict, e2: dict) -> None:
         v2 = e2["valor"](p_wti)
         col = riesgo.colateral_exigible(v1 + v2)
         filas[nombre] = {"E1": -v1, "E2": -v2, "Colat.": col, "Déficit": max(col - libres, 0.0)}
+    # C1 (dictamen 5-oct): colateral en riesgo durante toda la vida de las coberturas, no solo ante un choque
+    # instantáneo. E1 = pico de la PFE del CCS (27 meses) + NDF en el cuantil a 91 días (mismo factor: se suman);
+    # E2 = programa rodante en el cuantil a su plazo; E1 y E2 se agregan con la correlación TC–WTI observada.
+    r_tc = np.log(tc.loc["2025-09-28":"2026-09-28"]).diff()
+    r_cl = np.log(serie("cl_front_yahoo").loc["2025-09-28":"2026-09-28"]).diff()
+    rho = float(pd.concat([r_tc, r_cl], axis=1).dropna().corr().iloc[0, 1])
+    m.set("CorrTCWTI", rho, 2)
+    for conf in (0.95, 0.99):
+        z = cobertura.Z[conf]
+        s_q = s0 * np.exp(z * vol_tc * np.sqrt(T_fx))
+        p1 = e1["pfe_ccs"](vol_tc, conf) + max(-(e1["valor"](s_q) - e1["valor_ccs"](s_q)), 0.0)
+        p2 = max(-e2["valor"](np.exp(z * vol_cl * np.sqrt(T_cr)) - 1), 0.0)
+        col = riesgo.agregar_exposiciones(p1, p2, rho)
+        filas[f"PFE {conf:.0%}".replace("%", "\\,\\%")] = {"E1": p1, "E2": p2, "Colat.": col, "Déficit": max(col - libres, 0.0)}
+        m.set(f"PFE{'NoventaCinco' if conf == 0.95 else 'NoventaNueve'}", col, 1)
+    m.set("PFECCSNoventaNueve", e1["pfe_ccs"](vol_tc, 0.99), 1)
+    m.set("PFECCSNoventaCinco", e1["pfe_ccs"](vol_tc, 0.95), 1)
     t_col = pd.DataFrame(filas).T
     tabla_latex(
         t_col,
@@ -895,18 +920,28 @@ def riesgo_residual(ex: dict, mk: dict, m: Macros, e1: dict, e2: dict) -> None:
         f"{EEFF}, Nota 3.1(c); {BCRP}; {NYMEX}",
         "tab:colateral",
         decimales=1,
-        nota=f"E1 y E2: pasivo de los derivados, a TC medio; el 0.4 de E1 con TC sin cambio es la diferencia entre el TC de compra pactado y el medio. Déficit: colateral menos líneas libres (US\\$ {libres:.1f} MM).",
+        nota=(f"E1 y E2: pasivo de los derivados, a TC medio. Choques: instantáneos. PFE: pico en la vida del CCS "
+              f"más NDF a 91 días (E1) y programa rodante a su plazo (E2), lognormal con volatilidad realizada; "
+              f"E1 y E2 agregadas con correlación TC--WTI de {rho:.2f}. Déficit: colateral menos líneas libres "
+              f"(US\\$ {libres:.1f} MM)."),
         flotante=False,
     )
-    peor = t_col.iloc[-1]
+    peor = t_col.iloc[2]  # choque conjunto TC +10 % y WTI +30 %
     m.set("LineasLibres", libres, 1)
     m.set("ColateralTC", t_col.iloc[0]["Colat."], 1)
-    m.set("ColateralWTI", t_col.iloc[1]["Colat."], 1)
+    m.set("ColateralWTI", t_col.iloc[1]["E2"], 1)  # solo E2 (B1): el 0.4 restante es de E1
     # plan B: contratar primero 50 % del CCS (su valor es lineal en el nocional); el NDF se mantiene completo
     m.set("ColateralTCMitad", riesgo.colateral_exigible(e1["valor"](s0 * 1.1) - e1["valor_ccs"](s0 * 1.1) / 2), 1)
     m.set("ColateralConjunto", peor["Colat."], 1)
     m.set("DeficitConjunto", peor["Déficit"], 1)
-    m.set("UmbralNecesario", float(np.ceil(peor["Déficit"])), 0)  # umbral (redondeado hacia arriba) que haría el colateral ≤ líneas libres
+    # C1: el umbral se calibra con la PFE al 99 % conjunta y deja un colchón de líneas libres para la operación
+    colchon = w("credito.colchon_lineas")
+    pfe99 = t_col.loc["PFE 99\\,\\%", "Colat."]
+    umbral = float(np.ceil(pfe99 - (1 - colchon) * libres))
+    m.set("ColchonLineas", colchon, 0, pct=True)
+    m.set("UmbralNecesario", umbral, 0)
+    m.set("UmbralPorBanco", float(np.ceil(umbral / w("credito.n_contrapartes"))), 0)
+    m.set("NContrapartes", w("credito.n_contrapartes"), 0)
     m.set("PrestamoPuente", w("credito.prestamo_puente") / 1e3, 0)
 
 

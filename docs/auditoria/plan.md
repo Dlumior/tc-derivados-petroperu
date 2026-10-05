@@ -290,6 +290,40 @@ Validador: aritmética reproducida; 2 errores de interpretación. Revisor de rú
 - Recortes para caber: se quita el Cuadro de skew (las cifras siguen en la prosa) y se resume la objeción del swap. No se hizo B3 (Black-76 en fórmula) ni A7 (UST con duración de Macaulay; efecto ≈3 pb).
 - `make final`: OK, 0 errores y 0 avisos; cuerpo 10/10.
 
+## 6. Segundo dictamen (5-oct-2026)
+
+Dictamen: [`dictamen2.md`](dictamen2.md). Verificación con un script independiente que usa las funciones de
+`run_all.py` (PFE analítica, VaR y valor razonable recalculados).
+
+| # | Veredicto | Evidencia | Estado |
+|---|---|---|---|
+| C1 | **Válido** en el método; cifra exagerada | PFE del CCS: pico en t = 0.71 (jun-2027), 96.5 al 95 % y 134.9 al 99 % (el auditor estimaba ~110 al 95 %). Conjunta al 99 % con NDF y E2 (ρ TC–WTI = 0.35): **253.6** | ✅ nueva `riesgo.pfe_ccs` + test; filas PFE en el Cuadro de colateral; umbral = PFE 99 − 75 % de las líneas libres = **237** (≈79 por banco); MTA y período de reposición |
+| C2 | **No válido** en lo central; Medio | 23.9 es la EPE (esperada), lo correcto para el CVA; `cva_ccs` es sin colateral, coherente con un umbral alto. Válidos: el rótulo "máxima", el desfase de plazo del spread, DVA y KVA | ✅ texto: EPE sin colateral, FVA/KVA, desfase de plazo; DVA en el registro de E1 |
+| C3 | **Válido** (el ratio 1:1 no está prohibido: solo genera inefectividad) | "Inventario de su mes" no existe al designar; WTI no es un componente separable del Brent | ✅ designación sobre el inventario existente (80 %), riesgo total 1:1, redesignación al rotar, base como inefectividad |
+| C4 | **Válido** | La condición (ii) solo daba cura a la calificación, la salvedad y la empresa en marcha | ✅ *cross-acceleration*, umbral alto, dispensa CESCE; sin ella no se firma |
+| M1 | Parcial | Ya declarado | ✅ tope: nocional ≤ exposición al pactar |
+| M2 | Parcial | Ya tratado (restar del NDF) | ➖ |
+| M3 | Parcial | Ya declarado | ✅ "Contraste con el mercado local"; validación a cargo de Riesgos |
+| M4 | Parcial | Neto a VR con TC −10 % = (4.4); el texto ya lo llamaba inefectividad | ✅ derivado hipotético y prueba de 6.4.1(c)(ii) |
+| M5 | **No válido** en las cifras | E1: 78.5 = vol diaria realizada de 6.75 % a 91 días; E2: 93.3 se reproduce (55.8 % a 79 días). Falta el ES | ➖ |
+| M6 | Parcial | *Skew* ya declarado | ✅ valor temporal excluido (6.5.15) |
+| M7 | Válido (argumento) | — | ✅ HO/RBOB; no se cuantifica por falta de composición del inventario |
+| M8 | Parcial | 12.7 verificado (Yahoo); el promedio a 2 años es **4.1** | ✅ promedio y aviso de que los escenarios sobrestiman la reducción |
+| M9 | Válido | — | ✅ líneas usadas US$ 354.6 MM; +1 pp = US$ 3.5 MM/año |
+| M10 | Parcial | El swap *strip* a precio único es estándar | ➖ |
+| M11 | Válido | — | ✅ límites por contraparte y de pérdida, aprobación de modelos, Nivel 2 o 3 por instrumento |
+| M12 | Parcial | Ya está como condición (iii) | ➖ |
+| B1 | Válido | — | ✅ `ColateralWTI` = solo E2 (51.8) |
+| B2 | Válido | Redondeo a 0.1 en el código | ✅ "redondeado a 0.10" |
+| B3 | Parcial | Cada cuadro rotula su base | ➖ |
+| B4 | Válido | — | ✅ "un 61 % menos" (`PosReduccionPct`) |
+| B5 | Válido | La fuente estaba en el yaml (Nota 5, p. 52) | ✅ cita en el texto |
+| B6 | **No válido** | `valor_collar` revalúa con Black completo | — |
+| B7, B8 | Parcial | Ya reconocidos | ➖ |
+
+Recortes para caber: figuras de historia y escenarios más pequeñas, sin la fila "TC +5 % y WTI +10 %" del Cuadro
+de colateral, sin el "Principio" final y párrafos de CVA y liquidez condensados. `make final`: OK, 0 avisos, cuerpo 10/10.
+
 ## 4. Decisiones abiertas (requieren al grupo)
 1. ~~Integrantes del grupo (B3).~~ Resuelto el 3-oct.
 2. ~~Volumen de E2~~: el grupo eligió **80 %** (3-oct).
@@ -308,6 +342,7 @@ Validador: aritmética reproducida; 2 errores de interpretación. Revisor de rú
 | 2026-10-03 | Fase 4: EEFF jun-2026 (BN sin amortizar hasta jul-2027, swaps Citi vigentes) y vencimientos LO | ec98d53 |
 | 2026-10-03 | Fase 5: M9, B5, limitaciones; make final OK | 840c8b1 |
 | 2026-10-03 | /revisar: correcciones A, B y C del validador y del revisor de rúbrica | (este commit) |
-| 2026-10-05 | Reescritura con la skill informe-para-gerente-general: respuesta ejecutiva (memo Para/De/Asunto), conclusión al inicio de cada sección, definiciones operativas, objeciones respondidas, supuestos etiquetados, indicadores a vigilar y principio final; títulos de cuadros con la conclusión; macros `SensFXUnPct` y `SensWTIUnDolar`. make final OK, cuerpo 10/10 | (sin commit) |
-| 2026-10-05 | Sin recuadro ejecutivo y títulos simplificados (grupo); se quitan las fórmulas del CCS/NDF y de Black (método en prosa) y se agrega la Fig. `f_e2_collar` (armado del collar en 3 pasos). make final OK, cuerpo 10/10 | (sin commit) |
-| 2026-10-05 | /revisar: A1–A6, B1, B2, B4–B7 (inventario 214.9, plan B 70.7, ecuaciones de E1, Cuadro Inicio/Vencimiento del swap); se quita el Cuadro de skew. make final OK, cuerpo 10/10 | (sin commit) |
+| 2026-10-05 | Reescritura con la skill informe-para-gerente-general: respuesta ejecutiva (memo Para/De/Asunto), conclusión al inicio de cada sección, definiciones operativas, objeciones respondidas, supuestos etiquetados, indicadores a vigilar y principio final; títulos de cuadros con la conclusión; macros `SensFXUnPct` y `SensWTIUnDolar`. make final OK, cuerpo 10/10 | (este commit) |
+| 2026-10-05 | Sin recuadro ejecutivo y títulos simplificados (grupo); se quitan las fórmulas del CCS/NDF y de Black (método en prosa) y se agrega la Fig. `f_e2_collar` (armado del collar en 3 pasos). make final OK, cuerpo 10/10 | (este commit) |
+| 2026-10-05 | /revisar: A1–A6, B1, B2, B4–B7 (inventario 214.9, plan B 70.7, ecuaciones de E1, Cuadro Inicio/Vencimiento del swap); se quita el Cuadro de skew. make final OK, cuerpo 10/10 | (este commit) |
+| 2026-10-05 | Segundo dictamen: C1, C3, C4 válidos; C2, M5 y B6 no válidos en lo central; prioridades 1 y 2 aplicadas (PFE, umbral 237, NIIF 9 de E2, cross-acceleration). make final OK, cuerpo 10/10 | (este commit) |
