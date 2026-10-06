@@ -52,3 +52,7 @@ Exposiciones al 31-dic-2025 (EEFF); mercado a la **fecha de valorización 28-sep
 ## Auditoría en curso
 Dictámenes externos (3-oct y 5-oct-2026, `docs/auditoria/dictamen*.md`) y plan de levantamiento con checklist: `docs/auditoria/plan.md`. Antes de editar el
 informe, revisar qué fase sigue y marcar `[x]` / actualizar el tablero al cerrar cada tarea.
+
+## Videos del libro (YouTube)
+Serie de 13 videos estilo 3Blue1Brown (Manim + voz Kokoro local, respaldo ElevenLabs), uno por capítulo de
+`libro/cap/`. Plan, tablero y checklist por fases: `videos/PLAN.md` (marcar `[x]` y actualizar el tablero al avanzar).
