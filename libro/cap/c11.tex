@@ -1,0 +1,246 @@
+\chapter{Estrategia 1: cross currency swap y NDF}\label{cap:e1}
+
+\begin{objetivos}
+\begin{itemize}
+\item Describir el diseño de la Estrategia~1 y la función de cada instrumento.
+\item Reproducir paso a paso la valorización del CCS y del NDF (primera ecuación del informe).
+\item Leer los flujos del CCS por año y entender el efecto del período de gracia.
+\item Calcular las posiciones de cambio contable, en derivados y global (Cuadro~4 del informe).
+\item Construir los escenarios de resultado cambiario con y sin cobertura (Cuadro~6 y Figura~3).
+\item Identificar costos, riesgos residuales y supuestos de la estrategia.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Capítulos~\ref{cap:tasas} (cuota francesa, curvas), \ref{cap:riesgo} (exposición cambiaria, VaR), \ref{cap:mercados} (CVA), \ref{cap:forwards} (paridad cubierta y NDF), \ref{cap:swaps} (CCS) y~\ref{cap:diagnostico}.\end{prerreq}
+
+\section{El diseño}
+
+\paragraph{La respuesta, primero} La Estrategia~1 (E1) cubre el 96\,\% de la posición en soles. Con ella, una caída de 10\,\% del TC costaría US\$ 6.1 millones en lugar de 152.0. No exige pago inicial: su costo está en la tasa en dólares del swap (5.98\,\% con el cargo por riesgo de crédito) y en el diferencial del forward (0.24\,\% anual).
+
+\paragraph{El problema} PETROPERÚ, con moneda funcional dólar, tiene una posición pasiva en soles de S/ 4,704.0 millones. Como el préstamo del BN todavía no se amortiza (cap.~\ref{cap:diagnostico}), es la misma posición que al cierre de 2025. Tiene dos componentes de naturaleza distinta:
+\begin{enumerate}
+\item \textbf{El préstamo del BN} (S/ 3,765.6 millones): una deuda con cronograma conocido (aunque supuesto), con 27 pagos mensuales hasta diciembre de 2028. Requiere una cobertura \emph{de largo plazo} que replique ese cronograma: el CCS.
+\item \textbf{El resto} ($4{,}704.0-3{,}765.6=938.4$ millones de soles, sobre todo cuentas por pagar): saldos que rotan y se renuevan. Requieren una cobertura \emph{flexible y de corto plazo}: NDF a 91 días renovables, sobre el 80\,\% del saldo (S/ 750.7 millones).
+\end{enumerate}
+
+\begin{figure}[H]
+\centering\small
+\begin{tikzpicture}[node distance=1.4cm, box/.style={draw=azul,thick,rounded corners,align=center,minimum width=2.4cm,minimum height=0.9cm,fill=azul!6}]
+\node[box] (bn) {Banco de\\la Nación};
+\node[box, below=of bn] (pp) {PETROPERÚ};
+\node[box, below=of pp] (bk) {Banco\\contraparte (CCS)};
+\draw[-latex,thick,rojo] (pp.north) -- node[right,align=left,font=\scriptsize]{Pagos en S/ al 5.55\,\%:\\9 de solo intereses (17.0)\\y 18 cuotas de 218.3} (bn.south);
+\draw[-latex,thick,rojo] ([xshift=-6mm]bk.north) -- node[left,align=right,font=\scriptsize]{Recibe los\\mismos pagos\\en S/} ([xshift=-6mm]pp.south);
+\draw[-latex,thick,azul] ([xshift=6mm]pp.south) -- node[right,align=left,font=\scriptsize]{Paga US\$\\al 5.98\,\%\\(\emph{all-in})} ([xshift=6mm]bk.north);
+\end{tikzpicture}
+\caption{Estructura de flujos del CCS propuesto (reproduce la Figura~2 del informe). Los pagos en soles que entrega el banco contraparte son exactamente los que PETROPERÚ debe al BN: la empresa solo desembolsa dólares. Montos en millones.}\label{fig:ccs_flujos}
+\end{figure}
+
+\begin{intuicion}[dos coberturas para dos problemas]
+El CCS transforma la deuda en soles en una deuda sintética en dólares, la moneda funcional: desaparece el descalce para todo el plazo del préstamo. El NDF fija, trimestre a trimestre, el valor en dólares de las cuentas por pagar. Juntos cubren $(3{,}765.6+750.7)/4{,}704.0=96\,\%$ de la posición en soles.
+\end{intuicion}
+
+\begin{informe}[dos ajustes antes de pactar]
+El informe advierte que la posición distinta del BN es la de diciembre de 2025 y debe actualizarse antes de pactar. Y que, si los swaps de monedas vigentes con Citibank (un activo de US\$ 5.9 millones a junio de 2026) cubren soles, su nocional debe restarse del NDF: de lo contrario se cubriría dos veces lo mismo.
+\end{informe}
+
+\section{Los insumos}
+
+\begin{center}\small
+\captionof{table}{Parámetros de la Estrategia 1 al 28 de setiembre de 2026 (Cuadro~3 del informe).}\label{tab:c3}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xr@{}}
+\toprule
+\multicolumn{2}{@{}l}{\emph{Insumos de mercado}}\\
+TC compra / venta (S/ por US\$; BCRP) & 3.4367 / 3.4390\\
+Tasa cero S/ 1 año / 3 años (SBS) & 3.97\,\% / 5.03\,\%\\
+Tasa swap US\$ 1 año / 3 años (SOFR) & 4.50\,\% / 4.80\,\%\\
+\midrule
+\multicolumn{2}{@{}l}{\emph{CCS amortizable: recibe S/, paga US\$}}\\
+Saldo cubierto del BN (S/ MM, 27 pagos) & 3,765.6\\
+Nocional (US\$ MM, al TC de compra) & 1,095.7\\
+VP de la pata en S/ (US\$ MM, curva SBS) & 1,116.9\\
+Tasa fija de equilibrio en US\$ (antes de CVA) & 5.87\,\%\\
+Tasa con CVA (\emph{all-in}); CVA de 11 pb & 5.98\,\%\\
+Pagos totales de la pata en US\$ (US\$ MM) & 1,192.9\\
+\midrule
+\multicolumn{2}{@{}l}{\emph{NDF de compra de S/ a 91 días}}\\
+Nocional (S/ MM, 80\,\% del resto) & 750.7\\
+TC forward (S/ por US\$) & 3.4347\\
+\midrule
+\textbf{Posición en S/ sin cubrir (S/ MM)} & \textbf{187.7}\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Antes de seguir, conviene verificar que cada cifra es coherente con lo aprendido:
+\begin{itemize}
+\item Nocional: $3{,}765.6/3.4367=1{,}095.7$ (cap.~\ref{cap:swaps}).
+\item Resto de la posición: $4{,}704.0-3{,}765.6=938.4$; nocional del NDF: $0.80\times938.4=750.7$; sin cubrir: $938.4-750.7=187.7$.
+\item Cobertura: $1-187.7/4{,}704.0=96\,\%$.
+\item Forward: $3.4367\times(1.039/1.0414)^{91/360}=3.4347$ (cap.~\ref{cap:forwards}).
+\end{itemize}
+
+\section{La valorización, paso a paso}
+
+La primera ecuación del informe reúne las dos valorizaciones:
+\begin{gather*}
+\frac{1}{S}\sum_k C_k^{S/}P_k^{S/}=\sum_k C_k^{US\$}(c)\,P_k^{US\$},\\
+F=S\left(\frac{1+r_{S/}}{1+r_{US\$}}\right)^{d/360}.
+\end{gather*}
+
+\paragraph{Paso 1: la pata en soles} Los 27 pagos en soles (octubre de 2026 a diciembre de 2028: 9 de S/ 17.0 millones y 18 de S/ 218.3 millones) se descuentan con la curva cupón cero soberana interpolada para cada fecha, contando el tiempo desde la valorización (el primer pago es el 15 de octubre, a 17 días). Resultado: S/ 3,838.4 millones, que al TC de compra son US\$ 1,116.9 millones.
+
+\paragraph{Paso 2: la pata en dólares} Replica el perfil del préstamo: saldo inicial de US\$ 1,095.7 millones, intereses a la tasa $c$ por determinar y la misma amortización convertida a dólares.
+
+\paragraph{Paso 3: igualar} Se busca la tasa con la que los pagos en dólares, descontados con la curva SOFR, valen US\$ 1,116.9 millones: $c=5.87\,\%$.
+
+\paragraph{Paso 4: el cargo por riesgo de crédito} Con el perfil de exposición esperada del banco (pico de US\$ 23.9 millones), el spread de 569 pb y una LGD de 60\,\%, el CVA es de US\$ 1.7 millones, unos 11 pb anuales: tasa \emph{all-in} de 5.98\,\% (cap.~\ref{cap:mercados}).
+
+\paragraph{Paso 5: el NDF} Con el SOFR a tres meses (4.08\,\% simple, 4.14\,\% efectiva) y la tasa en soles a tres meses (3.90\,\%): $F=3.4347$.
+
+\begin{importante}[por qué el TC de compra]
+Ambas patas se convierten al TC de compra porque PETROPERÚ vende dólares: cada mes entrega dólares y recibe soles, y el precio relevante es el que el banco paga por los dólares. Para el registro contable, en cambio, el informe usa el TC medio.
+\end{importante}
+
+\section{Interpretación de la tasa y del costo}
+
+El 5.87\,\% no se compara con el 5.55\,\% del préstamo (monedas distintas) sino con lo que costaría deber dólares. Recordemos (cap.~\ref{cap:swaps}) que refleja la diferencia entre curvas (4.72\,\% en dólares frente a 4.52\,\% en soles a dos años) y la prima de un cupón del BN superior a la curva soberana (US\$ 1,116.9 frente a 1,095.7 millones). Frente al 9.7\,\% que el mercado exige a los bonos de PETROPERÚ, es una tasa baja.
+
+Tres costos adicionales deben tenerse en cuenta:
+\begin{itemize}
+\item \textbf{CVA.} 11 pb con el spread de diciembre de 2025 (569 pb); con el de agosto de 2026 (318 pb, a partir de un rendimiento de 7.6\,\% del bono 2032) sería de unos 6 pb y la tasa \emph{all-in}, 5.93\,\%.
+\item \textbf{Lo que el CVA no incluye.} El informe advierte que es un mínimo: no incluye el costo de fondeo y de capital del banco (FVA, KVA), el desfase de plazo entre el swap y los bonos con que se mide el spread, ni el riesgo \emph{wrong-way}: el pasivo del swap crece si el sol se deprecia, justo cuando la caja podría estar presionada.
+\item \textbf{Costo del NDF.} 0.24\,\% anual, US\$ 0.13 millones por trimestre: el diferencial de tasas.
+\end{itemize}
+
+\section{Los flujos del CCS}
+
+\begin{center}\small
+\captionof{table}{Flujos del CCS por año calendario, en millones (tabla de flujos que genera el código del informe).}\label{tab:c4}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Año & Recibe S/ & Interés S/ & Paga US\$ & Interés US\$\\
+\midrule
+2026 & 51.0 & 51.0 & 15.7 & 15.7\\
+2027 & 1,411.6 & 190.2 & 413.9 & 58.4\\
+2028 & 2,619.4 & 75.2 & 763.4 & 23.1\\
+\midrule
+Total & 4,081.9 & 316.3 & 1,192.9 & 97.2\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Cómo se lee:
+\begin{itemize}
+\item \textbf{2026}: quedan tres pagos (octubre a diciembre), todos de solo intereses: $3\times16.99=51.0$. En dólares: $3\times5.2=15.7$.
+\item \textbf{2027}: seis pagos de intereses (enero a junio) y seis cuotas (julio a diciembre): $6\times16.99+6\times218.28=101.9+1{,}309.7=1{,}411.6$.
+\item \textbf{2028}: doce cuotas: $12\times218.28=2{,}619.4$.
+\end{itemize}
+El total recibido, 4,081.9, menos el saldo (3,765.6) da los intereses en soles: 316.3. En dólares, de 1,192.9 pagados, 97.2 son intereses. La Figura~\ref{fig:ccs_anual} (cap.~\ref{cap:swaps}) muestra estos flujos.
+
+\section{Posiciones de cambio}
+
+La regulación peruana y la práctica de gestión distinguen tres posiciones:
+
+\begin{definicion}[PCC, PND y PCG]
+La \textbf{posición de cambio contable} (PCC) es la posición neta en moneda extranjera que surge del balance. La \textbf{posición neta en derivados} (PND) es la que crean los derivados (positiva si compran la moneda a plazo). La \textbf{posición de cambio global} (PCG) es su suma: $\text{PCG}=\text{PCC}+\text{PND}$. Es la que realmente queda expuesta.
+\end{definicion}
+
+\begin{center}\small
+\captionof{table}{Posiciones de cambio en S/ (Cuadro~4 del informe). Última columna: resultado en US\$ millones si el TC cae 10\,\% desde 3.4379.}\label{tab:c5}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrr@{}}
+\toprule
+& S/ MM & TC $-10\,\%$\\
+\midrule
+PCC: pasivo neto en S/ & $(4{,}704.0)$ & $(152.0)$\\
+PND: CCS (recibe S/) & 3,765.6 & 121.7\\
+PND: NDF (compra S/) & 750.7 & 24.3\\
+\midrule
+PCG $=$ PCC $+$ PND & $(187.7)$ & $(6.1)$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Cada fila se calcula con la fórmula del capítulo~\ref{cap:riesgo}: resultado $=\dfrac{N}{S_0}\cdot\dfrac{m}{1+m}$ con $S_0=3.4379$ (TC medio) y $m=-0.10$, es decir, $\dfrac{N}{3.4379}\times(-0.1111)$. Por ejemplo, para el CCS: $3{,}765.6/3.4379\times0.1111=+121.7$ (gana, porque es una posición activa en soles).
+
+El NDF se analiza con el Cuadro~5 del informe, idéntico al que se desarrolló en el capítulo~\ref{cap:forwards}: con un TC 10\,\% menor, el NDF paga US\$ 24.14 millones, las cuentas por pagar pierden 24.27 y el total es el costo constante de $-0.13$ millones. Por cada S/ 1,000 de nocional, el NDF paga US\$ 32.16.
+
+\section{Escenarios}
+
+\begin{center}\small
+\captionof{table}{Resultado por diferencia de cambio según el TC final, US\$ millones (Cuadro~6 del informe).}\label{tab:c7}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+TC final & 3.094 & 3.266 & 3.438 & 3.610 & 3.782\\
+& ($-10\,\%$) & ($-5\,\%$) & (base) & ($+5\,\%$) & ($+10\,\%$)\\
+\midrule
+Sin cobertura & $(152.0)$ & $(72.0)$ & 0.0 & 65.2 & 124.4\\
+Solo CCS & $(30.3)$ & $(14.4)$ & 0.0 & 13.0 & 24.8\\
+CCS + NDF & $(6.1)$ & $(2.9)$ & 0.0 & 2.6 & 5.0\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Las tres filas usan la misma fórmula con posiciones distintas: 4,704.0 (sin cobertura), $4{,}704.0-3{,}765.6=938.4$ (solo CCS) y 187.7 (CCS + NDF).
+
+\figura{e1_escenarios}{Resultado cambiario según el TC al cierre (reproduce la Figura~3 del informe). La cobertura \enquote{aplana} la línea: la pendiente cae en proporción a la posición cubierta.}
+
+\begin{ejemplo}{Reducción de la sensibilidad}
+Ante una caída de 10\,\% del TC (apreciación del sol de 11.1\,\%), la pérdida pasa de US\$ 152.0 a US\$ 6.1 millones: $1-6.1/152.0=96\,\%$ de reducción, igual a la proporción de la posición cubierta. La pérdida sin cobertura (152.0) difiere de la de la sección 2 del informe (155.2) \emph{solo} porque aquella parte del TC de cierre de 2025 (3.367) y esta del TC de hoy (3.4379): la posición es la misma.
+\end{ejemplo}
+
+\begin{informe}[riesgo residual medido con VaR]
+Al vencimiento del NDF (91 días), el VaR al 95\,\% del resultado cambiario baja de US\$ 78.5 a 3.1 millones: una reducción de 96\,\% (cap.~\ref{cap:riesgo}).
+\end{informe}
+
+\begin{informe}[a qué se renuncia]
+\enquote{Podría objetarse que, si el sol se deprecia, la empresa renuncia a una ganancia. Es cierto, y es el propósito: la cobertura no busca adivinar el TC, sino que la caja no dependa de él} (Stulz, 1996). Con el TC 10\,\% más alto, la ganancia baja de US\$ 124.4 a 5.0 millones.
+\end{informe}
+
+\section{Registro contable: un adelanto}
+
+Ambos derivados nacen con valor cero y luego se miden a valor razonable. Si el TC cayera 10\,\% de inmediato, el CCS sería un activo de US\$ 123.7 millones (11.3\,\% del nocional; cap.~\ref{cap:swaps}) y el NDF uno de US\$ 24.0 millones; si subiera 10\,\%, serían pasivos de 101.9 y 19.7 millones. La diferencia con la compensación \enquote{nominal} (121.7 y 24.3 del Cuadro~\ref{tab:c5}) es la \textbf{inefectividad esperada}: el cupón del BN supera la curva, de modo que el CCS vale algo más que el saldo que cubre, y el NDF todavía no vence. El capítulo~\ref{cap:niif} explica cómo se registra cada uno.
+
+\section{Riesgos residuales y supuestos}
+
+Ninguna cobertura es perfecta. La Estrategia~1 deja:
+\begin{itemize}
+\item \textbf{Riesgo de cronograma}: el CCS replica un cronograma \emph{inferido}. Con otros cronogramas plausibles la tasa varía entre 5.82\,\% y 6.01\,\%; antes de pactar debe obtenerse el contractual.
+\item \textbf{Riesgo de prepago}: si el BN prepaga o reestructura el préstamo, el CCS quedaría sin partida que cubrir. El informe exige una cláusula para cancelarlo a valor de mercado en ese caso.
+\item \textbf{Riesgo de renovación del NDF}: cada trimestre el NDF se renueva al forward vigente. Se cubre el valor de cada trimestre, no un tipo de cambio para todo el horizonte; además, el saldo de cuentas por pagar cambia y el nocional deberá ajustarse.
+\item \textbf{Riesgo de contraparte y de colateral}: si el sol se deprecia 10\,\%, el CCS y el NDF serían pasivos por unos US\$ 121.6 millones, que el banco podría pedir como colateral con un umbral cero. Es la restricción que decide la ejecución (cap.~\ref{cap:niif}).
+\item \textbf{Basis}: la curva de soles es soberana, no swap; la de dólares es la internacional, no la local. Con la curva local el CCS costaría 5.92\,\%.
+\item \textbf{Posición residual}: S/ 187.7 millones quedan sin cubrir, dentro de los límites de la política propuesta (70\,\%--100\,\%).
+\end{itemize}
+
+\begin{cuidado}[cubrir más de lo que se tiene]
+La cobertura se diseña sobre la posición a la fecha en que se pacta. Si antes de firmar el BN empezara a amortizar, o bajaran las cuentas por pagar, los nocionales deben reducirse: \enquote{nunca por encima de la exposición al pactar}, dice el informe. Un nocional mayor que la exposición deja una posición \emph{activa} en soles: la empresa estaría especulando a favor de la apreciación del sol.
+\end{cuidado}
+
+\begin{resumen}
+\begin{itemize}
+\item La Estrategia~1 combina un CCS amortizable sobre el préstamo del BN (S/ 3,765.6 millones) con NDF a 91 días sobre el 80\,\% del resto (S/ 750.7 millones): cubre el 96\,\% de la posición.
+\item El CCS se valoriza igualando el VP de los pagos en soles (curva SBS) con el de los pagos en dólares (curva SOFR): nocional US\$ 1,095.7 millones, VP US\$ 1,116.9 millones, tasa 5.87\,\%; con CVA de 11 pb, 5.98\,\%.
+\item Por el período de gracia, casi todo el principal se paga en 2028; en 2026 solo hay intereses.
+\item El NDF se pacta a 3.4347 y cuesta 0.24\,\% anual.
+\item PCC $(4{,}704.0)$ + PND $4{,}516.3$ = PCG $(187.7)$ millones de soles.
+\item Ante $-10\,\%$ del TC, la pérdida cae de US\$ 152.0 a 6.1 millones; el VaR al 95\,\%, de 78.5 a 3.1. A cambio, se renuncia a la ganancia simétrica.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[cálculo] Verifique las cifras de la columna \enquote{TC $+10\,\%$} del Cuadro~6 del informe para las tres posiciones, con $S_0=3.4379$.
+
+\ejercicio[cálculo] Si la política exigiera cubrir con NDF el 100\,\% del resto de la posición, ¿cuál sería el nocional del NDF, la PCG y la pérdida ante una caída de 10\,\% del TC?
+
+\ejercicio[cálculo] Calcule el resultado del NDF y de las cuentas por pagar cubiertas si al vencimiento el TC es 3.30.
+
+\ejercicio[conceptual] ¿Por qué se usa un CCS para el préstamo del BN y NDF para las cuentas por pagar, y no al revés?
+
+\ejercicio[conceptual] Un directivo propone esperar a que \enquote{el sol se deprecie un poco} antes de contratar el CCS, para hacerlo a un mejor tipo de cambio. ¿Qué responde?
+
+\ejercicio[conceptual] Explique por qué la tasa de 5.87\,\% del CCS puede considerarse barata aunque supere el 5.55\,\% del préstamo del BN.
+
+\ejercicio[cálculo] Descomponga el flujo en soles de 2027 (S/ 1,411.6 millones) en pagos de solo intereses y cuotas de amortización. ¿Por qué el flujo de 2028 es casi el doble?

@@ -1,0 +1,250 @@
+\chapter{Valoración de opciones: árboles, Black-Scholes, Black y griegas}\label{cap:valoracion}
+
+\begin{objetivos}
+\begin{itemize}
+\item Valorizar una opción con un árbol binomial por réplica y por probabilidades neutrales al riesgo.
+\item Extender el árbol a varios pasos y a opciones sobre futuros.
+\item Entender los supuestos y la fórmula de Black-Scholes-Merton.
+\item Aplicar paso a paso el modelo de Black (1976), ecuación (2) del informe, y reproducir las primas del collar.
+\item Interpretar la volatilidad implícita.
+\item Calcular e interpretar delta, gamma, vega y theta.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Capítulo~\ref{cap:opciones} (payoffs y paridad), capítulo~\ref{cap:riesgo} (volatilidad, normal y lognormal) y capítulo~\ref{cap:tasas} (tasas continuas).\end{prerreq}
+
+\section{El problema}
+
+Para un forward, el no arbitraje dio una fórmula sencilla porque el payoff es lineal: se replica con el activo y un préstamo, fijos desde el inicio. El payoff de una opción tiene un quiebre: vale cero en un tramo y crece en otro. Ninguna cartera \emph{fija} de activo y bono lo reproduce. La idea genial de Black, Scholes y Merton fue que una cartera que se \emph{ajusta continuamente} sí puede replicarlo. El árbol binomial muestra esa idea en su forma más simple.
+
+\section{El árbol binomial de un paso}
+
+Suponga que el precio de hoy, $S_0$, solo puede subir a $S_0u$ o bajar a $S_0d$ en un período $\Delta t$, y que existe un bono que rinde la tasa continua $r$.
+
+\begin{ficha}{valoración binomial de un paso}
+\paso{1. Ecuación}
+\begin{gather*}
+V_0=e^{-r\Delta t}\left[q\,V_u+(1-q)\,V_d\right],\\
+q=\frac{e^{r\Delta t}-d}{u-d}.
+\end{gather*}
+\paso{2. Símbolos} $V_u$, $V_d$: payoffs de la opción si el precio sube o baja. $u>1$, $d<1$: factores de subida y bajada. $q$: \textbf{probabilidad neutral al riesgo}. $V_0$: valor de la opción hoy.
+\paso{3. Intuición} Hay dos estados y dos activos (acción y bono): se puede construir una cartera que pague exactamente lo mismo que la opción en ambos estados. Por no arbitraje, la opción vale lo que cuesta esa cartera.
+\paso{4. Construcción} Cartera: $\Delta$ unidades del activo y $B$ invertido en el bono. Debe cumplir
+\begin{align*}
+\Delta S_0u+Be^{r\Delta t}&=V_u,\\
+\Delta S_0d+Be^{r\Delta t}&=V_d.
+\end{align*}
+Restando: $\Delta=\dfrac{V_u-V_d}{S_0u-S_0d}$. Despejando $B$ y sustituyendo en $V_0=\Delta S_0+B$, tras reordenar términos se obtiene la ecuación con $q$ definido como arriba.
+\paso{5. Supuestos} Dos estados posibles; se puede comprar y vender en corto el activo y el bono sin costos; no hay arbitraje, lo que exige $d<e^{r\Delta t}<u$.
+\paso{6. Ejemplo (didáctico)} $S_0=100$, $u=1.2$, $d=0.8$, $r=0$, put con $K=100$. $V_u=\max(100-120,0)=0$, $V_d=\max(100-80,0)=20$. Réplica: $\Delta=(0-20)/(120-80)=-0.5$; con $r=0$, $B=V_u-\Delta S_0u=0+0.5\times120=60$. $V_0=-0.5\times100+60=10$. Con $q$: $q=(1-0.8)/(1.2-0.8)=0.5$; $V_0=0.5\times0+0.5\times20=10$.
+\paso{7. Interpretación} La put vale 10. Se replica vendiendo en corto medio activo e invirtiendo 60 en el bono: si el precio sube, se recompran 0.5 unidades a 120 (60) con lo invertido y no queda nada; si baja, se recompran a 80 (40) y quedan 20.
+\paso{8. Limitaciones} Un mundo de dos estados es irreal; se corrige con muchos pasos pequeños.
+\end{ficha}
+
+\figura[0.8]{arbol1}{Árbol de un paso del ejemplo: en cada nodo, el precio del activo ($S$) y el valor de la put ($V$).}
+
+\begin{importante}[probabilidades neutrales al riesgo]
+En la fórmula no aparece la probabilidad \emph{real} de que el precio suba. Dos inversionistas que discrepen sobre esa probabilidad deben estar de acuerdo en el precio de la opción, porque ambos pueden replicarla. El número $q$ no es una creencia: es la probabilidad que haría que el activo rinda, en promedio, la tasa libre de riesgo. Valorizar \enquote{como si} el mundo fuera neutral al riesgo es un truco de cálculo que da el precio correcto de no arbitraje.
+\end{importante}
+
+\section{Árboles de varios pasos y opciones sobre futuros}
+
+Con $n$ pasos de longitud $\Delta t=T/n$ se repite el cálculo hacia atrás, nodo por nodo, desde el vencimiento. Para que el árbol tenga la volatilidad $\sigma$ deseada se usa la parametrización de Cox, Ross y Rubinstein:
+\[ u=e^{\sigma\sqrt{\Delta t}},\qquad d=\frac1u. \]
+
+\begin{adicional}[el árbol para un futuro]
+Un futuro no cuesta nada al entrar, por lo que bajo neutralidad al riesgo su precio esperado no crece: $q\,u+(1-q)\,d=1$. Entonces $q=\dfrac{1-d}{u-d}$, y el descuento sigue siendo $e^{-r\Delta t}$.
+\end{adicional}
+
+\begin{ejemplo}{La put del informe con un árbol de dos pasos}
+Datos de la capa de enero: $F_0=86.54$, $K=77.90$, $\sigma=56.1\,\%$, $T=79/365=0.21644$, $r=4.12\,\%$. Con dos pasos, $\Delta t=0.10822$:
+\begin{align*}
+u&=e^{0.5611\sqrt{0.10822}}=e^{0.18458}=1.20272,\\
+d&=1/u=0.83145,\\
+q&=\frac{1-0.83145}{1.20272-0.83145}=0.45398,\\
+e^{-r\Delta t}&=0.99555.
+\end{align*}
+Precios al vencimiento: $F_{uu}=125.18$, $F_{ud}=86.54$, $F_{dd}=59.83$. Payoffs de la put: $0$, $0$ y $77.90-59.83=18.07$. Hacia atrás:
+\begin{align*}
+V_u&=0.99555\,(0.45398\times0+0.54602\times0)=0,\\
+V_d&=0.99555\,(0.45398\times0+0.54602\times18.07)=9.82,\\
+V_0&=0.99555\,(0.45398\times0+0.54602\times9.82)=5.34.
+\end{align*}
+\end{ejemplo}
+
+\figura[0.85]{arbol2}{Árbol de dos pasos para la put de la capa de enero ($K=77.90$). Con solo dos pasos el resultado (5.34) todavía se aleja del valor del modelo continuo (4.85).}
+
+\figura{convergencia}{Valor de la put según el número de pasos del árbol. Oscila y converge al valor del modelo de Black: con 100 pasos ya da 4.84.}
+
+\section{El modelo de Black-Scholes-Merton}
+
+Si se hace tender el número de pasos a infinito, el árbol converge a un modelo en tiempo continuo, publicado en 1973 por Fischer Black y Myron Scholes, y desarrollado por Robert Merton.
+
+\begin{ficha}{Black-Scholes-Merton}
+\paso{1. Ecuación} Para una call y una put europeas sobre una acción sin dividendos:
+\begin{gather*}
+c=S_0N(d_1)-Ke^{-rT}N(d_2),\\
+p=Ke^{-rT}N(-d_2)-S_0N(-d_1),\\
+d_1=\frac{\ln(S_0/K)+(r+\sigma^2/2)T}{\sigma\sqrt T},\\
+d_2=d_1-\sigma\sqrt T.
+\end{gather*}
+\paso{2. Símbolos} $N(\cdot)$: normal estándar acumulada. $\sigma$: volatilidad anual del rendimiento logarítmico. Las demás, como antes.
+\paso{3. Intuición} $N(d_2)$ es la probabilidad neutral al riesgo de que la call se ejerza ($S_T>K$): $Ke^{-rT}N(d_2)$ es el valor presente de lo que se paga en ese caso. $S_0N(d_1)$ es el valor presente de lo que se recibe (el activo) en ese caso. $N(d_1)$ es, además, el delta de la call: la cantidad del activo de la cartera réplica.
+\paso{4. Construcción} Se supone que el precio sigue un movimiento browniano geométrico (rendimientos log normales con volatilidad $\sigma$ constante). Una cartera de la opción y $-\Delta$ unidades del activo, ajustada continuamente, no tiene riesgo y debe rendir $r$; esto da una ecuación diferencial cuya solución, con la condición final $\max(S_T-K,0)$, es la fórmula. Equivalentemente, es el valor esperado neutral al riesgo del payoff, descontado: $c=e^{-rT}\E^Q[\max(S_T-K,0)]$ con $S_T$ lognormal.
+\paso{5. Supuestos} Volatilidad y tasa constantes; negociación continua sin costos; venta en corto permitida; sin arbitraje; sin dividendos; precios sin saltos.
+\paso{6. Ejemplo (didáctico)} $S_0=K=100$, $r=5\,\%$, $\sigma=20\,\%$, $T=1$: $d_1=(0+0.05+0.02)/0.20=0.35$; $d_2=0.15$; $N(0.35)=0.6368$; $N(0.15)=0.5596$; $c=100\times0.6368-100e^{-0.05}\times0.5596=63.68-53.23=10.45$; $p=5.57$. Paridad: $10.45-5.57=4.88=100-95.12$.
+\paso{7. Interpretación} La call en el dinero vale 10.45, alrededor del 10\,\% del precio del activo, con un año de plazo y 20\,\% de volatilidad.
+\paso{8. Limitaciones} En la realidad la volatilidad cambia y depende del strike (\emph{sonrisa} o \emph{sesgo} de volatilidad), los precios saltan y negociar cuesta. El modelo sigue siendo el lenguaje común del mercado, que cotiza las opciones en términos de volatilidad implícita.
+\end{ficha}
+
+\section{El modelo de Black (1976) para opciones sobre futuros}
+
+Las opciones del informe tienen como subyacente un futuro. Fischer Black adaptó en 1976 la fórmula a ese caso. La diferencia es que un futuro no cuesta nada al entrar: no hay que financiar su compra.
+
+\begin{ficha}{modelo de Black, ecuación (2) del informe}
+\paso{1. Ecuación}
+\begin{gather*}
+P=e^{-rT}\left[K\,N(-d_2)-F\,N(-d_1)\right],\\
+C=e^{-rT}\left[F\,N(d_1)-K\,N(d_2)\right],\\
+d_1=\frac{\ln(F/K)+\sigma^2T/2}{\sigma\sqrt T},\qquad d_2=d_1-\sigma\sqrt T.
+\end{gather*}
+\paso{2. Símbolos} $F$: precio del futuro hoy. $K$: strike. $\sigma$: volatilidad del futuro. $T$: años al vencimiento de la opción. $r$: tasa libre de riesgo continua (para descontar el payoff).
+\paso{3. Intuición} Es Black-Scholes reemplazando $S_0$ por $Fe^{-rT}$: el valor presente del futuro. En $d_1$ desaparece la $r$, porque el futuro no tiene que crecer a la tasa libre de riesgo bajo la medida neutral.
+\paso{4. Construcción} Bajo neutralidad al riesgo, $F_T$ es lognormal con media $F$ (el futuro es una apuesta de costo cero). El valor de la put es $e^{-rT}\E^Q[\max(K-F_T,0)]$. Calculando esa esperanza con la lognormal se obtiene la fórmula, con las mismas $N(\cdot)$ que en Black-Scholes y sin el término de crecimiento.
+\paso{5. Supuestos} Los de Black-Scholes aplicados al futuro; opción europea.
+\paso{6. Ejemplo (del informe, capa de enero)} $F=86.54$, $K=77.90$, $\sigma=0.5611$, $T=79/365$, $r=0.0412$.
+\begin{align*}
+T&=0.21644,\quad \sqrt T=0.46523,\\
+\sigma\sqrt T&=0.5611\times0.46523=0.26104,\\
+\ln(F/K)&=\ln(86.54/77.90)=0.10518,\\
+\sigma^2T/2&=0.314833\times0.21644/2=0.03407,\\
+d_1&=(0.10518+0.03407)/0.26104=0.5334,\\
+d_2&=0.5334-0.2610=0.2724,\\
+N(-d_1)&=0.29686,\quad N(-d_2)=0.39265,\\
+e^{-rT}&=e^{-0.008913}=0.99113.
+\end{align*}
+Entonces
+\begin{align*}
+P&=0.99113\,[77.90\times0.39265-86.54\times0.29686]\\
+&=0.99113\,[30.588-25.690]\\
+&=0.99113\times4.897=4.85.
+\end{align*}
+\paso{7. Interpretación} La put de enero cuesta US\$ 4.85 por barril. $N(-d_2)=0.393$ es la probabilidad neutral al riesgo de que el futuro termine por debajo de 77.90: casi 40\,\%, reflejo de la altísima volatilidad. Las puts de noviembre (strike 83.30, 17 días) y diciembre (80.10, 50 días) cuestan 1.12 y 3.40: tienen menos tiempo para que el precio caiga. El promedio de las tres, $(1.12+3.40+4.85)/3=3.12$, es la \enquote{prima media} del Cuadro~7 del informe.
+\paso{8. Limitaciones} Las opciones reales sobre CL son americanas (la diferencia es pequeña para opciones sobre futuros con plazo corto) y la volatilidad implícita varía con el strike: usar 56.1\,\% para ambos strikes es una simplificación.
+\end{ficha}
+
+\figura{black_put}{Prima de la put de enero ($K=77.90$) según el precio del futuro, con 79 y con 20 días al vencimiento. Siempre está por encima del valor intrínseco; la diferencia, el valor tiempo, se reduce al acercarse el vencimiento.}
+
+\subsection{Encontrar el strike de la call: costo cero}
+
+Se busca $K_c$ tal que $C(K_c)=P(77.90)=4.85$. No hay fórmula cerrada: se prueba con distintos strikes.
+
+\begin{center}\small
+\captionof{table}{Prima de la call sobre el futuro de enero según su strike (Black, $\sigma=56.1\,\%$).}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+$K_c$ & 92.00 & 95.00 & 98.05 & 100.00 & 105.00\\
+Prima & 6.73 & 5.74 & 4.85 & 4.35 & 3.27\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Con $K_c=98.05$: $d_1=-0.3479$, $d_2=-0.6089$, $N(d_1)=0.36396$, $N(d_2)=0.27129$, y $C=0.99113\,[86.54\times0.36396-98.05\times0.27129]=0.99113\times4.897=4.85$. Con el mismo procedimiento, los techos de noviembre y diciembre son 103.68 y 100.38. La prima de la call vendida iguala exactamente la de la put comprada.
+
+\section{La volatilidad implícita}
+
+Todos los datos del modelo se observan, excepto $\sigma$. En la práctica se hace al revés: se observa el precio de la opción y se busca la $\sigma$ que lo reproduce. Esa es la \textbf{volatilidad implícita}.
+
+\begin{informe}
+El informe toma $\sigma=56.1\,\%$ del índice OVX de CBOE (vía FRED). Es una volatilidad implícita: refleja lo que el mercado espera en plena crisis de oferta. La prima de la put es muy sensible a ese dato: con 45\,\% valdría 3.35 y con 65\,\%, 6.09. Pero el collar \emph{como un todo} casi no depende del nivel de volatilidad: si sube la volatilidad, la put comprada vale más y la call vendida también. El informe calcula que el collar pierde solo unos 9 mil dólares por punto de volatilidad (su \emph{vega}, más abajo). Por la misma razón, el techo de costo cero cambia poco: con 45\,\% de volatilidad sería 97.58 y con 35\,\%, 97.17.
+
+El informe también compara el OVX con la volatilidad \emph{realizada} del futuro en el último año (55.8\,\%): casi iguales, lo que da confianza en el dato.
+\end{informe}
+
+\subsection{Sonrisa y sesgo de volatilidad}
+
+Si el modelo de Black fuera exacto, todas las opciones sobre el mismo futuro tendrían la misma volatilidad implícita, sea cual sea su strike. En la práctica no es así: al calcular la volatilidad implícita para cada strike se obtiene una curva, la \textbf{sonrisa de volatilidad}. Cuando es asimétrica se habla de \textbf{sesgo} (\emph{skew}).
+
+\begin{definicion}[Skew]
+El \textbf{skew} es la diferencia de volatilidad implícita entre opciones con distinto strike. En el crudo, las puts de strike bajo suelen cotizar con más volatilidad que las calls de strike alto, porque los productores pagan por protegerse de las caídas.
+\end{definicion}
+
+El skew importa mucho para un collar: si la call que se vende cotiza con menos volatilidad que la put que se compra, vale menos, y para igualar primas hay que venderla con un strike más bajo. El techo baja.
+
+\begin{informe}[sensibilidad al skew]
+\begin{center}\small
+\captionof{table}{Strike de la call de costo cero según el skew (US\$/bl).}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+& nov & dic & ene\\
+\midrule
+Misma volatilidad & 103.68 & 100.38 & 98.05\\
+Call 5 puntos más barata & 102.02 & 98.09 & 95.37\\
+Call 10 puntos más barata & 100.44 & 95.95 & 92.90\\
+\bottomrule
+\end{tabular}
+\end{center}
+Con 10 puntos de skew, el techo de enero bajaría de 98.05 a 92.90, casi al precio de hoy. Por eso el informe concluye que \enquote{los strikes se fijan con cotizaciones bancarias, no con el modelo}: el OVX es un solo número y no describe la superficie completa de volatilidades, que no es pública.
+\end{informe}
+
+\section{Las griegas}
+
+Las \textbf{griegas} miden cómo cambia el valor de una opción cuando cambia uno de sus determinantes, dejando los demás fijos. Son derivadas parciales de la fórmula.
+
+\begin{definicion}[Griegas principales (modelo de Black)]
+\begin{itemize}
+\item \textbf{Delta} ($\Delta=\partial V/\partial F$): cambio del valor por cada dólar de cambio del subyacente. Call: $e^{-rT}N(d_1)$; put: $-e^{-rT}N(-d_1)$.
+\item \textbf{Gamma} ($\Gamma=\partial^2V/\partial F^2$): cuánto cambia la delta. Igual para call y put: $e^{-rT}\,n(d_1)/(F\sigma\sqrt T)$, donde $n(\cdot)$ es la densidad normal.
+\item \textbf{Vega} ($\partial V/\partial\sigma$): cambio por cada punto de volatilidad. $e^{-rT}F\,n(d_1)\sqrt T$ (dividida entre 100 para un punto porcentual).
+\item \textbf{Theta} ($\partial V/\partial t$): cambio por el paso del tiempo, normalmente negativo para el comprador.
+\end{itemize}
+\end{definicion}
+
+\begin{ejemplo}{Griegas de la put del collar}
+Con los datos anteriores, $n(d_1)=n(0.5334)=0.3460$:
+\begin{itemize}
+\item Delta: $-0.99113\times0.29686=-0.294$: si el futuro baja un dólar, la put gana unos 29 centavos. El informe reporta el \emph{delta medio} de las tres capas, $-0.25$, porque las puts de noviembre y diciembre están más lejos del dinero o tienen menos plazo.
+\item Gamma: $0.99113\times0.3460/(86.54\times0.26104)=0.0152$: con cada dólar de caída, la delta se hace 0.015 más negativa.
+\item Vega: $0.99113\times86.54\times0.3460\times0.46523/100=0.138$: un punto más de volatilidad añade 14 centavos a la prima. La call vendida de 98.05 tiene una vega parecida (0.150), de modo que la vega del collar es casi nula: $0.138-0.150=-0.012$ por barril.
+\item Theta: unos $-0.048$ dólares por día: si nada más cambia, la put pierde casi 5 centavos diarios de valor tiempo.
+\end{itemize}
+\end{ejemplo}
+
+\figura{delta}{Delta de la put comprada, de la call vendida y del collar según el precio del futuro. En $F=86.54$ el collar de enero tiene una delta de $-0.65$ por barril: se comporta como una venta de 0.65 barriles de futuro por barril cubierto. Lejos de los strikes, la delta del collar tiende a $-1$: sumada a la del inventario ($+1$) da cero, porque fuera del rango el resultado queda fijo en el piso o en el techo. Entre los strikes, su valor absoluto es menor y el inventario conserva parte de su exposición.}
+
+\figura{gamma_vega}{Gamma y vega de la put: son máximas cerca del strike, donde la incertidumbre sobre si se ejercerá es mayor.}
+
+\begin{informe}[valor razonable del collar]
+Ante una caída instantánea de 10\,\% de la curva de futuros, en la capa de enero ($F=77.89$) la put pasa a valer 8.02 y la call 2.33: el collar vale $8.02-2.33=5.69$ por barril. Con un alza de 10\,\% ($F=95.19$): put 2.82 y call 8.59, valor $-5.77$. Repitiendo el cálculo en las tres capas y multiplicando por su volumen en collar (0.387 millones de barriles cada una), el informe obtiene un activo de US\$ 5.7 millones y un pasivo de US\$ 5.8 millones: las cifras de su registro contable. Observe que no son simétricas: el collar no es lineal.
+\end{informe}
+
+\begin{cuidado}[sumar deltas de distinta unidad]
+La delta de una opción se mide en unidades del subyacente por opción. Para pasar a la posición se multiplica por la cantidad cubierta. En el Cuadro~9 del informe, el collar (1.16 millones de barriles en tres capas) equivale a una venta de 0.62 millones de barriles, mientras que el swap, lineal, equivale a una venta de 1.16. La equivalencia del collar cambia con el precio; la del swap, no.
+\end{cuidado}
+
+\begin{resumen}
+\begin{itemize}
+\item En un árbol binomial la opción se replica con activo y bono; su valor es $e^{-r\Delta t}[qV_u+(1-q)V_d]$ con $q$ neutral al riesgo. Para futuros, $q=(1-d)/(u-d)$.
+\item Con muchos pasos el árbol converge a Black-Scholes; para futuros, al modelo de Black.
+\item Black: $P=e^{-rT}[KN(-d_2)-FN(-d_1)]$. En la capa de enero, la put de 77.90 vale 4.85 y la call de 98.05 también: collar de costo cero. Los techos de noviembre y diciembre son 103.68 y 100.38.
+\item La volatilidad implícita (56.1\,\%, OVX) mueve mucho la prima de cada opción, pero poco el collar; lo que sí lo mueve es el skew: con 10 puntos, el techo de enero bajaría a 92.90.
+\item Delta $-0.29$, gamma 0.015, vega 0.14 y theta $-0.05$ diario describen la put de enero; el collar de enero tiene delta $-0.65$ por barril en el punto actual.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[cálculo] Con $S_0=50$, $u=1.1$, $d=0.9$, $r=0$ y un paso, valorice una call con $K=50$ por réplica y por probabilidades neutrales al riesgo.
+
+\ejercicio[cálculo] Repita el ejercicio anterior con $r=5\,\%$ continua y $\Delta t=1$.
+
+\ejercicio[cálculo] Use el modelo de Black para valorizar una call sobre un futuro con $F=80$, $K=80$, $\sigma=40\,\%$, $T=0.5$ y $r=4\,\%$. Calcule también la put mediante la paridad.
+
+\ejercicio[conceptual] ¿Por qué la probabilidad real de que el precio suba no aparece en la fórmula del árbol binomial?
+
+\ejercicio[cálculo] Con la delta de $-0.294$ y la gamma de $0.0152$ de la put de enero, estime su nuevo valor si el futuro cae de 86.54 a 84.54. (Pista: use $\Delta V\approx\Delta\cdot\Delta F+\tfrac12\Gamma(\Delta F)^2$.)
+
+\ejercicio[conceptual] El OVX sube de 56.1\,\% a 65\,\% antes de que PETROPERÚ firme el collar. ¿Qué pasa con la prima de la put y con el strike de la call de costo cero?
+
+\ejercicio[conceptual] El banco cotiza la call que PETROPERÚ vende con 5 puntos de volatilidad menos que la put que compra. ¿Qué ocurre con el techo de costo cero de la capa de enero y por qué?

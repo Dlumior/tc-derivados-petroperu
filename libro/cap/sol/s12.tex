@@ -1,0 +1,19 @@
+\section*{Capítulo 12}
+
+\solucion{12.1} Parte abierta: $0.580\times(S_T-92.60)$; parte cubierta: 2.32 MMbl.
+
+Con $S_T=95.00$: abierto $=0.580\times2.40=1.39$. Swap: $2.32\times(89.38-92.60)+1.39=-7.47+1.39=-6.07$. Collar: 95.00 está entre piso y techo en las tres capas, así que $2.32\times2.40+1.39=5.57+1.39=6.96$. Propuesta: $(-6.07+6.96)/2=0.44$ millones.
+
+Con $S_T=70.00$: abierto $=0.580\times(-22.60)=-13.11$. Swap: $-7.47-13.11=-20.58$. Collar: todas las capas bajo el piso: $0.774\times(-36.5)-13.11=-28.24-13.11=-41.35$. Propuesta: $(-20.58-41.35)/2=-30.96$ millones.
+
+\solucion{12.2} Peor caso ($-30\,\%$): $0.7\times(-23.6)+0.3\times(-44.4)=-16.5-13.3=-29.8$ millones. Mejor caso ($+30\,\%$): $0.7\times8.7+0.3\times34.9=6.1+10.5=16.5$ millones. Más swap reduce la pérdida en el escenario malo, pero también la ganancia en el bueno.
+
+\solucion{12.3} $S_T=86.54$: todas las puts quedan fuera del dinero salvo la de noviembre ($83.30<86.54$, tampoco se ejerce). Parte cubierta: $0.774\times[3\times(86.54-92.60)-(1.12+3.40+4.85)]=0.774\times(-18.18-9.37)=0.774\times(-27.55)=-21.3$. Parte abierta: $0.580\times(-6.06)=-3.5$. Total: $-24.8$ millones.
+
+\solucion{12.4} Si el precio de venta del producto ya está pactado, el margen depende solo del costo del crudo: fijarlo con el swap \enquote{cierra} el margen. Para los cargamentos cuyo precio de venta aún seguirá al mercado, el collar protege contra caídas grandes y conserva parte de la subida, que se trasladaría también al precio de venta.
+
+\solucion{12.5} Con la curva plana en 92.60, el swap fijaría 92.60 y su resultado frente al precio de hoy sería cero en la parte cubierta: los 3.7 millones desaparecerían, porque provenían de la backwardation. El collar seguiría siendo útil: su función es limitar pérdidas extremas sin prima. Sus pisos se recalcularían al 90\,\% de un futuro de 92.60 (83.30 en todas las capas), más cerca del precio actual.
+
+\solucion{12.6} Porque cuesta 7.2 millones de prima (3.12 por barril en promedio sobre 2.32 millones de barriles) en cada rotación del programa, una salida de caja difícil para una empresa con 94\,\% de sus líneas usadas. Pero una opción comprada, una vez pagada, no puede convertirse en pasivo: nunca exige colateral. Si el banco no concede el umbral del CSA, comprar puts para el tramo más expuesto evita el problema de colateral, por eso es parte del plan~B.
+
+\solucion{12.7} Cada capa es un tercio del 80\,\%: 26.7\,\% del inventario. Sin reponer noviembre quedan dos capas: $0.80\times2/3=53\,\%$. Sin reponer tampoco diciembre, una: $0.80\times1/3=27\,\%$. Son las cifras del informe: el programa solo protege si se renueva.

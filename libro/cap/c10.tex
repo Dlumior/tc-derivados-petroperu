@@ -1,0 +1,163 @@
+\chapter{Diagnóstico: los riesgos financieros de PETROPERÚ}\label{cap:diagnostico}
+
+\begin{objetivos}
+\begin{itemize}
+\item Leer la matriz de riesgos del informe (Cuadro~2) y justificar la prioridad de cada riesgo.
+\item Reconstruir la exposición cambiaria y su impacto con los datos de los estados financieros.
+\item Cuantificar la exposición al crudo y relacionarla con la utilidad bruta.
+\item Explicar por qué el riesgo de tasa es de valor razonable y de refinanciación, no de flujo de caja.
+\item Explicar cómo la liquidez restringe el diseño de las coberturas.
+\item Distinguir el riesgo de precio del crudo del riesgo de margen de refinación.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Toda la Parte~I y los capítulos~\ref{cap:forwards} a~\ref{cap:opciones}.\end{prerreq}
+
+\section{De la teoría al caso}
+
+Con las herramientas de las Partes~I y~II podemos leer la sección 2 del informe como lo haría un gerente de riesgos. El procedimiento tiene tres pasos que se repiten para cada riesgo: (i) identificar el \emph{origen} (qué partida del balance o del negocio crea la exposición); (ii) medir la \emph{exposición} (cuánto dinero depende de la variable de mercado) y su \emph{impacto} ante un escenario adverso; y (iii) decidir la \emph{respuesta} (cubrir con derivados, cubrir parcialmente o no cubrir). El resultado es una matriz de riesgos.
+
+\section{La matriz de riesgos}
+
+\begin{center}\small
+\captionof{table}{Matriz de riesgos de PETROPERÚ al cierre de 2025 (resumen del Cuadro~2 del informe; US\$ millones salvo indicación).}\label{tab:matriz}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.19\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.27\linewidth}@{}}
+\toprule
+Riesgo & Exposición e impacto & Respuesta\\
+\midrule
+\textcolor{rojo}{\textbf{Tipo de cambio}} & Pasivo neto S/ 4,704.0 MM (US\$ 1,397). TC $-10\,\%$: $(155.2)$; $+10\,\%$: 127.0 & CCS + NDF (Estrategia 1)\\
+\textcolor{rojo}{\textbf{Crudo}} & Inventario 2,901 MBL (168.4). WTI $-20\,\%$: $(33.3)$, 2.3 veces la utilidad bruta & Swap o collar OTC (Estrategia 2)\\
+\textcolor{oro}{\textbf{Margen (\emph{crack})}} & Productos en inventario 313.5. Precios $-10\,\%$: $(31.3)$; el margen no se mide con los EEFF & Cobertura natural; fase 2\\
+\textcolor{oro}{\textbf{Tasa de interés}} & Bonos 2,030.3 a mercado (3,096.0 en libros). $\pm100$ pb: $\mp166$ en valor razonable & Solo la tasa base, no el spread\\
+\textbf{Liquidez} & Pagos a menos de un año 3,163.4; líneas usadas al 94\,\% & No se cubre: condiciona el diseño\\
+\textbf{Crédito} & Mayoristas y Estado; baja concentración & No es necesario\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+El código de color del informe distingue prioridad \textcolor{rojo}{alta} (se cubre con derivados), \textcolor{oro}{media} (cobertura parcial) y baja (no se cubre con derivados). La lógica de la priorización combina tres preguntas: ¿el impacto es grande respecto de la capacidad de la empresa para absorberlo?, ¿existe un derivado eficiente para ese riesgo?, ¿el costo y las exigencias de caja del derivado son compatibles con la liquidez?
+
+\section{Riesgo de tipo de cambio}
+
+\subsection{Origen y tamaño}
+
+Con contabilidad en dólares, todo saldo en otra moneda genera riesgo. Las posiciones en euros (activa por EUR 95.6 millones) y en yenes (pasiva por JPY 50.5 millones) son pequeñas y la Gerencia las considera no significativas. La exposición relevante es en soles: una posición pasiva neta de S/ 4,704.0 millones al cierre de 2025, un 21\,\% mayor que la de 2024 (S/ 3,880.1 millones). La Figura~\ref{fig:posicion_soles} (capítulo~\ref{cap:riesgo}) muestra su composición: S/ 991.0 millones de activos frente a S/ 5,695.0 millones de pasivos.
+
+El rubro dominante, \enquote{otros pasivos financieros} (S/ 3,824.5 millones), incluye el \textbf{préstamo del Banco de la Nación} con garantía soberana: S/ 3,765.6 millones al 5.55\,\%, pactado en 46 cuotas mensuales hasta diciembre de 2028 (Nota 14(ii)). Los estados financieros intermedios a junio de 2026 muestran el mismo saldo, íntegro en el pasivo no corriente: todavía no se había amortizado nada. De ahí el supuesto del informe: solo intereses hasta junio de 2027 y 18 cuotas francesas desde julio de 2027 (el cronograma reconstruido en el capítulo~\ref{cap:tasas}). Una consecuencia importante: a la fecha de valorización la posición en soles \emph{sigue siendo} la de diciembre de 2025, S/ 4,704.0 millones.
+
+\subsection{El riesgo ya se materializó}
+
+En 2025 el tipo de cambio interbancario medio pasó de 3.765 a 3.361, una caída de $3.361/3.765-1=-10.7\,\%$: el sol se apreció. La diferencia de cambio aumentó en US\$ 119.3 millones el saldo en dólares del préstamo del BN (con los tipos promedio, $3{,}765.6/3.361-3{,}765.6/3.765\approx120$ millones, del mismo orden). En el agregado la empresa reportó una ganancia cambiaria neta de US\$ 13.4 millones, porque otras partidas compensaron, pero la pérdida en la principal deuda en soles fue real.
+
+\subsection{Sensibilidad}
+
+Como vimos en el capítulo~\ref{cap:riesgo}, con $|N|=4{,}704.0$ y $S_0=3.367$:
+\begin{itemize}
+\item aproximación lineal de la empresa: $\pm1{,}397.1\times10\,\%=\pm139.7$ millones;
+\item cálculo exacto: $-155.2$ si el TC cae 10\,\% y $+127.0$ si sube 10\,\%.
+\end{itemize}
+
+\subsection{Por qué no hay cobertura natural}
+
+Una empresa con ingresos en soles podría pensar que su deuda en soles está naturalmente cubierta. El informe explica por qué no es así: las ventas locales se facturan en soles, pero sus precios siguen la paridad de importación en dólares. Si el sol se aprecia, los precios en soles bajan y el ingreso en dólares se mantiene. Económicamente son flujos en dólares. La deuda en soles a tasa fija, en cambio, no se ajusta: su valor en dólares sube. El descalce es económico, no solo contable.
+
+\section{Riesgo de precio del crudo}
+
+\subsection{Origen}
+
+El informe lo califica como el riesgo operativo-financiero más directo. En 2025 PETROPERÚ compró crudo y productos por US\$ 2,490.0 millones, a un promedio de US\$ 78.66/bl y con un volumen de 87 MBDC. (Verificación de consistencia: $87{,}000\times365\times78.66\approx\text{US\$}~2{,}498$ millones, muy cerca de la cifra reportada.)
+
+Entre la compra del crudo y la venta del refinado pasan semanas. Si en ese lapso el precio cae, el inventario pierde valor y los productos se venden a precios que siguen al crudo más barato. La Nota 1-d de los estados financieros atribuye a este efecto parte de la pérdida de 2025, año en que el crudo cerró en US\$ 57.42/bl, un $57.42/71.72-1=-19.9\,\%$ menos que en 2024.
+
+\subsection{Exposición e impacto}
+
+Al cierre, el inventario de crudo era de 2,901 MBL (US\$ 168.4 millones), y el de hidrocarburos en total, US\$ 563.5 millones. Una caída de 20\,\% del WTI sobre el inventario de crudo equivale a US\$ 33.3 millones al precio de cierre: 2.3 veces la utilidad bruta del año (US\$ 14.4 millones). Al precio de la fecha de valorización la misma caída costaría US\$ 53.7 millones.
+
+\subsection{Un riesgo simétrico y de gran escala}
+
+A diferencia del tipo de cambio, el efecto es lineal: cada dólar por barril vale US\$ 2.9 millones. Y el precio se mueve mucho: en 2026 el WTI subió hasta US\$ 92.60/bl al 28 de setiembre, en plena crisis de oferta en Medio Oriente. A ese precio el mismo inventario vale $2.901\times92.60=268.6$ millones, y la volatilidad implícita es 56.1\,\%.
+
+\subsection{El margen de refinación}
+
+Lo que realmente gana una refinería no es el precio del crudo ni el de los productos, sino la diferencia entre ambos.
+
+\begin{definicion}[Margen de refinación o \emph{crack}]
+El \textbf{crack spread} es la diferencia entre el precio de los productos refinados (gasolina, diésel) y el del crudo con que se fabrican, normalmente por barril. Es el margen bruto de la refinería antes de sus costos operativos.
+\end{definicion}
+
+El informe lo trata como un riesgo aparte, de prioridad media. Cubrir el crudo no fija el margen: si el crudo y los productos caen juntos, la cobertura del crudo protege el inventario, pero el margen puede comprimirse igual. Además, el inventario de productos (US\$ 313.5 millones) queda fuera de la Estrategia~2: cada 10\,\% de caída de sus precios le resta US\$ 31.3 millones. Existen swaps líquidos de diésel y gasolina (contratos NYMEX HO y RBOB), pero el informe no los cuantifica porque los estados financieros no revelan la composición del inventario de productos. Los deja como \textbf{fase~2}.
+
+\begin{informe}[el FEPC no es una cobertura]
+El Fondo de Estabilización de Precios de los Combustibles amortigua los precios al público de algunos productos. Pero solo alcanza al Diésel BX y al Petróleo Industrial 6, y en 2025 fue un aporte neto de la empresa (0.43\,\% de los ingresos), no una compensación. Un mecanismo de estabilización que en el año malo resta en vez de sumar no protege la caja de la empresa.
+\end{informe}
+
+\section{Riesgo de tasa de interés}
+
+\figura{deuda}{Deuda financiera y con el accionista al cierre de 2025 (con los datos de la Nota~14 de los estados financieros que usa el informe). Toda la deuda es a tasa fija: bonos internacionales (azul), préstamos bancarios en soles y dólares (rojo) y deuda con el MEF (verde).}
+
+Toda la deuda está pactada a tasa fija: bonos 2032 (4.750\,\%) y 2047 (5.625\,\%) por US\$ 3,000 millones nominales, el préstamo CESCE (3.285\,\%, 2030), el préstamo del BN y líneas de corto plazo. En consecuencia:
+
+\begin{itemize}
+\item \textbf{No hay riesgo de flujo de caja por tasas}: los intereses que se pagarán ya están fijados.
+\item \textbf{Sí hay riesgo de valor razonable}: los bonos valen US\$ 2,030.3 millones a mercado; con duración modificada de 8.2 años, cada 100 pb cambian su valor en unos US\$ 166 millones.
+\item \textbf{Sí hay riesgo de refinanciación}: por la opinión con salvedades del auditor se incumplió un covenant no financiero del préstamo CESCE y su saldo (US\$ 722.2 millones) se reclasificó al corto plazo. Si hay que refinanciarlo, se hará a las tasas de entonces.
+\item \textbf{Las líneas de corto plazo se reprecian}: los US\$ 354.6 millones usados se renuevan a la tasa vigente en cada renovación. Un punto porcentual más costaría $354.6\times0.01=3.5$ millones al año.
+\end{itemize}
+
+\begin{importante}[base frente a spread]
+El rendimiento de 9.7\,\% de los bonos se descompone en 4.04\,\% de tasa base (Tesoro de EE.\,UU.) y unos 569 pb de spread de crédito. Un swap o un rate lock puede fijar la tasa base, pero no el spread, que es el componente dominante y depende de la percepción del riesgo de PETROPERÚ. Por eso la respuesta al riesgo de tasa es solo parcial.
+\end{importante}
+
+\begin{definicion}[Covenant]
+Un \textbf{covenant} es una obligación contractual del deudor incluida en un préstamo: financiera (mantener cierto nivel de endeudamiento, por ejemplo) o no financiera (presentar estados financieros auditados sin salvedades, por ejemplo). Su incumplimiento permite al acreedor exigir el pago anticipado; por eso la deuda se reclasifica al corto plazo.
+\end{definicion}
+
+\section{Riesgo de liquidez}
+
+El informe lo califica de crítico. De US\$ 376.9 millones en líneas revolventes se usaban US\$ 354.6 millones ($354.6/376.9=94\,\%$), y los pagos no descontados a menos de un año suman US\$ 3,163.4 millones.
+
+No es un riesgo de precio: no hay una variable de mercado que, si se mueve, cambie su tamaño. Por eso no se cubre con derivados. Pero \emph{condiciona su diseño}: deben evitarse instrumentos con llamadas de margen diarias (futuros en bolsa) y con primas iniciales altas (comprar opciones). Esta restricción explica muchas decisiones de las estrategias:
+\begin{itemize}
+\item CCS y NDF, no futuros de tipo de cambio;
+\item swap y collar OTC, no futuros de NYMEX;
+\item collar de costo cero, no put sola;
+\item CSA con umbrales altos y respaldo del Estado.
+\end{itemize}
+
+\section{Riesgo de crédito}
+
+La cartera de clientes se concentra en mayoristas de primer nivel y entidades del Estado (Nota 3.1(b)): el riesgo de crédito es bajo y no requiere derivados (como los \emph{credit default swaps}, que existen pero no se justifican aquí).
+
+Ojo: es el riesgo de crédito \emph{de los clientes de PETROPERÚ} el que es bajo. El riesgo de crédito \emph{de PETROPERÚ para sus bancos} es alto (B-/Caa1), y es lo que encarece los derivados vía CVA y colateral.
+
+\begin{cuidado}[sumar los impactos de la matriz]
+Los impactos de la matriz se miden con escenarios distintos ($\pm10\,\%$ del TC, $-20\,\%$ del WTI, $\pm100$ pb) y sobre conceptos distintos (resultado antes de impuestos, valor del inventario, valor razonable de bonos). No se pueden sumar para obtener una \enquote{pérdida total}. Para compararlos hace falta medirlos con una misma vara. El informe lo hace para las dos estrategias con el VaR al 95\,\% (cap.~\ref{cap:riesgo}: 78.5 millones para el tipo de cambio a 91 días y 93.3 para el crudo a 79 días), y para agregar el colateral usa la correlación entre ambos factores (0.35).
+\end{cuidado}
+
+\begin{resumen}
+\begin{itemize}
+\item El riesgo cambiario nace de un pasivo neto en soles de S/ 4,704.0 millones, concentrado en el préstamo del BN; una caída de 10\,\% del TC costaría US\$ 155.2 millones. No hay cobertura natural porque los ingresos son económicamente dólares.
+\item El riesgo de crudo nace de un inventario de 2,901 MBL que se vende semanas después; una caída de 20\,\% del WTI cuesta US\$ 33.3 millones, 2.3 veces la utilidad bruta (53.7 millones al precio de hoy).
+\item El margen de refinación (\emph{crack}) no se fija cubriendo el crudo; queda para una fase~2 con swaps de productos.
+\item El riesgo de tasa es de valor razonable y refinanciación; un derivado solo puede fijar la tasa base, no el spread.
+\item La liquidez no se cubre, pero descarta márgenes diarios y primas altas.
+\item El crédito de los clientes es bajo; el de PETROPERÚ como contraparte, alto.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[cálculo] Con los saldos de la Figura~\ref{fig:posicion_soles}, verifique la posición neta en soles y conviértala a dólares con el TC de 3.367.
+
+\ejercicio[cálculo] Calcule cuánto aumentó, en dólares, el saldo del préstamo del BN (S/ 3,765.6 millones) si el tipo de cambio pasó de 3.765 a 3.361. Compare con los US\$ 119.3 millones de la Nota 14(c) y explique la diferencia.
+
+\ejercicio[cálculo] ¿Cuánto cambiaría el valor del inventario de crudo de 2,901 MBL si el WTI pasa de 92.60 a 80.00?
+
+\ejercicio[conceptual] ¿Por qué el informe asigna prioridad media y no alta al riesgo de tasa de interés?
+
+\ejercicio[conceptual] Explique por qué el riesgo de liquidez no se cubre con derivados pero afecta la elección de los derivados.
+
+\ejercicio[conceptual] Un analista suma $155.2+33.3+166=354.5$ y concluye que \enquote{la pérdida potencial total es US\$ 354.5 millones}. ¿Qué errores comete?
+
+\ejercicio[conceptual] El crudo baja 15\,\% y los productos refinados bajan 20\,\% en el mismo mes. ¿Protege a PETROPERÚ una cobertura sobre el inventario de crudo? ¿Qué riesgo queda sin cubrir?

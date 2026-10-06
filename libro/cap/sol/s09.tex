@@ -1,0 +1,15 @@
+\section*{Capítulo 9}
+
+\solucion{9.1} $S_u=55$, $S_d=45$; payoffs $V_u=5$, $V_d=0$. Réplica: $\Delta=(5-0)/(55-45)=0.5$; con $r=0$, $B=V_d-\Delta S_d=0-22.5=-22.5$ (deuda). $V_0=0.5\times50-22.5=2.50$. Neutral al riesgo: $q=(1-0.9)/(1.1-0.9)=0.5$; $V_0=0.5\times5+0.5\times0=2.50$.
+
+\solucion{9.2} $e^{0.05}=1.05127$; $q=(1.05127-0.9)/0.2=0.75636$. $V_0=e^{-0.05}(0.75636\times5)=0.95123\times3.7818=3.60$. Por réplica: $\Delta=0.5$ y $Be^{0.05}=-22.5$, luego $B=-21.40$; $V_0=25-21.40=3.60$. La call vale más que con $r=0$ porque comprar a plazo (vía la call) evita financiar el activo.
+
+\solucion{9.3} En el dinero, $\ln(F/K)=0$: $d_1=\sigma\sqrt T/2=0.4\times0.70711/2=0.14142$; $d_2=-0.14142$. $N(d_1)=0.55623$, $N(d_2)=0.44377$. $C=e^{-0.02}\times80\times(0.55623-0.44377)=0.98020\times80\times0.11246=8.82$. Por paridad, $P=C-e^{-rT}(F-K)=8.82$.
+
+\solucion{9.4} Porque la opción se puede replicar con el activo y el bono, y el costo de la réplica no depende de las probabilidades. Cualquier inversionista, crea lo que crea sobre la probabilidad de subida, puede construir la cartera réplica al mismo costo; si la opción costara distinto, habría arbitraje. Las creencias sobre el futuro ya están incorporadas en el precio del activo de hoy.
+
+\solucion{9.5} $\Delta F=-2$. $\Delta V\approx(-0.294)(-2)+\tfrac12(0.0152)(-2)^2=0.588+0.030=0.62$. Nuevo valor $\approx4.85+0.62=5.47$. El modelo de Black con $F=84.54$ da 5.47: la aproximación con delta y gamma es muy buena para cambios pequeños.
+
+\solucion{9.6} Con 65\,\% de volatilidad la put de enero sube de 4.85 a 6.09 por barril. La call de 98.05 también se encarece (a 6.21), de modo que para mantener el costo cero bastaría un strike algo mayor, cerca de 98.45. Con mayor volatilidad ambas opciones valen más; el efecto sobre el techo es pequeño (por eso la vega del collar es casi nula), pero si la empresa quisiera comprar \emph{solo} la put, el costo subiría en un 26\,\%. Lo que sí movería el techo es un cambio del \emph{skew}, no del nivel.
+
+\solucion{9.7} Con menos volatilidad, la call vale menos para cualquier strike. Para que su prima siga igualando la de la put (4.85), hay que venderla con un strike más bajo, más cerca del dinero. Según el informe, el techo de enero bajaría de 98.05 a 95.37. La empresa conserva menos ganancia si el WTI sube: el skew encarece el collar aunque siga siendo de \enquote{costo cero}.

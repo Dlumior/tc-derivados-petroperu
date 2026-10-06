@@ -1,0 +1,17 @@
+\section*{Capítulo 8}
+
+\solucion{8.1} Payoffs: 0, 0, 7 y 20. Ganancias: $-7$, $-7$, $0$ y $+13$. Punto de equilibrio: $K+c=107$.
+
+\solucion{8.2} Con $S_T=70$ la put se ejerce: el vendedor paga $80-70=10$. Ganancia: $4-10=-6$. Pérdida máxima: si el activo vale cero, paga 80 y conserva la prima: $80-4=76$.
+
+\solucion{8.3} $p=c-e^{-rT}(F_0-K)=6.20-e^{-0.01}\times0=6.20$. Cuando la opción sobre un futuro está exactamente en el dinero ($K=F_0$), la call y la put valen lo mismo.
+
+\solucion{8.4} Resultado:
+\[ \min(\max(S_T,77.90),98.05)-92.60\ \text{por barril}. \]
+$S_T=70$: $77.90-92.60=-14.70$ (piso); para 0.387 MMbl, $-5.69$ millones.
+$S_T=90$: $90.00-92.60=-2.60$ (entre strikes, sin protección); $-1.01$ millones.
+$S_T=110$: $98.05-92.60=+5.45$ (techo); $+2.11$ millones.
+
+\solucion{8.5} Las opciones son sobre el futuro de enero (86.54), no sobre el contrato frente (92.60). Medidos respecto del subyacente correcto, la put está 10\,\% abajo ($77.90/86.54=0.90$) y la call 13.3\,\% arriba ($98.05/86.54=1.133$). Que la call necesite estar algo más lejos para valer lo mismo se debe a que, con una distribución lognormal, los precios pueden subir mucho más de lo que pueden bajar (el precio no cae de cero): la cola superior es más larga, y para igualar primas la call debe alejarse más en términos porcentuales.
+
+\solucion{8.6} El valor intrínseco es lo que pagaría la opción si se ejerciera ya; el valor tiempo es lo que se paga por la posibilidad de que el precio se mueva favorablemente antes del vencimiento. Una opción fuera del dinero tiene valor intrínseco cero, pero puede tener una prima alta si la volatilidad es alta y queda tiempo: la put a 77.90 vale 4.85 por barril porque, con una volatilidad implícita de 56.1\,\%, una caída de más de 10\,\% en 79 días es bastante probable.

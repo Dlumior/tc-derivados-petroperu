@@ -1,0 +1,246 @@
+\chapter{Contabilidad, colateral, gobierno e implementación}\label{cap:niif}
+
+\begin{objetivos}
+\begin{itemize}
+\item Explicar la asimetría contable que crea un derivado y cómo la corrige la contabilidad de coberturas.
+\item Aplicar la NIIF~9 a las dos estrategias: qué se designa, cómo y qué es inefectividad.
+\item Comparar las estrategias con los criterios del Cuadro~11 del informe.
+\item Cuantificar el colateral que podría exigir el banco y entender por qué es la restricción que decide.
+\item Describir el plan~B y las condiciones de implementación: política, ISDA/CSA, autorizaciones y separación de funciones.
+\item Releer las conclusiones del informe con todo lo aprendido.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Capítulos~\ref{cap:mercados}, \ref{cap:e1} y~\ref{cap:e2}.\end{prerreq}
+
+\section{El problema contable}
+
+Un derivado se registra a \textbf{valor razonable} (su valor de mercado) y, por regla general, sus cambios de valor van al resultado del período. La partida que se cubre, en cambio, puede medirse de otra forma: el inventario, al costo; un préstamo, al costo amortizado; una transacción futura ni siquiera está en el balance. Sin un tratamiento especial, una cobertura económicamente perfecta podría \emph{aumentar} la volatilidad de las utilidades: el derivado mueve el resultado de este trimestre y la partida cubierta lo hace en otro, o nunca.
+
+\begin{ejemplo}{La asimetría (didáctico)}
+Una empresa cubre con un NDF una compra en soles que hará dentro de seis meses. Al cierre del trimestre el sol se ha depreciado y el NDF tiene un valor negativo de 2 millones, que va a resultados. La compra futura será más barata en dólares, pero como aún no ocurrió no se registra nada. El estado de resultados muestra una pérdida de 2 millones que, económicamente, no existe.
+\end{ejemplo}
+
+\section{La contabilidad de coberturas según la NIIF 9}
+
+La NIIF~9 (\emph{Instrumentos Financieros}, capítulo 6) permite, si se cumplen ciertos requisitos, alinear el reconocimiento del derivado y de la partida cubierta. Distingue tres tipos de relación:
+
+\begin{definicion}[Tipos de cobertura contable]
+\begin{itemize}
+\item \textbf{Cobertura de valor razonable}: cubre cambios en el valor de un activo o pasivo reconocido (o de un compromiso en firme). El cambio de valor de la partida cubierta atribuible al riesgo cubierto se reconoce en resultados, junto con el del derivado.
+\item \textbf{Cobertura de flujos de efectivo}: cubre la variabilidad de flujos futuros. La parte \emph{efectiva} del cambio de valor del derivado se lleva a \textbf{otro resultado integral} (ORI, una cuenta del patrimonio) y se reclasifica a resultados cuando los flujos cubiertos afectan el resultado.
+\item \textbf{Cobertura de la inversión neta} en un negocio en el extranjero (no aplica aquí).
+\end{itemize}
+\end{definicion}
+
+\paragraph{Requisitos} Para aplicar la contabilidad de coberturas la empresa debe: (i) \textbf{designar y documentar} la relación desde el inicio (partida cubierta, instrumento, riesgo, ratio de cobertura y método de evaluación); (ii) demostrar una \textbf{relación económica} entre partida e instrumento (sus valores se mueven en sentidos opuestos por el riesgo cubierto); (iii) que el riesgo de crédito no domine esos cambios de valor (NIIF~9, 6.4.1(c)(ii)); y (iv) usar un ratio de cobertura coherente con el que realmente gestiona. La parte \textbf{inefectiva} (la diferencia que no se compensa) va a resultados. Una transacción futura solo puede cubrirse si es \textbf{altamente probable} (6.3.3).
+
+\begin{definicion}[Derivado hipotético]
+Para medir la inefectividad de una cobertura de flujos se compara el derivado real con un \textbf{derivado hipotético}: uno imaginario que replicaría exactamente la partida cubierta (mismas fechas, montos y moneda) y que valdría cero al inicio. Lo que el derivado real cambie de más o de menos respecto del hipotético es inefectividad.
+\end{definicion}
+
+\begin{adicional}[NIIF 9 frente a NIC 39]
+La norma anterior (NIC~39) exigía que la efectividad estuviera entre 80\,\% y 125\,\%. La NIIF~9 eliminó ese rango y lo reemplazó por los requisitos cualitativos anteriores, más cercanos a la gestión de riesgos real de la empresa.
+\end{adicional}
+
+\section{Estrategia 1: el CCS como cobertura de flujos; el NDF sin designar}
+
+\begin{informe}
+El CCS se designa como \textbf{cobertura de flujos de efectivo} del préstamo del BN: la parte efectiva va a ORI y pasa a resultados cuando lo hace la diferencia de cambio del préstamo. Sus fuentes de inefectividad son el cronograma, el CVA y el \emph{basis} entre monedas, que puede excluirse de la relación (NIIF~9, 6.5.16); se miden con un derivado hipotético que replica el préstamo, y se documenta que el riesgo de crédito no domina la relación. El valor razonable incluye el riesgo de crédito propio (DVA; NIIF~13, ¶42).
+
+El NDF, en cambio, \textbf{no se designa}: la diferencia de cambio de las cuentas por pagar va a resultados (NIC~21) y el NDF la compensa en el mismo estado. No hace falta contabilidad de coberturas porque ambas partidas ya se miden en resultados.
+\end{informe}
+
+\begin{ejemplo}{Una caída instantánea de 10\,\% del TC}
+Con el TC medio pasando de 3.4379 a 3.0941:
+\begin{itemize}
+\item El saldo del préstamo del BN (S/ 3,765.6 millones) aumenta en dólares: $3{,}765.6/3.0941-3{,}765.6/3.4379=1{,}217.0-1{,}095.3=121.7$ millones. Es una pérdida por diferencia de cambio en resultados.
+\item El CCS pasa a ser un activo de US\$ 123.7 millones. Esa ganancia se registra en ORI.
+\item Se reclasifican de ORI a resultados 121.7 millones, que compensan la pérdida cambiaria del préstamo.
+\item El resultado del período queda prácticamente sin efecto; en ORI quedan unos 2.0 millones, que corresponden a la parte del valor del CCS ligada a los intereses futuros (el cupón del BN supera la curva) y se reclasificarán cuando esos intereses afecten el resultado.
+\end{itemize}
+Al mismo tiempo, las cuentas por pagar en soles pierden y el NDF (activo de 24.0 millones) lo compensa directamente en resultados.
+\end{ejemplo}
+
+\section{Estrategia 2: cobertura de valor razonable de un inventario que rota}
+
+\begin{informe}
+Las tres capas suman el 80\,\% del inventario que \emph{existe hoy} y se designan como \textbf{cobertura de valor razonable} de ese inventario, por su \emph{riesgo de precio total} y en ratio 1:1. No se designan como cobertura de un \emph{componente} WTI, porque el crudo se compra referido al Brent. Al venderse un lote, la relación se discontinúa (NIIF~9, 6.5.6) y el derivado se redesigna sobre el lote que lo reemplaza; su valor a esa fecha y la base Brent--WTI son inefectividad. En el collar se excluye el valor temporal como costo de la cobertura (6.5.15).
+\end{informe}
+
+Tres ideas se combinan en ese párrafo:
+\begin{itemize}
+\item \textbf{Riesgo total, no componente.} La NIIF~9 permite cubrir solo un \enquote{componente} del precio (por ejemplo, la parte WTI) si es identificable y medible. Como el crudo de PETROPERÚ sigue al Brent, se designa el riesgo de precio completo y se acepta que la base genere inefectividad.
+\item \textbf{Discontinuar y redesignar.} El inventario rota cada mes: el lote cubierto se vende. Cada vez, la relación termina y el derivado (que sigue vivo) se asigna al lote nuevo. Como el derivado ya no vale cero en ese momento, su valor es fuente de inefectividad.
+\item \textbf{Valor temporal del collar.} Los cambios del valor tiempo de las opciones (por volatilidad o por el paso del tiempo) no tienen contrapartida en el inventario. Excluirlos de la relación y tratarlos como \enquote{costo de la cobertura} evita esa inefectividad.
+\end{itemize}
+
+\begin{cuidado}[escenario económico no es pérdida contable]
+El informe advierte que su Cuadro~8 es \emph{económico}. La pérdida contable del inventario depende de su costo y de su valor neto de realización (NIC~2): un inventario comprado a 57.42 no registra pérdida contable si el WTI cae de 92.60 a 80, aunque económicamente haya perdido valor frente a hoy.
+\end{cuidado}
+
+\section{Comparación de las estrategias}
+
+\begin{center}\small
+\captionof{table}{Comparación de las estrategias (Cuadro~11 del informe), US\$ millones.}\label{tab:c10}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+\toprule
+Criterio & E1: CCS + NDF & E2: swap + collar & Tasa (no hoy)\\
+\midrule
+Exposición cubierta & 96\,\% de la posición en S/ & 2.32 MMbl, 80\,\% del inventario (214.9) & Tasa base del CESCE (722.2)\\
+Reducción del riesgo & TC $-10\,\%$: de (152.0) a (6.1) & WTI $-30\,\%$: de (80.6) a (34.0) & Baja: no cubre el spread\\
+Costo inicial & Cero; CVA de 11 pb en la tasa & Cero & Cero (inicio diferido)\\
+Costo económico & 0.24\,\% anual (NDF) & Swap: 3.7 frente al spot (nulo frente al futuro) & Pagos si la tasa baja\\
+Colateral con umbral cero & 121.6 si el TC sube 10\,\% & 51.8 si el WTI sube 30\,\% & Bajo\\
+NIIF 9 & CCS: flujos (ORI); NDF: resultados & Valor razonable; se redesigna al rotar & Flujos, solo si es altamente probable\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+La fila nueva respecto de los capítulos anteriores es la del colateral. El informe la resume en su frase central: \enquote{lo que puede impedir ejecutarlas no es su costo, sino el colateral que pediría el banco}.
+
+\section{Liquidez: la restricción que decide}
+
+Los derivados OTC no tienen márgenes de bolsa, pero un banco pedirá colateral a una contraparte B-/Caa1. El informe supone el caso más exigente, \textbf{umbral cero}, y mide cuánto podría tener que entregar PETROPERÚ.
+
+\begin{center}\small
+\captionof{table}{Colateral exigible con umbral cero, US\$ millones (Cuadro~13 del informe). Déficit: colateral menos líneas libres (22.2).}\label{tab:colateral-libro}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& E1 & E2 & Colat. & Déficit\\
+\midrule
+TC $+10\,\%$ & 121.6 & 0.0 & 121.6 & 99.4\\
+WTI $+30\,\%$ & 0.4 & 51.8 & 52.2 & 30.0\\
+Ambos a la vez & 121.6 & 51.8 & 173.4 & 151.2\\
+PFE 95\,\% & 108.3 & 97.5 & 168.9 & 146.7\\
+PFE 99\,\% & 151.4 & 157.8 & 253.6 & 231.4\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Cómo se lee:
+\begin{itemize}
+\item \textbf{Choques instantáneos.} Si el TC sube 10\,\%, el CCS y el NDF son pasivos por $101.9+19.7=121.6$ millones. Si el WTI sube 30\,\%, el swap y el collar lo son por 51.8. A la vez, 173.4.
+\item \textbf{PFE.} Pero el CCS vive 27 meses: lo relevante no es un choque de hoy sino la exposición potencial futura en toda su vida (cap.~\ref{cap:mercados}). Para la E1 se toma el pico de la PFE del CCS más el NDF en el cuantil a 91 días (151.4 al 99\,\%); para la E2, el programa rodante en el cuantil a su plazo (157.8).
+\item \textbf{Agregación.} E1 y E2 se suman con la correlación TC--WTI de 0.35 (cap.~\ref{cap:riesgo}): $\sqrt{151.4^2+157.8^2+2\times0.35\times151.4\times157.8}\approx253.6$.
+\end{itemize}
+
+Frente a esos 253.6 millones, PETROPERÚ tiene US\$ 22.2 millones de líneas libres ($376.9-354.6$). El préstamo puente de US\$ 475 millones que obtuvo con apoyo del Gobierno tiene otro destino (normalizar el capital de trabajo).
+
+\begin{ficha}{umbral necesario del CSA}
+\paso{1. Ecuación}
+\[ \text{Umbral}=\text{PFE}_{99\,\%}-(1-\text{colchón})\times\text{Líneas libres}. \]
+\paso{2. Símbolos} PFE$_{99\,\%}$: colateral conjunto en el escenario del 99\,\%. Colchón: fracción de las líneas libres que se reserva para la operación (25\,\%).
+\paso{3. Intuición} El banco debe tolerar sin pedir colateral todo lo que la empresa no puede pagar con sus líneas, dejando una reserva para operar.
+\paso{4. Construcción} Si el colateral exigible en el escenario malo es la PFE y la empresa puede usar a lo sumo el 75\,\% de sus líneas libres, el resto debe cubrirlo el umbral.
+\paso{5. Supuestos} PFE lognormal con la volatilidad realizada; tres bancos con exposiciones iguales.
+\paso{6. Ejemplo (del informe)} $253.6-0.75\times22.2=253.6-16.7=236.9\to237$ millones; con tres bancos, unos 79 millones cada uno.
+\paso{7. Interpretación} La ejecución exige un umbral total de al menos US\$ 237 millones o la garantía del Estado. \enquote{Sin ello, la cobertura agravaría el riesgo de liquidez que busca mitigar.}
+\paso{8. Limitaciones} El 99\,\% no es el peor caso; la volatilidad puede subir; un banco puede reducir el umbral si baja la calificación.
+\end{ficha}
+
+\subsection{Plan B si el banco no concede el umbral}
+
+\begin{enumerate}
+\item[(a)] \textbf{Escalonar}: contratar primero el 50\,\% del CCS. El colateral ante un TC $+10\,\%$ baja de 121.6 a 70.7 millones.
+\item[(b)] \textbf{Comprar opciones}: una opción comprada solo exige prima y nunca colateral. La put de WTI sobre el 80\,\% cuesta US\$ 7.2 millones, por lo que se limitaría al tramo más expuesto.
+\item[(c)] \textbf{Mejorar el CSA}: umbral escalonado según la calificación y reajuste semanal del colateral en lugar de diario.
+\item[(d)] \textbf{Garantía del Estado} sobre la línea de derivados.
+\end{enumerate}
+
+\section{Riesgo de tasa: no se recomienda cubrirlo hoy}
+
+La deuda de largo plazo ya es fija; pasarla a variable añadiría riesgo sin bajar el costo de crédito, que lo domina el spread. Queda como opción el swap de inicio diferido para la refinanciación del CESCE (4.91\,\% con pago anual; cap.~\ref{cap:swaps}), solo cuando esa refinanciación sea altamente probable (NIIF~9, 6.3.3). Hoy no lo es, por el incumplimiento del covenant.
+
+\section{Condiciones de implementación}
+
+Un derivado mal gobernado puede convertirse en especulación. El informe propone estas condiciones:
+
+\begin{enumerate}
+\item \textbf{Política de Cobertura aprobada por el Directorio}, con límites (70\,\%--100\,\% de la posición en soles y 50\,\%--80\,\% del inventario de crudo), prohibición expresa de especular y métricas mensuales. Los límites evitan tanto la falta de cobertura como la sobrecobertura. Incluye límites por contraparte y de pérdida.
+\item \textbf{Contratos ISDA con anexo CSA} y un umbral de al menos US\$ 237 millones, o el plan~B, con período de reposición del colateral y monto mínimo de transferencia. Como el covenant del CESCE ya está incumplido, el incumplimiento cruzado (§5(a)(vi)) se limita a \emph{cross-acceleration}, con umbral alto y dispensa expresa para el CESCE; sin ella, no se firma (cap.~\ref{cap:mercados}). Se negocia además que la rebaja de calificación, la opinión con salvedades o la incertidumbre de empresa en marcha no causen el cierre inmediato sin un período de cura, y una cláusula de prepago: si el BN prepaga, el CCS se cancela a valor de mercado.
+\item \textbf{Opinión legal y autorizaciones}: antes de pactar, la Gerencia Legal opina y se obtiene la autorización que exija el régimen de endeudamiento y tesorería de una empresa del Estado. Se evalúa si los compromisos contingentes que el D.U. N.° 003-2026 autoriza al MINEM (hasta US\$ 2,000 millones) pueden respaldar las líneas de derivados.
+\item \textbf{Documentación y revelación}: las coberturas se documentan según la NIIF~9 y se revelan según la NIIF~7 (¶21A--24G); los swaps con Citibank entran a la política. Con insumos aproximados (\emph{proxy}) y el CVA, el nivel de jerarquía de valor razonable (2 o 3; NIIF~13, ¶73) se determina por instrumento.
+\item \textbf{Separación de funciones}: Finanzas contrata (\emph{front office}), Riesgos controla límites, aprueba los modelos y verifica de forma independiente los precios de los bancos (\emph{middle office}), y Contabilidad registra (\emph{back office}).
+\end{enumerate}
+
+\begin{informe}[cuándo revisar y qué vigilar]
+Se revisa la decisión si el BN prepaga su préstamo; si el CVA, el FVA o el \emph{basis} superan el beneficio de estabilizar la caja; o si el marcador de venta resulta ser el Brent (la E2 pasaría a swaps de Brent). Cada mes se vigilan el colateral exigido frente a las líneas libres, la posición neta en soles frente a lo cubierto, el diferencial Brent--WTI y la calificación crediticia, que activa los umbrales del CSA.
+\end{informe}
+
+\section{Por qué todo esto vale la pena}
+
+Volvamos a la pregunta del capítulo~\ref{cap:caso}. En un mundo perfecto, cubrirse no crearía valor. PETROPERÚ está lejos de ese mundo: pierde dinero, su capital de trabajo es negativo en US\$ 2,296.4 millones, usa el 94\,\% de sus líneas, el mercado le exige 9.7\,\% en dólares y el auditor duda de su continuidad. En esas condiciones:
+\begin{itemize}
+\item una pérdida cambiaria de US\$ 152 millones o una caída del crudo de US\$ 80 millones no se absorbe con caja propia: obliga a buscar financiamiento caro o a dejar de operar (Froot et al., 1993);
+\item el objetivo no es ganar con los precios sino eliminar los escenarios extremos que acercan a la empresa a la insolvencia (Stulz, 1996);
+\item los costos de la cobertura (0.24\,\% anual en el NDF, 3.7 millones de backwardation frente al spot, 11 pb de CVA) son conocidos y acotados, frente a pérdidas potenciales mucho mayores e inciertas.
+\end{itemize}
+Pero el caso también muestra el límite de esa lógica: si la cobertura exige más colateral del que la empresa puede entregar, convierte un riesgo de precio en un riesgo de liquidez. Por eso la recomendación es condicional.
+
+\begin{adicional}[limitaciones del análisis]
+El propio informe declara que sus cifras son indicativas: (i) el cronograma del BN es inferido (tasa del CCS entre 5.82\,\% y 6.01\,\%); (ii) la posición en soles distinta del BN y el inventario son de diciembre de 2025: si cambiaron, cambian los nocionales, no el diseño; (iii) la curva soberana y el OVX sustituyen a la curva swap en soles y a la superficie de volatilidad, que no son públicas; (iv) el CVA es un mínimo (sin FVA, KVA ni riesgo \emph{wrong-way}); (v) los escenarios de la E2 suponen que el inventario sigue al WTI y sobrestiman la reducción del riesgo; (vi) el VaR y la PFE suponen lognormalidad y volatilidad constante. Antes de pactar se requieren el cronograma contractual, la posición actualizada y cotizaciones ejecutables de al menos tres bancos (no BlueGamma ni Yahoo Finance).
+\end{adicional}
+
+\section{Las conclusiones del informe, releídas}
+
+\begin{enumerate}
+\item \textbf{Decisión}: aprobar las dos estrategias. PETROPERÚ asume hoy, sin cobertura, una deuda neta de S/ 4,704.0 millones y un inventario expuesto a un WTI que cayó 19.9\,\% en 2025 y hoy cotiza a US\$ 92.60/bl. Con utilidad bruta casi nula y liquidez restringida, una mala racha compromete la continuidad operativa. \emph{(Capítulos 1, 3 y 10.)}
+\item \textbf{Estrategia 1}: el CCS al 5.98\,\% \emph{all-in} (5.93\,\% con el spread de agosto de 2026) más NDF cubre el 96\,\% de la posición en soles; ante una caída de 10\,\% del TC, la pérdida baja de US\$ 152.0 a 6.1 millones, sin pago inicial. \emph{(Capítulos 2, 4, 5, 7 y 11.)}
+\item \textbf{Estrategia 2}: un programa rodante sobre el 80\,\% del inventario, mitad swap y mitad collar de costo cero, reduce la pérdida ante una caída de 30\,\% del WTI de US\$ 80.6 a 34.0 millones, sin prima. El margen de refinación queda para una fase~2; la tasa no se cubre hasta que la refinanciación del CESCE sea altamente probable. \emph{(Capítulos 6, 8, 9 y 12.)}
+\item \textbf{Condición}: se ejecuta solo con un umbral CSA de al menos US\$ 237 millones o con la garantía del Estado, porque al 99\,\% el colateral podría llegar a US\$ 253.6 millones en la vida del CCS; y con dispensa del incumplimiento cruzado por el CESCE. Sin esa condición, plan~B o se pospone. \emph{(Capítulos 4 y 13.)}
+\item \textbf{Próximos pasos}: presentar la Política de Cobertura al Directorio; negociar ISDA/CSA con al menos tres bancos; obtener la opinión legal y el respaldo del Estado (MINEM, D.U. N.° 003-2026); y ejecutar primero el CCS, que cubre el riesgo de mayor impacto.
+\end{enumerate}
+
+\section{Guía para releer el informe}
+
+Al terminar este libro, cada término del informe debería remitir a una idea precisa:
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.5\linewidth}X@{}}
+\toprule
+Término del informe & Dónde se explica\\
+\midrule
+Moneda funcional, empresa en marcha, calificación & Cap.~1\\
+Curva cupón cero, bootstrap, SOFR, tasa efectiva, cuota francesa con gracia & Cap.~2\\
+Volatilidad, asimetría $\pm10\,\%$, duración, VaR, correlación & Cap.~3\\
+OTC, márgenes, ISDA, CSA, umbral, EPE, PFE, CVA, cross-acceleration & Cap.~4\\
+NDF, paridad cubierta, pips, TC de compra & Cap.~5\\
+Backwardation, rendimiento de conveniencia, base, $h^*$ & Cap.~6\\
+CCS, swap a precio promedio, swap de inicio diferido & Cap.~7\\
+Put, call, collar de costo cero, paridad & Cap.~8\\
+Modelo de Black, volatilidad implícita, skew, delta, vega & Cap.~9\\
+Matriz de riesgos, margen de refinación (\emph{crack}) & Cap.~10\\
+PCC, PND, PCG & Cap.~11\\
+Saldo estructural, programa rodante, capas & Cap.~12\\
+NIIF 9, ORI, derivado hipotético, colateral, plan~B & Cap.~13\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{resumen}
+\begin{itemize}
+\item Sin contabilidad de coberturas, los derivados pueden aumentar la volatilidad contable aunque reduzcan la económica.
+\item E1: el CCS es cobertura de flujos de efectivo (ORI, derivado hipotético, \emph{basis} excluible); el NDF no se designa porque ambas partidas ya van a resultados.
+\item E2: cobertura de valor razonable del inventario existente, por su riesgo total; se discontinúa y redesigna al rotar; el valor temporal del collar se excluye.
+\item El colateral es la restricción que decide: PFE conjunta al 99\,\% de 253.6 millones frente a 22.2 de líneas libres. La ejecución exige un umbral de al menos 237 millones (79 por banco) o la garantía del Estado; si no, plan~B.
+\item La implementación exige política con límites, ISDA/CSA con \emph{cross-acceleration} y período de cura, autorizaciones legales, documentación NIIF~9 y separación de funciones.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[conceptual] Explique con un ejemplo propio por qué un derivado que reduce el riesgo económico puede aumentar la volatilidad de las utilidades si no se aplica contabilidad de coberturas.
+
+\ejercicio[cálculo] Con una subida instantánea de 10\,\% del TC medio (de 3.4379 a 3.7817), calcule la ganancia cambiaria del préstamo del BN en dólares y describa el registro bajo cobertura de flujos de efectivo, sabiendo que el CCS pasa a ser un pasivo de US\$ 101.9 millones.
+
+\ejercicio[conceptual] ¿Por qué la cobertura del inventario se designa como de valor razonable, la del préstamo como de flujos de efectivo y el NDF no se designa?
+
+\ejercicio[conceptual] ¿Qué riesgo busca evitar el límite superior de la política (100\,\% de la posición en soles, 80\,\% del inventario)?
+
+\ejercicio[cálculo] Si las líneas libres fueran de US\$ 60 millones y la PFE conjunta al 99\,\% siguiera en 253.6, ¿qué umbral total exigiría la regla del informe? ¿Cuánto por banco con tres bancos?
+
+\ejercicio[conceptual] ¿Por qué es importante que quien contrata los derivados no sea quien mide los límites ni quien los registra?
+
+\ejercicio[integrador] Redacte, en no más de diez líneas, la recomendación a la Gerencia General explicando por qué PETROPERÚ debería implementar ambas estrategias, mencionando beneficio, costo, condición de ejecución y principal riesgo residual de cada una.

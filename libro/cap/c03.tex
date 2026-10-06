@@ -1,0 +1,264 @@
+\chapter{Riesgo, rendimiento y exposición}\label{cap:riesgo}
+
+\begin{objetivos}
+\begin{itemize}
+\item Calcular rendimientos simples y logarítmicos, y una volatilidad anualizada.
+\item Usar la distribución normal para describir la incertidumbre de un precio.
+\item Entender covarianza y correlación, base del ratio de cobertura.
+\item Cuantificar una exposición cambiaria y explicar por qué su efecto es asimétrico.
+\item Cuantificar una exposición al precio de una materia prima.
+\item Medir el riesgo de tasa de un bono con la duración modificada y entender el spread de crédito.
+\item Calcular el valor en riesgo (VaR) de una posición y agregar dos riesgos correlacionados.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Capítulo~\ref{cap:tasas} (valor presente, tasas continuas, logaritmos).\end{prerreq}
+
+\section{Medir cuánto se mueve un precio}
+
+Decir que el tipo de cambio \enquote{es riesgoso} no ayuda a decidir. Necesitamos números: ¿cuánto suele moverse?, ¿qué tan grave sería un mal escenario?, ¿cuánto cambia mi resultado si se mueve? Este capítulo construye esos números en tres pasos: primero medimos los movimientos de un precio (rendimientos y volatilidad); luego, cuánto de nuestro patrimonio depende de ese precio (exposición); y finalmente combinamos ambos para obtener el impacto.
+
+\section{Rendimientos}
+
+\begin{definicion}[Rendimiento simple y logarítmico]
+Si un precio pasa de $P_{t-1}$ a $P_t$:
+\begin{gather*} R_t=\frac{P_t-P_{t-1}}{P_{t-1}}\quad\text{(simple)},\\ r_t=\ln\frac{P_t}{P_{t-1}}\quad\text{(logarítmico)}. \end{gather*}
+\end{definicion}
+
+Para movimientos pequeños ambos son casi iguales ($\ln(1+x)\approx x$). El logarítmico tiene dos ventajas: se suma en el tiempo ($\ln\frac{P_2}{P_0}=\ln\frac{P_2}{P_1}+\ln\frac{P_1}{P_0}$) y es simétrico (subir de 100 a 110 y bajar de 110 a 100 dan $+9.53\,\%$ y $-9.53\,\%$, mientras que los simples dan $+10\,\%$ y $-9.09\,\%$). Es el rendimiento que usan los modelos de opciones y el que usa el informe para medir volatilidades.
+
+\section{Volatilidad}
+
+\begin{ficha}{volatilidad anualizada}
+\paso{1. Ecuación}
+\begin{gather*} \hat\sigma_{per}=\sqrt{\frac{1}{n-1}\sum_{t=1}^{n}(r_t-\bar r)^2},\\ \sigma_{anual}=\hat\sigma_{per}\sqrt{m}. \end{gather*}
+\paso{2. Símbolos} $r_t$: rendimientos logarítmicos de cada período (mensual, diario). $\bar r$: su promedio. $n$: número de rendimientos. $\hat\sigma_{per}$: desviación estándar por período. $m$: períodos por año (12 si es mensual, unos 252 si es diario hábil). $\sigma_{anual}$: \textbf{volatilidad} anualizada, en porcentaje.
+\paso{3. Intuición} La volatilidad mide el tamaño típico de los movimientos. Si los rendimientos de períodos distintos son independientes, sus varianzas se suman: la varianza de un año es $m$ veces la de un período, y la desviación estándar $\sqrt{m}$ veces. Por eso la volatilidad crece con la raíz del tiempo, no proporcionalmente.
+\paso{4. Construcción} $\operatorname{Var}(r_1+\dots+r_m)=m\,\sigma^2_{per}$ si son independientes y con igual varianza. Tomando raíz: $\sigma_{anual}=\sigma_{per}\sqrt m$. Se divide entre $n-1$ (no $n$) para corregir el sesgo de estimar la media con la misma muestra.
+\paso{5. Supuestos} Rendimientos independientes e idénticamente distribuidos. La volatilidad es constante en el tiempo.
+\paso{6. Ejemplo (didáctico)} Tipos de cambio mensuales: 3.70, 3.65, 3.68, 3.60, 3.55, 3.58. Rendimientos log: $\ln(3.65/3.70)=-1.361\,\%$, $+0.819\,\%$, $-2.198\,\%$, $-1.399\,\%$, $+0.842\,\%$. Media: $-0.659\,\%$. Desviación estándar muestral: $1.400\,\%$ mensual. Anualizada: $1.400\times\sqrt{12}=4.85\,\%$.
+\paso{7. Interpretación} Un movimiento anual \enquote{típico} (una desviación estándar) del tipo de cambio sería de un 5\,\% en cualquier dirección.
+\paso{8. Limitaciones} En la realidad la volatilidad cambia (sube en crisis) y los movimientos extremos son más frecuentes que lo que sugiere la distribución normal. Con pocos datos, la estimación es imprecisa.
+\end{ficha}
+
+\begin{informe}
+La Figura~1 del informe muestra el tipo de cambio y el WTI mensuales de enero de 2021 a agosto de 2026, con volatilidades anualizadas de los rendimientos logarítmicos mensuales de \textbf{5.6\,\% para el tipo de cambio} y \textbf{29.3\,\% para el WTI}. Equivalen a volatilidades mensuales de $5.6/\sqrt{12}=1.62\,\%$ y $29.3/\sqrt{12}=8.46\,\%$. El crudo es más de cinco veces más volátil que el tipo de cambio.
+\end{informe}
+
+\figura{historia}{Tipo de cambio y WTI, promedios mensuales de enero de 2021 a agosto de 2026 (reproduce la Figura~1 del informe con las series del BCRP). La franja gris es 2025: el sol se apreció y el crudo cayó, justo los dos movimientos que más dañan a PETROPERÚ.}
+
+\begin{definicion}[Volatilidad histórica e implícita]
+La \textbf{volatilidad histórica} se estima con precios pasados, como en la ficha. La \textbf{volatilidad implícita} es la que el mercado \enquote{incorpora} en los precios de las opciones: la que hay que introducir en un modelo de valoración para reproducir el precio observado. Mira hacia adelante. El índice OVX de la bolsa CBOE mide la volatilidad implícita de las opciones sobre un fondo de petróleo; el informe toma de él $\sigma=56.1\,\%$ para el WTI (cap.~\ref{cap:valoracion}).
+\end{definicion}
+
+Que la volatilidad implícita (56.1\,\%) casi duplique la histórica (29.3\,\%) no es una contradicción, por dos razones. Primero, el 29.3\,\% se calcula con \emph{promedios mensuales}, y promediar suaviza la serie: oculta parte de los saltos diarios. Segundo, la volatilidad cambia con el tiempo. El informe lo comprueba: la volatilidad \emph{realizada} del futuro de WTI en el último año, medida con precios diarios, fue 55.8\,\%, casi igual al OVX. Con precios diarios, la anualización usa $m=252$ días hábiles.
+
+\section{La distribución normal}
+
+Para traducir una volatilidad en probabilidades se suele suponer que los rendimientos siguen una distribución \textbf{normal}: la conocida campana, simétrica alrededor de la media.
+
+\begin{definicion}[Normal estándar y $N(x)$]
+Una variable $Z$ es \textbf{normal estándar} si tiene media 0 y desviación estándar 1. Su función de distribución acumulada, $N(x)=\Pr(Z\le x)$, da la probabilidad de que $Z$ no supere $x$. Por simetría, $N(-x)=1-N(x)$.
+\end{definicion}
+
+\begin{center}\small
+\captionof{table}{Valores de la función normal acumulada.}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+$x$ & 0 & 0.25 & 0.50 & 0.53 & 1.00 & 1.645 & 1.96 & 2.00\\
+$N(x)$ & 0.500 & 0.599 & 0.691 & 0.702 & 0.841 & 0.950 & 0.975 & 0.977\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Regla práctica: aproximadamente el 68\,\% de las observaciones caen dentro de una desviación estándar de la media y el 95\,\% dentro de 1.96 desviaciones. Si el WTI tiene una volatilidad anual de 29.3\,\%, un rendimiento logarítmico anual entre $-57\,\%$ y $+57\,\%$ ($\pm1.96\times29.3\,\%$) cubre el 95\,\% de los casos bajo este supuesto.
+
+\begin{adicional}[la lognormal]
+Si los rendimientos \emph{logarítmicos} son normales, el \emph{precio} $P_T=P_0e^{r}$ sigue una distribución \textbf{lognormal}: nunca es negativo y tiene una cola larga hacia arriba. Este es el supuesto de los modelos Black-Scholes y Black que estudiaremos en el capítulo~\ref{cap:valoracion}.
+\end{adicional}
+
+\section{Covarianza y correlación}
+
+Cuando dos precios se mueven juntos, uno puede servir para cubrir al otro.
+
+\begin{definicion}[Covarianza y correlación]
+La \textbf{covarianza} entre dos rendimientos $X$ y $Y$ es $\operatorname{Cov}(X,Y)=\E[(X-\E X)(Y-\E Y)]$: positiva si tienden a moverse en la misma dirección. La \textbf{correlación} la normaliza: $\rho=\dfrac{\operatorname{Cov}(X,Y)}{\sigma_X\sigma_Y}$, que siempre está entre $-1$ y $+1$.
+\end{definicion}
+
+Con $\rho=1$ los dos rendimientos se mueven en perfecta sincronía (aunque con distinta amplitud); con $\rho=0$ no hay relación lineal. En el capítulo~\ref{cap:futuros} usaremos esta idea para el \emph{ratio de cobertura de mínima varianza} $h^*=\rho\,\sigma_S/\sigma_F$, que el informe calcula para el Brent y el WTI frente al futuro de WTI.
+
+La correlación también importa para \emph{sumar} riesgos. El informe mide una correlación de 0.35 entre los rendimientos diarios del tipo de cambio y del WTI en el último año: se mueven algo juntos, pero lejos de la sincronía perfecta. Si dos pérdidas potenciales $e_1$ y $e_2$ dependen de factores con correlación $\rho$, la pérdida conjunta \enquote{típica} no es $e_1+e_2$ sino
+\[ e=\sqrt{e_1^2+e_2^2+2\rho\,e_1e_2}, \]
+que solo iguala la suma si $\rho=1$. Con $\rho<1$ hay \textbf{diversificación}: es poco probable que ambos factores se muevan en contra a la vez con toda su fuerza. El informe usa esta fórmula para agregar el colateral de sus dos estrategias (cap.~\ref{cap:niif}).
+
+\section{Exposición cambiaria}
+
+\subsection{Posición en moneda extranjera}
+
+\begin{definicion}[Posición de cambio]
+La \textbf{posición en una moneda extranjera} es la suma de los activos menos los pasivos denominados en esa moneda. Si es positiva, la empresa está \textbf{larga} (posición activa) en esa moneda; si es negativa, está \textbf{corta} (posición pasiva).
+\end{definicion}
+
+\figura{posicion_soles}{Composición de la posición en soles de PETROPERÚ al cierre de 2025 (con los saldos en soles de la Nota~3 de los estados financieros que usa el informe). Los pasivos dominan, sobre todo los \enquote{otros pasivos financieros}, que incluyen el préstamo del BN.}
+
+Sumando las barras: activos $41.1+482.3+467.6=991.0$; pasivos $3{,}824.5+517.2+607.8+740.6+4.9=5{,}695.0$. Posición neta: $991.0-5{,}695.0=-4{,}704.0$ millones de soles. PETROPERÚ está \emph{corta en soles}: debe más soles de los que tiene.
+
+\subsection{El efecto de un cambio del tipo de cambio}
+
+\begin{ficha}{resultado cambiario de una posición en soles}
+\paso{1. Ecuación} Para una posición neta $N$ en soles (negativa si es pasiva), el resultado en dólares cuando el tipo de cambio pasa de $S_0$ a $S_1$ es
+\[ \Delta V=\frac{N}{S_1}-\frac{N}{S_0}. \]
+Para un pasivo de tamaño $|N|$: $\;\Delta V=|N|\left(\dfrac{1}{S_0}-\dfrac{1}{S_1}\right)$.
+\paso{2. Símbolos} $S_0,S_1$: tipo de cambio inicial y final en soles por dólar. $N/S$: valor en dólares de $N$ soles.
+\paso{3. Intuición} Un sol vale $1/S$ dólares. Si el sol se aprecia ($S$ baja), cada sol vale más dólares; un pasivo en soles se encarece y quien lo debe pierde.
+\paso{4. Construcción} Valor del pasivo en dólares antes: $|N|/S_0$; después: $|N|/S_1$. La pérdida es el aumento del pasivo: $|N|/S_1-|N|/S_0$; el resultado es su negativo. Si escribimos $S_1=S_0(1+m)$, con $m$ la variación porcentual,
+\[ \Delta V=\frac{|N|}{S_0}\left(1-\frac{1}{1+m}\right)=\frac{|N|}{S_0}\cdot\frac{m}{1+m}. \]
+\paso{5. Supuestos} La posición no cambia mientras cambia el tipo de cambio. Se mide el efecto contable en la moneda funcional.
+\paso{6. Ejemplo (del informe)} $|N|=4{,}704.0$, $S_0=3.367$ (TC SBS que usan los estados financieros). En dólares: $4{,}704.0/3.367=1{,}397.1$ millones.
+\begin{itemize}
+\item TC cae 10\,\% ($m=-0.10$): $1{,}397.1\times\frac{-0.10}{0.90}=1{,}397.1\times(-0.1111)=-155.2$.
+\item TC sube 10\,\% ($m=+0.10$): $1{,}397.1\times\frac{0.10}{1.10}=1{,}397.1\times0.0909=+127.0$.
+\end{itemize}
+\paso{7. Interpretación} Una caída del 10\,\% del tipo de cambio costaría US\$ 155.2 millones; una subida del 10\,\% daría US\$ 127.0 millones. El efecto es \textbf{asimétrico}. Como escala de decisión, el informe calcula que cada 1\,\% que se aprecia el sol cuesta unos US\$ 14.1 millones ($1{,}397.1\times0.01/0.99$).
+\paso{8. Limitaciones} Ignora que la posición cambia en el tiempo (se pagan cuotas) y que hay efectos económicos indirectos (sobre ventas y costos) que el cálculo contable no captura.
+\end{ficha}
+
+\figura{asimetria_tc}{Resultado exacto frente a la aproximación lineal para la posición en soles de PETROPERÚ. La curva exacta es cóncava: pierde más cuando el TC baja de lo que gana cuando sube en la misma proporción.}
+
+\begin{informe}[aproximación lineal]
+La empresa estima que un $\pm10\,\%$ del dólar afecta el resultado en $\pm\text{US\$}~139.7$ millones. Es la aproximación lineal $1{,}397.1\times0.10=139.7$. El informe señala que el cálculo exacto es asimétrico ($-155.2$ y $+127.0$). La asimetría proviene de que el valor en dólares de un sol es $1/S$, una función curva de $S$.
+\end{informe}
+
+\begin{cuidado}[\enquote{el TC cae 10\,\%} no es \enquote{el sol se aprecia 10\,\%}]
+Si $S$ pasa de 3.4379 a $0.9\times3.4379$, el precio del dólar en soles cae 10\,\%, pero el precio del sol en dólares sube $1/0.9-1=11.1\,\%$. El informe usa esta precisión en la sección 3.1: \enquote{una caída de 10\,\% del tipo de cambio (una apreciación del sol de 11.1\,\%)}.
+\end{cuidado}
+
+\subsection{Exposición contable y exposición económica}
+
+El informe advierte que el descalce \emph{no es solo contable}. Las ventas locales se facturan en soles, pero sus precios siguen la paridad de importación en dólares. Si el sol se aprecia, los precios en soles tienden a bajar para mantener su equivalente en dólares. Económicamente, esas ventas son flujos en dólares. Por eso no sirven como \textbf{cobertura natural} de una deuda en soles: una cobertura natural existiría si la empresa tuviera ingresos cuyo valor en dólares subiera cuando el sol se aprecia, y no es el caso.
+
+\section{Exposición al precio del crudo}
+
+La exposición a una materia prima es más directa: si se tiene una cantidad $Q$ y el precio cambia en $\Delta P$, el valor cambia en
+\[ \Delta V=Q\,\Delta P. \]
+
+\begin{ejemplo}{Inventario de crudo al cierre de 2025}
+Inventario: 2,901 MBL $=2.901$ millones de barriles. Precio de cierre de 2025: US\$ 57.42/bl. Valor a ese precio: $2.901\times57.42=166.6$ millones (los estados financieros lo registran en US\$ 168.4 millones). Una caída de 20\,\% del WTI: $\Delta P=-0.20\times57.42=-11.48$; $\Delta V=2.901\times(-11.48)=-33.3$ millones. Frente a una utilidad bruta de 14.4 millones, la pérdida equivale a $33.3/14.4=2.3$ veces. Con el WTI de la fecha de valorización (US\$ 92.60/bl), el mismo volumen y la misma caída de 20\,\% costarían $2.901\times0.20\times92.60=53.7$ millones: el riesgo creció con el precio.
+\end{ejemplo}
+
+A diferencia del tipo de cambio, la relación es lineal: cada dólar por barril vale US\$ 2.901 millones, suba o baje. El informe la llama \enquote{simétrica y de gran escala}. Además, el riesgo no es hipotético: entre la compra y la venta del refinado pasan semanas, y la Nota 1-d de los estados financieros atribuye parte de la pérdida de 2025 a la caída del precio durante ese lapso.
+
+\section{Riesgo de tasa de interés: bonos y duración}
+
+\subsection{Precio y rendimiento de un bono}
+
+\begin{definicion}[Bono, cupón y rendimiento al vencimiento]
+Un \textbf{bono} es un préstamo fraccionado en títulos: el emisor paga un \textbf{cupón} periódico (un porcentaje fijo del \textbf{valor nominal}) y devuelve el nominal al vencimiento. Su precio es el valor presente de esos flujos. El \textbf{rendimiento al vencimiento} $y$ (o TIR) es la tasa única que, usada para descontar todos los flujos, reproduce el precio observado:
+\[ P=\sum_{k=1}^{n}\frac{C_k}{(1+y)^{t_k}}. \]
+\end{definicion}
+
+Precio y rendimiento se mueven en direcciones opuestas: si el mercado exige más rendimiento, los mismos flujos valen menos hoy.
+
+\begin{definicion}[Spread de crédito]
+El rendimiento de un bono corporativo puede descomponerse en el rendimiento de un bono sin riesgo de igual plazo (el Tesoro de EE.\,UU., para bonos en dólares) más un \textbf{spread de crédito}, que compensa el riesgo de impago y la menor liquidez del emisor.
+\end{definicion}
+
+\subsection{La duración}
+
+\begin{ficha}{duración modificada}
+\paso{1. Ecuación}
+\begin{gather*} D_{Mac}=\frac{1}{P}\sum_{k}t_k\,\frac{C_k}{(1+y)^{t_k}},\qquad D_{mod}=\frac{D_{Mac}}{1+y},\\ \Delta P\approx-D_{mod}\,\Delta y\,P. \end{gather*}
+\paso{2. Símbolos} $D_{Mac}$: duración de Macaulay, en años. $D_{mod}$: duración modificada. $\Delta y$: cambio del rendimiento (en tanto por uno: 100 pb $=0.01$). $\Delta P$: cambio aproximado del precio.
+\paso{3. Intuición} La duración de Macaulay es el plazo promedio en que se reciben los flujos, ponderado por su valor presente. La duración modificada dice en qué porcentaje cae el precio por cada punto de aumento del rendimiento.
+\paso{4. Construcción} Derivando $P(y)=\sum C_k(1+y)^{-t_k}$: $\dfrac{dP}{dy}=-\sum t_kC_k(1+y)^{-t_k-1}=-\dfrac{1}{1+y}\sum t_kC_k(1+y)^{-t_k}=-\dfrac{D_{Mac}}{1+y}P=-D_{mod}P$. Para cambios pequeños, $\Delta P\approx\frac{dP}{dy}\Delta y$.
+\paso{5. Supuestos} Cambio pequeño y paralelo del rendimiento. La aproximación es lineal.
+\paso{6. Ejemplo (didáctico)} Bono a 3 años, cupón 5\,\%, nominal 100, $y=9.7\,\%$. Valores presentes: $5/1.097=4.558$; $5/1.097^2=4.155$; $105/1.097^3=79.537$. Precio: $88.250$. $D_{Mac}=(1\times4.558+2\times4.155+3\times79.537)/88.250=2.850$ años. $D_{mod}=2.850/1.097=2.598$. Si $y$ sube 100 pb: $\Delta P\approx-2.598\times0.01\times88.250=-2.29$ (el cálculo exacto da $-2.25$).
+\paso{7. Interpretación} El bono pierde un 2.6\,\% de su valor por cada punto porcentual de aumento del rendimiento.
+\paso{8. Limitaciones} Para cambios grandes la relación precio-rendimiento es curva (\emph{convexidad}) y la aproximación lineal sobrestima las pérdidas y subestima las ganancias.
+\end{ficha}
+
+\figura{duracion}{Precio de un bono de 20 años con cupón de 5\,\% en función del rendimiento. La recta es la aproximación por duración en $y=9.7\,\%$: buena cerca del punto, imprecisa lejos por la convexidad.}
+
+\begin{informe}
+Los bonos 2032 y 2047 de PETROPERÚ valen US\$ 2,030.3 millones a mercado frente a US\$ 3,096.0 millones en libros. El precio de mercado implica un rendimiento de 9.7\,\%, es decir, un spread de unos 569 pb sobre el Tesoro de EE.\,UU. de igual duración (4.04\,\%). Con una duración modificada de 8.2 años, cada 100 pb cambian su valor en $8.2\times0.01\times2{,}030.3\approx166$ millones. Como la deuda es a tasa fija, ese cambio no afecta los intereses que se pagan (no hay riesgo de \emph{flujo de caja}), sino el valor razonable de la deuda y, sobre todo, el costo de \emph{refinanciarla}. Y como el componente dominante es el spread (5.7 puntos) y no la tasa base (4.0 puntos), un derivado de tasas puede fijar la base pero no el spread.
+\end{informe}
+
+\begin{cuidado}[valor en libros y valor de mercado]
+El valor en libros de una deuda (3,096.0) es lo que la empresa recibió más los intereses devengados y menos lo amortizado, según la contabilidad. El valor de mercado (2,030.3) es lo que hoy pagaría un inversionista por esos bonos. Que el segundo sea mucho menor no significa que la empresa deba menos: debe exactamente lo pactado. Significa que el mercado duda de que pague y exige un rendimiento alto.
+\end{cuidado}
+
+\section{Valor en riesgo (VaR)}\label{sec:var}
+
+Las sensibilidades responden \enquote{¿cuánto pierdo si el precio cae 10\,\%?}. Pero no dicen qué tan probable es esa caída. Un 10\,\% en tres meses es un movimiento grande para el tipo de cambio y uno corriente para el crudo. El valor en riesgo combina tamaño y probabilidad en una sola cifra.
+
+\begin{definicion}[Valor en riesgo]
+El \textbf{VaR} al nivel de confianza $c$ (por ejemplo, 95\,\%) y horizonte $T$ es la pérdida que solo se supera con probabilidad $1-c$ en ese horizonte. Un VaR al 95\,\% de 78.5 millones a 91 días significa: en 19 de cada 20 trimestres, la pérdida no pasará de 78.5 millones.
+\end{definicion}
+
+\begin{ficha}{VaR de una posición con resultado monótono}
+\paso{1. Ecuación}
+\begin{gather*}
+x_c=x_0\,e^{-z_c\,\sigma\sqrt{T}},\\
+\text{VaR}_c=-\text{Resultado}(x_c).
+\end{gather*}
+\paso{2. Símbolos} $x_0$: precio de hoy del factor de riesgo (TC o WTI). $\sigma$: volatilidad anual del factor. $T$: horizonte en años. $z_c$: cuantil de la normal estándar ($z_{95\,\%}=1.645$, $z_{99\,\%}=2.326$). $x_c$: precio adverso en el cuantil. $\text{Resultado}(x)$: ganancia o pérdida de la posición si el factor termina en $x$.
+\paso{3. Intuición} Si el resultado empeora siempre que el precio baja (es \emph{monótono}), el peor 5\,\% de los resultados corresponde exactamente al peor 5\,\% de los precios. Basta encontrar el precio que solo se supera a la baja en el 5\,\% de los casos y evaluar la posición en él.
+\paso{4. Construcción} Con rendimientos log normales de media cero, $\ln(x_T/x_0)\sim N(0,\sigma^2T)$. El cuantil del 5\,\% inferior es $-z_{95}\,\sigma\sqrt{T}$; exponenciando se obtiene $x_c$. Como el resultado es monótono, su cuantil es el resultado evaluado en $x_c$.
+\paso{5. Supuestos} Factor lognormal sin tendencia; volatilidad constante; la posición no cambia en el horizonte; resultado monótono en el factor (vale también para un collar, no solo para posiciones lineales).
+\paso{6. Ejemplo (del informe, E1 sin cobertura)} $x_0=3.4379$ (TC medio), $\sigma=6.75\,\%$ (volatilidad realizada diaria del último año), $T=91/360$. Entonces $z\sigma\sqrt T=1.645\times0.0675\times0.5028=0.0558$ y $x_c=3.4379\,e^{-0.0558}=3.2512$. Para el pasivo de S/ 4,704.0 millones:
+\[ \text{VaR}=\frac{4{,}704.0}{3.2512}-\frac{4{,}704.0}{3.4379}=1{,}446.8-1{,}368.3=78.5. \]
+\paso{7. Interpretación} Sin cobertura, en un trimestre malo de cada veinte la pérdida cambiaria superaría US\$ 78.5 millones.
+\paso{8. Limitaciones} Las colas reales son más gruesas que las de la normal; el VaR no dice cuánto se pierde \emph{más allá} del umbral; la volatilidad estimada cambia.
+\end{ficha}
+
+\begin{informe}[el VaR de las estrategias]
+El Cuadro~\ref{tab:var-libro} resume el VaR al 95\,\% que calcula el informe al vencimiento de cada cobertura (91 días para el tipo de cambio, 79 días para el crudo, con la volatilidad realizada de un año: 6.75\,\% y 55.8\,\%).
+
+\begin{center}\small
+\captionof{table}{VaR al 95\,\% al vencimiento (US\$ millones).}\label{tab:var-libro}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+& Sin cobertura & Con cobertura & Reducción\\
+\midrule
+E1 (tipo de cambio) & 78.5 & 3.1 & 96\,\%\\
+E2 (crudo) & 93.3 & 36.5 & 61\,\%\\
+\bottomrule
+\end{tabular}
+\end{center}
+Para el crudo sin cobertura: $z\sigma\sqrt T=1.645\times0.558\times\sqrt{79/365}=0.427$, el WTI adverso es $92.60\,e^{-0.427}=60.42$ y la pérdida $2.901\times(60.42-92.60)=93.3$ millones. Las cifras \enquote{con cobertura} se obtienen igual, evaluando la posición cubierta en ese mismo precio (caps.~\ref{cap:e1} y~\ref{cap:e2}).
+\end{informe}
+
+\begin{cuidado}[VaR no es pérdida máxima]
+El 5\,\% restante de los casos puede traer pérdidas mucho mayores que el VaR. Por eso el informe complementa el VaR con escenarios de estrés (caídas de 30\,\% del WTI) y, para el colateral, con cuantiles al 99\,\%.
+\end{cuidado}
+
+\begin{resumen}
+\begin{itemize}
+\item El rendimiento logarítmico $\ln(P_t/P_{t-1})$ se suma en el tiempo. La volatilidad es su desviación estándar anualizada con $\sqrt{m}$: 5.6\,\% para el TC y 29.3\,\% para el WTI en el informe.
+\item La distribución normal convierte volatilidades en probabilidades; $N(x)$ será clave para valorizar opciones.
+\item La correlación mide cuánto se mueven juntos dos precios; de ella depende la calidad de una cobertura.
+\item Una posición pasiva de $|N|$ soles produce un resultado $|N|(1/S_0-1/S_1)$ en dólares: asimétrico, $-155.2$ y $+127.0$ millones para $\mp10\,\%$ con los datos de 2025.
+\item El inventario de crudo tiene una exposición lineal: US\$ 2.901 millones por cada dólar por barril.
+\item El VaR al 95\,\% combina tamaño y probabilidad: sin cobertura, 78.5 millones en el tipo de cambio (91 días) y 93.3 millones en el crudo (79 días).
+\item La duración modificada mide la sensibilidad del precio de un bono al rendimiento: 8.2 años en los bonos de PETROPERÚ, unos US\$ 166 millones por cada 100 pb.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[cálculo] Los precios mensuales de un crudo fueron 80, 84, 78, 81 y 86. Calcule los rendimientos logarítmicos, su desviación estándar muestral y la volatilidad anualizada.
+
+\ejercicio[cálculo] Una empresa con moneda funcional dólar tiene un pasivo neto de S/ 2,000 millones y el tipo de cambio es 3.50. Calcule el resultado en dólares si el tipo de cambio cae 5\,\% y si sube 5\,\%. Compare con la aproximación lineal.
+
+\ejercicio[conceptual] ¿Por qué una caída de 10\,\% del tipo de cambio afecta más a PETROPERÚ que una subida de 10\,\%? Explíquelo sin fórmulas.
+
+\ejercicio[cálculo] Un bono a 3 años paga un cupón anual de 6\,\% y su rendimiento es 8\,\%. Calcule su precio, su duración de Macaulay, su duración modificada y el cambio aproximado del precio si el rendimiento sube 50 pb.
+
+\ejercicio[cálculo] Si la volatilidad mensual de un precio es 8.46\,\%, ¿cuál es la anual? Bajo normalidad, ¿qué rango de rendimientos logarítmicos anuales contiene aproximadamente el 68\,\% de los casos?
+
+\ejercicio[conceptual] PETROPERÚ no tiene deuda a tasa variable. ¿Significa eso que no tiene riesgo de tasa de interés? Explique usando el informe.
+
+\ejercicio[cálculo] Una empresa con moneda funcional dólar tiene un pasivo neto de S/ 500 millones. El TC es 3.40 y su volatilidad anual, 6\,\%. Calcule el VaR al 95\,\% a tres meses ($T=0.25$).
+
+\ejercicio[cálculo] Dos riesgos tienen pérdidas potenciales de 80 y 50 millones y una correlación de 0.35. Calcule la pérdida conjunta con la fórmula de agregación y compárela con la suma simple.

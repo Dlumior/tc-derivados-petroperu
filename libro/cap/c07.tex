@@ -1,0 +1,197 @@
+\chapter{Swaps: intercambiar flujos}\label{cap:swaps}
+
+\begin{objetivos}
+\begin{itemize}
+\item Describir un swap de tasas de interés y sus flujos.
+\item Valorizar un swap como diferencia entre dos bonos y obtener la tasa swap.
+\item Calcular la tasa de un swap de inicio diferido y entender el \emph{rate lock}.
+\item Describir un \emph{cross currency swap} amortizable y obtener su tasa de equilibrio.
+\item Explicar el swap de materias primas a precio promedio.
+\item Entender por qué un swap cambia de valor cuando se mueve el mercado.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Capítulo~\ref{cap:tasas} (factores de descuento, cuota francesa, bootstrap) y capítulo~\ref{cap:forwards} (forwards y valor en vida).\end{prerreq}
+
+\section{La idea: cambiar lo que se paga}
+
+Una empresa tiene una deuda a tasa variable y teme que suban las tasas. Otra tiene ingresos que suben con las tasas y preferiría pagar variable. En lugar de refinanciar sus deudas, pueden acordar \emph{intercambiar} los intereses: la primera paga a la segunda una tasa fija y recibe de ella una variable, que usa para pagar su deuda original. El resultado es que la primera empresa paga, en neto, una tasa fija. Eso es un \textbf{swap}.
+
+\begin{definicion}[Swap]
+Un \textbf{swap} es un contrato OTC en que dos partes acuerdan intercambiar series de flujos de caja en fechas futuras, calculados con reglas distintas sobre un monto de referencia llamado \textbf{nocional}. Cada serie de flujos se llama \textbf{pata} (\emph{leg}).
+\end{definicion}
+
+\section{El swap de tasas de interés}
+
+En un swap de tasas \emph{plain vanilla}, una parte paga una tasa fija y recibe una variable (por ejemplo, SOFR) sobre el mismo nocional y en la misma moneda. Como ambas patas están en la misma moneda, el nocional no se intercambia y en cada fecha solo se paga la diferencia neta.
+
+\begin{ejemplo}{Flujos de un swap a 3 años (didáctico)}
+Nocional: US\$ 100 millones. La empresa paga fijo 4.80\,\% y recibe la tasa variable observada al inicio de cada año, que resulta ser 4.30\,\%, 4.90\,\% y 5.20\,\%. Pago neto anual de la empresa (fijo menos variable, por 100):
+\begin{center}\small
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Año & Variable & Recibe $-$ paga & Neto (US\$ MM)\\
+\midrule
+1 & 4.30\,\% & $4.30-4.80$ & $-0.50$\\
+2 & 4.90\,\% & $4.90-4.80$ & $+0.10$\\
+3 & 5.20\,\% & $5.20-4.80$ & $+0.40$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Si la empresa tiene una deuda que paga la tasa variable, su costo total es $\text{variable}-(\text{variable}-4.80\,\%)=4.80\,\%$ fijo cada año.
+\end{ejemplo}
+
+\section{Valorizar un swap y obtener la tasa swap}
+
+Un swap se puede ver como un intercambio de bonos: quien paga fijo y recibe variable está \enquote{largo} en un bono a tasa variable y \enquote{corto} en un bono a tasa fija, ambos con el mismo nocional. Sumar y restar el nocional al final no cambia nada, porque se cancela.
+
+\begin{ficha}{tasa swap}
+\paso{1. Ecuación}
+\begin{gather*}
+V_{\text{paga fijo}}=B_{\text{variable}}-B_{\text{fijo}},\\
+s_n=\frac{1-DF(n)}{\sum_{k=1}^n DF(k)}.
+\end{gather*}
+\paso{2. Símbolos} $B_{\text{variable}}$, $B_{\text{fijo}}$: valores de un bono variable y de uno fijo con nocional 1. $s_n$: tasa swap a $n$ años (la tasa fija que hace $V=0$). $DF(k)$: factores de descuento.
+\paso{3. Intuición} Al pactarse, el swap debe valer cero; la tasa fija es la que iguala ambas patas.
+\paso{4. Construcción} Un bono a tasa variable sin riesgo vale su nominal en cada fecha de fijación de tasa: si cada año paga la tasa de mercado de ese año, descontarla a esa misma tasa da exactamente 1. Así $B_{\text{variable}}=1$. El bono fijo vale $B_{\text{fijo}}=s\sum_k DF(k)+DF(n)$. Igualando: $1=s\sum DF(k)+DF(n)$, de donde sale $s_n$. Es la misma condición de \enquote{tasa par} del bootstrap (cap.~\ref{cap:tasas}).
+\paso{5. Supuestos} Pagos anuales; la tasa variable se fija al inicio de cada período y se paga al final; patas descontadas con la misma curva libre de riesgo.
+\paso{6. Ejemplo} Con los factores obtenidos por bootstrap ($0.956938$, $0.911796$, $0.868608$): $s_3=(1-0.868608)/(0.956938+0.911796+0.868608)=0.131392/2.737342=4.80\,\%$. Se recupera la tasa de partida, como debe ser.
+\paso{7. Interpretación} La tasa swap es un \enquote{promedio ponderado} de las tasas de la curva hasta el plazo $n$.
+\paso{8. Limitaciones} En el mercado actual la pata variable usa SOFR compuesto diariamente y la curva de descuento depende del colateral; el principio es el mismo.
+\end{ficha}
+
+\paragraph{Valor en vida} Si un año después las tasas swap suben, quien paga fijo a 4.80\,\% tiene un contrato más barato que el que conseguiría hoy y su swap gana valor. Aproximadamente, si la nueva tasa swap es $s'$, el valor para quien paga fijo es $(s'-s)\times\text{nocional}\times\sum DF(k)$. Por ejemplo, si la tasa sube a 5.30\,\%: $(0.0530-0.0480)\times100\times2.7373=1.37$ millones.
+
+\section{Swaps de inicio diferido y \emph{rate lock}}
+
+A veces se quiere fijar hoy la tasa de una deuda que se contratará en el futuro.
+
+\begin{ficha}{tasa swap forward}
+\paso{1. Ecuación} Para un swap que empieza en el año $a$ y termina en $b$:
+\[ s_{a,b}=\frac{DF(a)-DF(b)}{\sum_{k=a+1}^{b}DF(k)}. \]
+\paso{2. Símbolos} $a$: inicio diferido; $b$: vencimiento; $DF$: factores de hoy.
+\paso{3. Intuición} Es la tasa fija que hace valer cero hoy un swap cuyos flujos empiezan en $a$.
+\paso{4. Construcción} El bono variable que empieza en $a$ vale hoy $DF(a)-DF(b)$ (vale 1 en $a$, descontado, menos el nominal que se devuelve en $b$). La pata fija vale $s\sum_{k=a+1}^{b}DF(k)$. Se igualan.
+\paso{5. Supuestos} Los de la ficha anterior.
+\paso{6. Ejemplo (didáctico)} Swap a 2 años que empieza dentro de 1 año, con la curva del capítulo~\ref{cap:tasas}: $s_{1,3}=(0.956938-0.868608)/(0.911796+0.868608)=0.088330/1.780404=4.96\,\%$.
+\paso{7. Interpretación} Hoy se puede fijar 4.96\,\% para un financiamiento de 2 años que empezará en un año, aunque la tasa swap a 2 años de hoy sea 4.72\,\%: la curva creciente implica tasas futuras mayores.
+\paso{8. Limitaciones} Fija la tasa base, no el spread de crédito del deudor.
+\end{ficha}
+
+\begin{informe}[riesgo de tasa]
+El informe no recomienda un swap de tasas hoy: la deuda de largo plazo ya es fija, y pasarla a variable añadiría riesgo sin bajar el costo de crédito, que lo domina el spread. Deja como opción un \textbf{swap de inicio diferido} (o un \textbf{rate lock}, un forward sobre la tasa de un bono o swap) para la refinanciación del préstamo CESCE, de 2027 a su vencimiento en 2030, con pago anual: una tasa de \textbf{4.91\,\%}, frente al 3.285\,\% del préstamo vigente.
+
+Con la fórmula anterior se reproduce. Al bootstrap del capítulo~\ref{cap:tasas} se agrega la tasa swap a 4 años (4.80\,\%): $DF(4)=[1-0.048\times(0.956938+0.911796+0.868608)]/1.048=0.828824$. Entonces
+\[ s_{1,4}=\frac{0.956938-0.828824}{0.911796+0.868608+0.828824}=\frac{0.128114}{2.609228}=4.91\,\%. \]
+Pero el informe pone una condición contable: solo se contrataría cuando la refinanciación sea \emph{altamente probable} (NIIF~9, 6.3.3), y hoy no lo es por el incumplimiento del covenant. La herramienta, además, cubre solo la tasa base; el spread de crédito quedaría expuesto.
+\end{informe}
+
+\section{El \emph{cross currency swap}}
+
+Ahora las dos patas están en monedas distintas.
+
+\begin{definicion}[\emph{Cross currency swap} (CCS)]
+En un \textbf{CCS} las partes intercambian flujos de intereses y de principal en dos monedas distintas. A diferencia del swap de tasas, el principal sí se intercambia (o se amortiza), porque una unidad de cada moneda no vale lo mismo. Si ambas patas son a tasa fija, se llama CCS fijo-fijo. Si el principal se devuelve en cuotas, es \textbf{amortizable}.
+\end{definicion}
+
+\begin{intuicion}[convertir una deuda de moneda]
+PETROPERÚ debe soles al Banco de la Nación. Firma con un banco un CCS en el que \emph{recibe} exactamente las cuotas en soles que debe pagar al BN y \emph{paga} cuotas en dólares. Las cuotas en soles entran y salen: PETROPERÚ solo desembolsa dólares. Es como si hubiera cambiado su deuda en soles por una deuda en dólares. Se dice que la deuda se convirtió \emph{sintéticamente} a dólares.
+\end{intuicion}
+
+\begin{ficha}{tasa de equilibrio de un CCS amortizable (primera ecuación del informe)}
+\paso{1. Ecuación}
+\[ \frac{1}{S}\sum_{k}C^{S/}_k\,P^{S/}_k=\sum_k C^{US\$}_k(c)\,P^{US\$}_k. \]
+\paso{2. Símbolos} $C^{S/}_k$: pago en soles que PETROPERÚ recibe en $t_k$ (igual al que debe al BN). $P^{S/}_k$: factor de descuento de la curva soberana en soles (el informe escribe $P$ donde este libro escribe $DF$). $S$: tipo de cambio de compra. $C^{US\$}_k(c)$: pago en dólares, calculado con la tasa $c$ sobre un saldo en dólares que se amortiza con el mismo perfil que el préstamo. $P^{US\$}_k$: factor de la curva SOFR.
+\paso{3. Intuición} El lado izquierdo es el valor hoy, en dólares, de lo que PETROPERÚ recibe; el derecho, el valor hoy de lo que paga. Al inicio el swap vale cero, así que ambos deben ser iguales. La incógnita es $c$.
+\paso{4. Construcción} (i) Se proyectan los 27 pagos en soles que quedan del préstamo: 9 de solo intereses (S/ 17.0 millones) y 18 cuotas de S/ 218.3 millones. (ii) Se descuentan con la curva en soles y se dividen entre $S$: valor en dólares de la pata en soles. (iii) La pata en dólares replica el perfil: su saldo inicial es el saldo en soles entre $S$ y amortiza en dólares lo mismo que el préstamo amortiza en soles, convertido a $S$; los intereses se calculan con la tasa $c$. (iv) Se busca $c$ por prueba y error (bisección) hasta igualar ambos lados.
+\paso{5. Supuestos} Cronograma supuesto; curva soberana como aproximación a una curva swap en soles (no hay una pública); sin cargo por riesgo de crédito.
+\paso{6. Ejemplo (del informe)}
+\begin{itemize}
+\item Saldo cubierto: S/ 3,765.6 millones (el préstamo no se ha amortizado); nocional: $3{,}765.6/3.4367=\text{US\$}~1{,}095.7$ millones.
+\item Valor presente de la pata en soles: S/ 3,838.4 millones, es decir, $3{,}838.4/3.4367=\text{US\$}~1{,}116.9$ millones.
+\item Tasa de equilibrio: $c=5.87\,\%$ (efectiva anual), es decir, $i=1.0587^{1/12}-1=0.4765\,\%$ mensual. Durante la gracia, la pata en dólares paga solo intereses: $1{,}095.7\times0.004765=5.2$ millones al mes.
+\item Pagos totales: la pata en soles recibe S/ 4,081.9 millones (todo el servicio de deuda al BN, con S/ 316.3 millones de intereses); la pata en dólares paga US\$ 1,192.9 millones, de los cuales 97.2 son intereses.
+\end{itemize}
+\paso{7. Interpretación} PETROPERÚ convierte su deuda de S/ 3,765.6 millones al 5.55\,\% en una deuda equivalente de US\$ 1,095.7 millones al 5.87\,\% (antes del cargo por riesgo de crédito; 5.98\,\% con él).
+\paso{8. Limitaciones} El cronograma es inferido. El informe lo prueba con alternativas plausibles: tasa nominal en lugar de efectiva, amortización lineal en lugar de francesa, o cuotas solo en 2028. La tasa del CCS se mueve entre 5.82\,\% y 6.01\,\%. Antes de pactar hay que obtener el cronograma contractual.
+\end{ficha}
+
+\figura{ccs_anual}{Flujos del CCS por año calendario, según la tabla de flujos que genera el código del informe. La pata en soles (convertida a dólares al TC de compra) y la pata en dólares son casi iguales cada año: el CCS cambia la moneda de la deuda sin cambiar su perfil. Casi todo el principal se paga en 2028.}
+
+\begin{adicional}[replicar la tasa]
+Reproducir el 5.87\,\% exige la curva completa en ambas monedas para cada uno de los 27 meses. Este libro lo verificó ejecutando el código público del informe con sus datos: la curva soberana de la SBS interpolada día a día y la curva SOFR construida por bootstrap desde la tasa a 3 meses y los swaps de 1 a 10 años. Incluso con solo los nodos de la Figura~\ref{fig:curvas} (y las tasas cupón cero en dólares del bootstrap) e interpolación lineal se obtiene una pata en soles de US\$ 1,116.8 millones y una tasa de 5.87\,\%: la tasa es poco sensible al detalle de la curva.
+\end{adicional}
+
+\subsection{Por qué 5.87\,\% no es comparable con 5.55\,\%}
+
+Una tasa en dólares y una en soles no se comparan directamente: cada una es el precio del tiempo en su moneda. El informe explica que el 5.87\,\% es algo mayor que el 5.55\,\% por dos razones:
+\begin{enumerate}
+\item En el plazo del CCS, la curva en dólares (4.72\,\% a dos años) está \emph{por encima} de la curva en soles (4.52\,\%). Eso, por sí solo, empujaría la tasa en dólares por encima de una tasa en soles equivalente.
+\item El cupón del BN (5.55\,\%) es \emph{mayor} que la curva soberana en soles. Por eso los pagos en soles, descontados a la curva, valen más que el saldo: US\$ 1,116.9 millones frente a un nocional de US\$ 1,095.7 millones, una prima de 21.2 millones (1.9\,\%). Para que el swap valga cero, esa prima se traslada a la pata en dólares en forma de una tasa más alta.
+\end{enumerate}
+
+\begin{importante}[con qué comparar]
+La comparación relevante no es con el 5.55\,\% del BN sino con lo que le costaría a PETROPERÚ endeudarse en dólares: el mercado exige 9.7\,\% a sus bonos. Convertir la deuda en soles a dólares al 5.98\,\% \emph{all-in} es, en ese sentido, barato.
+\end{importante}
+
+\paragraph{Contraste con el mercado local} Con la curva \enquote{sintética} en dólares de la SBS (la implícita en los forwards locales; cap.~\ref{cap:forwards}) en lugar de la SOFR, la tasa del CCS sería 5.92\,\%. Esa curva es el único dato público del \textbf{basis} entre monedas: la diferencia entre el costo del dólar en el mercado local y en el internacional.
+
+\subsection{El valor del CCS cuando se mueve el tipo de cambio}
+
+Una vez pactado, el valor del CCS para PETROPERÚ es
+\[ V_{CCS}=\frac{\VP^{S/}}{S}-\VP^{US\$}, \]
+donde $\VP^{S/}$ es el valor en soles de la pata que recibe y $\VP^{US\$}$ el de la que paga. Si el tipo de cambio cae, $1/S$ sube y el swap gana valor. Para el registro contable el informe usa el TC medio (3.4379). Con $\VP^{S/}=3{,}838.4$ millones de soles y $\VP^{US\$}=1{,}116.9$ millones:
+\begin{itemize}
+\item TC $-10\,\%$ ($S=3.0941$): $3{,}838.4/3.0941-1{,}116.9=1{,}240.6-1{,}116.9=+123.7$.
+\item TC $+10\,\%$ ($S=3.7817$): $3{,}838.4/3.7817-1{,}116.9=1{,}015.0-1{,}116.9=-101.9$.
+\end{itemize}
+Son las cifras del registro contable del informe: un activo de US\$ 123.7 millones (11.3\,\% del nocional) o un pasivo de US\$ 101.9 millones ante un choque instantáneo de $\mp10\,\%$. Ese pasivo potencial es el que el banco querrá colateralizar (cap.~\ref{cap:niif}).
+
+\section{Swaps de materias primas a precio promedio}
+
+\begin{definicion}[Swap de materias primas]
+En un \textbf{swap de materias primas}, una parte paga un precio fijo por una cantidad de referencia y la otra paga el precio variable de mercado (a menudo, un \emph{promedio} de precios observados en un período). Se liquida por diferencias, sin entrega física.
+\end{definicion}
+
+En el swap de WTI del informe, PETROPERÚ \enquote{vende a precio fijo el promedio de los próximos 3 meses}: recibe el precio fijo $K=89.38$ y paga el promedio $\bar S$ observado. Su liquidación por barril es
+\[ K-\bar S. \]
+Junto con el inventario, que se vende al precio de mercado $\bar S$, el ingreso total por barril es $\bar S+(K-\bar S)=K$: queda fijado en 89.38.
+
+\paragraph{El precio fijo justo} Un swap a precio promedio es una cartera de forwards, uno por cada período de promedio. Su precio fijo justo es, aproximadamente, el promedio de los precios futuros de esos períodos (ignorando pequeñas diferencias de descuento). Por eso el informe fija $K$ en el promedio de los futuros CL de noviembre a enero: $(92.60+89.01+86.54)/3=89.38$. Con \emph{liquidaciones mensuales}: cada mes se liquida la diferencia sobre un tercio del volumen.
+
+\paragraph{Por qué promedio} Los cargamentos se venden a lo largo del trimestre, no en un solo día. Un precio promedio se ajusta mejor a esa realidad y reduce el riesgo de que un solo día atípico determine el resultado.
+
+\begin{informe}[valor razonable del swap]
+El informe cubre con el swap la mitad del volumen cubierto: 1.16 millones de barriles. Ante una caída instantánea de 10\,\% de la curva de futuros, el swap gana $0.10\times89.38=8.94$ por barril, que descontado a 79 días ($e^{-0.0412\times79/365}=0.99113$) son 8.86. Para 1.16 millones de barriles: un activo de US\$ 10.3 millones; con un alza de 10\,\%, un pasivo de igual tamaño. La simetría se debe a que el swap es lineal.
+\end{informe}
+
+\begin{cuidado}[nocional no es exposición]
+El nocional de un swap de tasas (100 millones en el ejemplo) no se paga: solo sirve para calcular los intereses. En un CCS, en cambio, el principal sí fluye (aquí, a través de las cuotas amortizables). Confundir ambos casos lleva a sobrestimar o subestimar el riesgo de una operación.
+\end{cuidado}
+
+\begin{resumen}
+\begin{itemize}
+\item Un swap intercambia flujos calculados con reglas distintas sobre un nocional.
+\item Un swap de tasas equivale a intercambiar un bono variable por uno fijo; la tasa swap es $s_n=[1-DF(n)]/\sum DF(k)$.
+\item La tasa de un swap de inicio diferido es $[DF(a)-DF(b)]/\sum_{a+1}^{b}DF(k)$; el informe propone esta herramienta para la futura refinanciación del CESCE.
+\item El CCS amortizable recibe los pagos en soles del préstamo del BN y paga en dólares: nocional US\$ 1,095.7 millones, tasa de equilibrio 5.87\,\% (5.98\,\% con CVA), pagos totales US\$ 1,192.9 millones. Con otros cronogramas, entre 5.82\,\% y 6.01\,\%.
+\item Su valor es $\VP^{S/}/S-\VP^{US\$}$: $+123.7$ o $-101.9$ millones ante $\mp10\,\%$ del TC.
+\item El swap de WTI fija en 89.38 el precio de 1.16 millones de barriles (la mitad de lo cubierto): liquida $K-\bar S$ por barril, cada mes.
+\item El swap de inicio diferido para el CESCE fijaría hoy 4.91\,\% de 2027 a 2030, pero solo si la refinanciación es altamente probable.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[cálculo] Con $DF(1)=0.9615$ y $DF(2)=0.9155$, calcule la tasa swap a 2 años.
+
+\ejercicio[cálculo] Una empresa paga fijo 4.80\,\% en un swap de 3 años con nocional de 50 millones. Inmediatamente después de pactarlo, la tasa swap a 3 años baja a 4.30\,\%. Con $\sum DF=2.737$, estime el valor del swap para la empresa.
+
+\ejercicio[cálculo] Con los factores $DF(1)=0.956938$, $DF(2)=0.911796$ y $DF(3)=0.868608$, calcule la tasa de un swap de 1 año que empieza dentro de 2 años.
+
+\ejercicio[cálculo] En el swap de WTI, el promedio de precios observado resulta 80.00. Calcule la liquidación del swap sobre su volumen (1.16 millones de barriles) y el ingreso total por barril incluyendo la venta del crudo.
+
+\ejercicio[conceptual] Explique por qué la pata en soles del CCS vale más que su nocional y qué efecto tiene eso sobre la tasa en dólares.
+
+\ejercicio[conceptual] ¿Por qué el informe no recomienda hoy un swap de tasas de interés para los bonos de PETROPERÚ?

@@ -1,0 +1,156 @@
+\chapter{Opciones financieras: derechos, payoffs y estrategias}\label{cap:opciones}
+
+\begin{objetivos}
+\begin{itemize}
+\item Definir opciones de compra (call) y de venta (put), su precio de ejercicio y su prima.
+\item Dibujar el payoff y la ganancia o pérdida de las cuatro posiciones básicas.
+\item Distinguir valor intrínseco y valor tiempo, y clasificar una opción según su \emph{moneyness}.
+\item Deducir la paridad put-call para opciones sobre acciones y sobre futuros.
+\item Construir una put protectora y un collar de costo cero.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Capítulos~\ref{cap:mercados} (payoff y ganancia) y~\ref{cap:forwards} (forwards y no arbitraje).\end{prerreq}
+
+\section{Un derecho, no una obligación}
+
+Un seguro de auto le da un derecho: si choca, la aseguradora paga el daño. Si no choca, usted no recibe nada, pero tampoco recupera la prima. Usted paga hoy un monto conocido para eliminar una pérdida grande e incierta, sin renunciar a nada en el escenario bueno.
+
+Un forward elimina la incertidumbre en ambas direcciones: protege contra la caída del precio pero renuncia a la subida. Una opción funciona como el seguro: protege contra el escenario malo y conserva el bueno. A cambio, cuesta una prima.
+
+\section{Definiciones}
+
+\begin{definicion}[Opción]
+Una \textbf{opción de compra} (\emph{call}) da a su comprador el derecho, pero no la obligación, de comprar un activo a un precio fijado $K$, llamado \textbf{precio de ejercicio} o \emph{strike}, en (o hasta) una fecha $T$. Una \textbf{opción de venta} (\emph{put}) da el derecho de vender a $K$. El comprador paga al vendedor (o \emph{lanzador}) una \textbf{prima}. La opción es \textbf{europea} si solo puede ejercerse en $T$, y \textbf{americana} si puede ejercerse en cualquier momento hasta $T$.
+\end{definicion}
+
+El comprador tiene el derecho; el vendedor, la obligación de cumplir si el comprador ejerce. El comprador solo ejerce cuando le conviene: una call si $S_T>K$, una put si $S_T<K$.
+
+\begin{informe}
+Las opciones del informe son \textbf{opciones sobre futuros de WTI}, una por cada mes en que se vende el inventario: noviembre y diciembre de 2026 y enero de 2027. Cada una vence siete días hábiles antes del 26 del mes previo al del contrato (regla de NYMEX): a 17, 50 y 79 días de la fecha de valorización. La de enero, a 79 días, es la que el informe usa como referencia en el texto, y también este libro. Su subyacente es el precio del futuro $F$, no el spot. Por eso se valorizan con el modelo de Black (1976), que estudiaremos en el capítulo~\ref{cap:valoracion}.
+\end{informe}
+
+\section{Payoffs y ganancias}
+
+\begin{ficha}{payoff de las opciones}
+\paso{1. Ecuaciones} Al vencimiento:
+\begin{gather*}
+\text{call comprada: } \max(S_T-K,\,0),\\
+\text{put comprada: } \max(K-S_T,\,0).
+\end{gather*}
+Las posiciones vendidas tienen el payoff con signo opuesto. La ganancia del comprador es el payoff menos la prima ($c$ o $p$); la del vendedor, la prima menos el payoff.
+\paso{2. Símbolos} $S_T$: precio del subyacente en $T$. $K$: strike. $\max(a,b)$: el mayor de los dos números. $c$, $p$: primas de la call y la put.
+\paso{3. Intuición} Si ejercer conviene, el comprador obtiene la diferencia; si no, deja vencer la opción y recibe cero. Nunca recibe un payoff negativo: ese es el valor del derecho.
+\paso{4. Construcción} Call: si $S_T>K$, comprar a $K$ algo que vale $S_T$ da $S_T-K$; si $S_T\le K$, no se ejerce y el payoff es 0. Ambos casos se resumen en $\max(S_T-K,0)$. La put es simétrica.
+\paso{5. Supuestos} Opción europea; liquidación al vencimiento.
+\paso{6. Ejemplo} $K=90$, prima de la call 6 y de la put 5. Si $S_T=110$: la call paga 20 y gana $20-6=14$; la put paga 0 y pierde 5. Si $S_T=70$: la call paga 0 y pierde 6; la put paga 20 y gana 15.
+\paso{7. Interpretación} El comprador de una call gana con subidas y su pérdida máxima es la prima. El de una put gana con bajadas, con la misma pérdida máxima. El vendedor cobra la prima y asume el riesgo.
+\paso{8. Limitaciones} Ignora el valor del dinero en el tiempo entre el pago de la prima y el vencimiento (en rigor, la ganancia debería capitalizar la prima).
+\end{ficha}
+
+\figura{opciones_4}{Payoff (azul) y ganancia (rojo discontinuo) de las cuatro posiciones básicas con $K=90$. Los payoffs son \enquote{quebrados} en $K$: las opciones son instrumentos \emph{no lineales}. La distancia vertical entre ambas líneas es la prima.}
+
+\paragraph{Punto de equilibrio} Es el precio al vencimiento en que la ganancia es cero: $K+c$ para una call comprada y $K-p$ para una put comprada. En el ejemplo, 96 y 85.
+
+\section{Valor intrínseco, valor tiempo y \emph{moneyness}}
+
+\begin{definicion}[Valor intrínseco y valor tiempo]
+El \textbf{valor intrínseco} de una opción es lo que pagaría si se ejerciera ahora: $\max(S-K,0)$ para una call y $\max(K-S,0)$ para una put (en opciones sobre futuros se usa $F$ en lugar de $S$). El \textbf{valor tiempo} es la diferencia entre la prima y el valor intrínseco: lo que se paga por la posibilidad de que el precio se mueva favorablemente antes del vencimiento.
+\end{definicion}
+
+\begin{definicion}[\emph{Moneyness}]
+Una opción está \textbf{dentro del dinero} (\emph{in the money}, ITM) si su valor intrínseco es positivo, \textbf{en el dinero} (ATM) si $S\approx K$ y \textbf{fuera del dinero} (OTM) si ejercerla ahora no daría nada.
+\end{definicion}
+
+\begin{ejemplo}{La put del collar}
+Put sobre el futuro de enero con $K=77.90$ cuando $F=86.54$. Está fuera del dinero: vender a 77.90 algo que vale 86.54 no conviene. Su valor intrínseco es cero y toda su prima (US\$ 4.85/bl) es valor tiempo: lo que el mercado cobra por la probabilidad de que el futuro caiga más de 10\,\% en 79 días, con una volatilidad implícita de 56.1\,\%.
+\end{ejemplo}
+
+\section{La paridad put-call}
+
+Una call y una put con el mismo strike y vencimiento están ligadas por una relación de no arbitraje, sin necesidad de ningún modelo.
+
+\begin{ficha}{paridad put-call}
+\paso{1. Ecuación} Para opciones europeas sobre un activo sin ingresos:
+\[ c-p=S_0-K\,e^{-rT}. \]
+Para opciones europeas sobre un futuro:
+\[ c-p=e^{-rT}(F_0-K). \]
+\paso{2. Símbolos} $c$, $p$: primas de call y put con igual $K$ y $T$. $S_0$: spot. $F_0$: futuro. $r$: tasa continua.
+\paso{3. Intuición} Comprar una call y vender una put con el mismo strike equivale a comprar a plazo a $K$: si $S_T>K$ se ejerce la call; si $S_T<K$, la contraparte ejerce la put y obliga a comprar a $K$. En ambos casos se compra a $K$.
+\paso{4. Construcción} Cartera A: call comprada más put vendida. Payoff: $\max(S_T-K,0)-\max(K-S_T,0)=S_T-K$ en todos los casos (compruébelo con $S_T$ mayor y menor que $K$). Cartera B: el activo más una deuda de $Ke^{-rT}$; en $T$ vale $S_T-K$. Iguales payoffs, igual precio hoy: $c-p=S_0-Ke^{-rT}$. Para futuros, la cartera B es un futuro largo (cuesta cero) más un bono que paga $F_0-K$ en $T$, cuyo valor es $e^{-rT}(F_0-K)$.
+\paso{5. Supuestos} Opciones europeas, sin costos de transacción, sin riesgo de contraparte.
+\paso{6. Ejemplo (datos del informe)} $F_0=86.54$, $K=77.90$, $r=4.12\,\%$, $T=79/365=0.2164$, $e^{-rT}=0.99113$. Si la put vale 4.85: $c=4.85+0.99113\times(86.54-77.90)=4.85+8.56=13.42$.
+\paso{7. Interpretación} Una call con strike 77.90 costaría 13.42: está dentro del dinero (valor intrínseco descontado 8.56) y tiene el mismo valor tiempo que la put (4.85).
+\paso{8. Limitaciones} Para opciones americanas la relación se convierte en desigualdades.
+\end{ficha}
+
+\section{Estrategias con opciones}
+
+\subsection{Put protectora}
+
+Quien tiene un activo y compra una put obtiene un \textbf{piso}: si el precio cae por debajo de $K$, la put compensa la caída. Es exactamente un seguro con deducible: el deducible es la distancia entre el precio actual y $K$, y la prima es el costo del seguro.
+\[ \text{Resultado}=\max(S_T,K)-S_0-p. \]
+
+\figura{put_protectora}{Activo comprado a 90 con y sin put protectora ($K=80$, prima 3). La pérdida queda limitada a $90-80+3=13$; la ganancia, reducida en 3, sigue siendo ilimitada.}
+
+\begin{informe}
+Para PETROPERÚ, comprar solo puts sobre el 80\,\% del inventario (2.32 millones de barriles, en tres capas) costaría US\$ 7.2 millones: la prima media de las tres capas es 3.12 dólares por barril, y $2.32\times3.12=7.2$. Es la línea \enquote{Solo put, prima pagada} del Cuadro~8 del informe. Una prima así, cada trimestre, es difícil de financiar para una empresa con 94\,\% de sus líneas usadas: es justamente el argumento a favor del collar. El informe sí la deja como \emph{plan B} para el tramo más expuesto, porque una opción comprada no exige colateral (cap.~\ref{cap:niif}).
+\end{informe}
+
+\subsection{El collar}
+
+Para financiar la put sin pagar prima, se puede \emph{vender} una call con strike más alto. La prima cobrada por la call paga la put.
+
+\begin{definicion}[Collar y collar de costo cero]
+Un \textbf{collar} (para quien tiene el activo) es la combinación de una put comprada con strike $K_p$ y una call vendida con strike $K_c>K_p$. Es \textbf{de costo cero} si $K_c$ se elige de modo que la prima de la call vendida sea igual a la de la put comprada.
+\end{definicion}
+
+\figura{collar_construccion}{Construcción del collar de la capa de enero (reproduce la idea de la Figura~4 del informe): put comprada con strike 77.90 más call vendida con strike 98.05. La suma (azul) paga si el precio cae bajo 77.90 y cobra si sube sobre 98.05; entre ambos strikes no hay flujos.}
+
+\begin{ficha}{resultado de un inventario con collar}
+\paso{1. Ecuación} Por unidad de inventario:
+\begin{multline*}
+(S_T-S_0)+\max(K_p-S_T,0)\\-\max(S_T-K_c,0)=\min\bigl(\max(S_T,K_p),K_c\bigr)-S_0.
+\end{multline*}
+\paso{2. Símbolos} $S_0$: precio de hoy (92.60). $K_p=77.90$; $K_c=98.05$ (capa de enero).
+\paso{3. Intuición} El precio efectivo al que se \enquote{vende} el inventario queda encerrado entre $K_p$ y $K_c$, como si llevara un collar.
+\paso{4. Construcción} Por tramos. Si $S_T<K_p$: $(S_T-S_0)+(K_p-S_T)=K_p-S_0$. Si $K_p\le S_T\le K_c$: ninguna opción paga, queda $S_T-S_0$. Si $S_T>K_c$: $(S_T-S_0)-(S_T-K_c)=K_c-S_0$.
+\paso{5. Supuestos} Opciones europeas que vencen cuando se vende el inventario; sin riesgo de base; primas iguales.
+\paso{6. Ejemplo (capa de enero, por barril)}
+\begin{itemize}
+\item Piso: $77.90-92.60=-14.70$ dólares por barril.
+\item Techo: $98.05-92.60=+5.45$ dólares por barril.
+\item Con $S_T=83.34$ ($-10\,\%$): $83.34-92.60=-9.26$, igual que sin cobertura (entre strikes).
+\end{itemize}
+\paso{7. Interpretación} Haga lo que haga el WTI, el barril de esta capa queda valorizado entre 77.90 y 98.05: pierde a lo sumo 14.70 y gana a lo sumo 5.45 frente al precio de hoy, sin pagar prima. En el capítulo~\ref{cap:e2} se suman las tres capas.
+\paso{8. Limitaciones} Renuncia a toda ganancia sobre 98.05; entre los strikes no protege nada; la elección de $K_p$ determina $K_c$ y depende de la volatilidad y del sesgo de volatilidades del mercado.
+\end{ficha}
+
+\begin{cuidado}[\enquote{costo cero} no es \enquote{sin costo}]
+El collar no requiere pago inicial, pero cuesta: la empresa entrega a cambio la ganancia por encima de 98.05. Si el WTI sube a 120, el collar le hace perder la diferencia entre 120 y 98.05 respecto del inventario sin cobertura.
+\end{cuidado}
+
+\begin{resumen}
+\begin{itemize}
+\item Una call da el derecho de comprar a $K$; una put, el de vender. El comprador paga una prima; el vendedor asume la obligación.
+\item Payoffs: $\max(S_T-K,0)$ y $\max(K-S_T,0)$. La ganancia descuenta la prima. Las opciones son no lineales.
+\item La prima se descompone en valor intrínseco y valor tiempo. La put del informe (77.90 con $F=86.54$) está fuera del dinero: todo es valor tiempo.
+\item Paridad put-call: $c-p=S_0-Ke^{-rT}$; sobre futuros, $c-p=e^{-rT}(F_0-K)$.
+\item La put protectora fija un piso a cambio de la prima (7.2 millones para el 80\,\% del inventario). El collar de costo cero financia la put vendiendo una call: en la capa de enero, piso 77.90, techo 98.05, prima neta cero.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[cálculo] Una call con $K=100$ cuesta 7. Calcule su payoff y su ganancia si $S_T$ es 90, 100, 107 y 120. ¿Cuál es el punto de equilibrio?
+
+\ejercicio[cálculo] Usted vende una put con $K=80$ y cobra 4. ¿Cuál es su ganancia si $S_T=70$? ¿Cuál es su pérdida máxima posible?
+
+\ejercicio[cálculo] Con $F_0=90$, $K=90$, $r=4\,\%$ y $T=0.25$, una call sobre el futuro vale 6.20. ¿Cuánto debe valer la put? Explique el resultado.
+
+\ejercicio[cálculo] Con los strikes de la capa de enero (77.90 y 98.05), calcule el resultado por barril del inventario con collar si $S_T$ es 70, 90 y 110, y luego para el volumen en collar de esa capa (0.387 MMbl).
+
+\ejercicio[conceptual] ¿Por qué en el collar de costo cero la call vendida tiene un strike mucho más alejado del precio actual (98.05 frente a 92.60, un 6\,\% arriba) que el de la put (77.90, un 16\,\% abajo de 92.60), aun teniendo la misma prima? (Pista: piense en qué precio es el subyacente de las opciones.)
+
+\ejercicio[conceptual] Explique la diferencia entre el valor intrínseco y el valor tiempo de una opción. ¿Puede una opción fuera del dinero tener una prima alta?

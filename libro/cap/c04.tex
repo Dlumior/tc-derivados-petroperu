@@ -1,0 +1,239 @@
+\chapter{Mercados, posiciones y participantes}\label{cap:mercados}
+
+\begin{objetivos}
+\begin{itemize}
+\item Distinguir mercado spot y mercado de derivados.
+\item Explicar qué significa estar largo o corto en un activo.
+\item Distinguir \emph{payoff} y ganancia o pérdida (\emph{profit/loss}).
+\item Diferenciar cobertura, especulación y arbitraje.
+\item Comparar mercados organizados (bolsa) y mercados OTC.
+\item Entender márgenes, apalancamiento, riesgo de contraparte, contratos ISDA y CSA, colateral, EPE, PFE, CVA e incumplimiento cruzado.
+\item Distinguir liquidación con entrega física y liquidación por diferencias.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Capítulos~\ref{cap:caso} a~\ref{cap:riesgo}.\end{prerreq}
+
+\section{Qué hace un mercado financiero}
+
+Un mercado financiero reúne a quienes quieren comprar y vender activos financieros o riesgos. Sus funciones básicas son tres: trasladar recursos de quien ahorra a quien invierte, \emph{descubrir precios} (agregar la información de muchos participantes en un precio público) y \emph{trasladar riesgos} de quien no quiere asumirlos a quien está dispuesto a hacerlo a cambio de un pago. Los derivados cumplen sobre todo esta última función.
+
+Según lo que se negocia, se habla del mercado de dinero (préstamos de corto plazo), de capitales (bonos y acciones), cambiario (monedas) y de materias primas (petróleo, metales, granos). En el caso PETROPERÚ intervienen todos.
+
+\paragraph{Participantes} Las \textbf{empresas no financieras} (como PETROPERÚ) usan los mercados para financiarse y cubrir riesgos de su negocio. Los \textbf{bancos} actúan como intermediarios y como \emph{contrapartes} de derivados: firman el contrato con la empresa y, a su vez, cubren su propio riesgo en el mercado. Los \textbf{inversionistas} (fondos, aseguradoras) compran activos y a veces asumen riesgos que otros quieren ceder. Los \textbf{reguladores} supervisan: en el Perú, la SBS (bancos, seguros y AFP), la SMV (mercado de valores, a la que PETROPERÚ reporta) y el BCRP (política monetaria y estadísticas, fuente de los tipos de cambio del informe).
+
+\section{Mercado spot y mercado a plazo}
+
+\begin{definicion}[Mercado spot]
+En el \textbf{mercado spot} (o al contado) se pacta hoy una operación que se liquida de inmediato o en un plazo muy corto (en divisas, típicamente dos días hábiles). El \textbf{precio spot} $S_0$ es el precio de esa operación.
+\end{definicion}
+
+Imagine que la refinería sabe hoy que dentro de tres meses tendrá que vender un cargamento de productos cuyo precio sigue al crudo, o que dentro de un año tendrá que pagar una cuota en soles. En el mercado spot solo puede fijar precios para hoy. Para fijar \emph{hoy} un precio \emph{futuro} necesita un contrato distinto: un contrato a plazo, es decir, un derivado. Sin él, la empresa solo puede esperar y aceptar el precio que haya en la fecha.
+
+\begin{definicion}[Mercado de derivados]
+En el \textbf{mercado de derivados} se pactan hoy contratos cuyos pagos dependen del valor futuro de un subyacente y se liquidan en fechas posteriores. Su precio se determina por \emph{no arbitraje} a partir del spot, las tasas de interés y otros factores (capítulos~\ref{cap:forwards} a~\ref{cap:valoracion}).
+\end{definicion}
+
+\section{Posiciones largas y cortas}
+
+\begin{definicion}[Posición larga y corta]
+Se está \textbf{largo} en un activo cuando se gana si su precio sube: por ejemplo, porque se lo posee o porque se ha pactado comprarlo a un precio fijo. Se está \textbf{corto} cuando se gana si su precio baja: porque se ha pactado venderlo a un precio fijo, porque se lo debe o porque se lo ha vendido sin tenerlo (\emph{venta en corto}).
+\end{definicion}
+
+\figura{largo_corto}{Ganancia por unidad de una posición larga y una corta abiertas a 90. Son imágenes en espejo: lo que gana una lo pierde la otra.}
+
+Aplicado a PETROPERÚ:
+\begin{itemize}
+\item El inventario de crudo es una posición \textbf{larga en crudo}: vale más si el WTI sube.
+\item El pasivo neto en soles es una posición \textbf{corta en soles}: la empresa pierde si el sol se aprecia.
+\end{itemize}
+
+Cubrir una posición consiste en tomar la posición \emph{opuesta} en un derivado. Para el crudo, la empresa necesita algo que gane cuando el WTI baje (una posición corta en crudo). Para los soles, algo que gane cuando el sol se aprecie (una posición larga en soles). Toda la Parte~III del libro es la aplicación de esta frase.
+
+\section{Payoff y ganancia o pérdida}
+
+Dos conceptos que se confunden con facilidad y que este libro distinguirá siempre:
+
+\begin{definicion}[Payoff y profit/loss]
+El \textbf{payoff} es el pago contractual que genera un derivado al vencimiento, en función del precio del subyacente en ese momento. La \textbf{ganancia o pérdida} (\emph{profit/loss}, P\&L) es el payoff menos lo que costó la posición, incluidos la prima inicial y, si corresponde, el costo de financiarla o de haber renunciado a un precio mejor.
+\end{definicion}
+
+Para un forward, que se pacta sin pago inicial, payoff y ganancia coinciden. Para una opción, por la que se paga una prima, no: la opción puede tener un payoff positivo y, aun así, generar pérdida si el payoff no alcanza a cubrir la prima. Los gráficos del libro muestran en el eje horizontal el precio del subyacente al vencimiento ($S_T$) y en el vertical el payoff o el resultado, y siempre se indica cuál de los dos.
+
+\section{Cobertura, especulación y arbitraje}
+
+Los mismos contratos pueden usarse con tres propósitos muy distintos.
+
+\begin{definicion}[Cobertura, especulación y arbitraje]
+\begin{itemize}
+\item \textbf{Cobertura} (\emph{hedging}): tomar una posición en un derivado para reducir el riesgo de una exposición que ya se tiene por el negocio.
+\item \textbf{Especulación}: tomar una posición para ganar con un movimiento de precios que se anticipa, sin exposición previa que cubrir. Aumenta el riesgo.
+\item \textbf{Arbitraje}: aprovechar una diferencia de precios entre activos equivalentes para obtener una ganancia sin riesgo y sin inversión neta.
+\end{itemize}
+\end{definicion}
+
+\begin{ejemplo}{Un arbitraje (didáctico)}
+Un banco A cotiza el dólar a 3.40 soles y otro banco B lo compra a 3.42. Un operador compra US\$ 1 millón en A pagando S/ 3.40 millones y los vende de inmediato en B por S/ 3.42 millones: gana S/ 20,000 sin riesgo y sin capital propio. Muchos operadores harían lo mismo; la compra empuja hacia arriba el precio de A y la venta empuja hacia abajo el de B hasta que la diferencia desaparece. En equilibrio no hay arbitraje.
+\end{ejemplo}
+
+\begin{importante}[el principio de no arbitraje]
+En un mercado que funciona bien, dos posiciones que generan exactamente los mismos flujos futuros deben costar lo mismo hoy. Este principio, que parece obvio, es la herramienta central para valorizar derivados: si un derivado puede \emph{replicarse} con activos cuyo precio conocemos, su precio es el costo de la réplica.
+\end{importante}
+
+\begin{informe}
+El informe deja claro que las estrategias son de cobertura: la Política de Cobertura que propone debe incluir la \enquote{prohibición expresa de especular}, y el objetivo es \enquote{estabilizar resultados y flujos, no especular}.
+\end{informe}
+
+\section{Mercados organizados y mercados OTC}
+
+Los derivados se negocian en dos tipos de mercado.
+
+\begin{definicion}[Bolsa y OTC]
+En un \textbf{mercado organizado} (bolsa), como NYMEX o CME, se negocian contratos estandarizados (tamaño, fechas, calidad del subyacente) y una \textbf{cámara de compensación} se interpone entre comprador y vendedor, garantizando el cumplimiento a cambio de exigir márgenes. En el \textbf{mercado OTC} (\emph{over the counter}, extrabursátil), dos partes, normalmente una empresa y un banco, negocian directamente un contrato a la medida.
+\end{definicion}
+
+\begin{center}\small
+\captionof{table}{Bolsa frente a OTC.}\label{tab:otc}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.24\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+\toprule
+& Bolsa (futuros) & OTC (forwards, swaps) \\
+\midrule
+Contrato & Estandarizado & A la medida \\
+Contraparte & Cámara de compensación & Banco \\
+Riesgo de crédito & Muy bajo & Relevante, se mitiga con colateral \\
+Liquidación & Diaria (márgenes) & Al vencimiento o periódica \\
+Liquidez para salir & Alta & Menor; se negocia con el banco \\
+Exigencia de caja & Margen inicial y diario & Según el CSA; puede ser cero \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Margen y apalancamiento}
+
+\begin{definicion}[Margen]
+El \textbf{margen inicial} es un depósito de garantía que la bolsa exige al abrir una posición en futuros. Cada día la posición se valoriza al precio de cierre y las ganancias o pérdidas se abonan o cargan en la cuenta de margen (\emph{marking to market}). Si el saldo cae por debajo del \textbf{margen de mantenimiento}, el titular recibe una \textbf{llamada de margen} y debe reponer el saldo, en efectivo y de inmediato.
+\end{definicion}
+
+\begin{ejemplo}{Llamadas de margen sobre futuros de crudo (didáctico)}
+Un contrato de futuros de WTI en NYMEX cubre 1,000 barriles. Suponga, con fines ilustrativos, un margen inicial de US\$ 6,000 por contrato y un margen de mantenimiento de US\$ 5,000. Para cubrir 2.901 millones de barriles harían falta 2,901 contratos cortos, es decir, un depósito inicial de $2{,}901\times6{,}000=17.4$ millones de dólares.
+
+Si al día siguiente el WTI sube US\$ 3 por barril, la posición corta pierde $3\times1{,}000=3{,}000$ por contrato; el saldo cae a 3,000, por debajo del mantenimiento, y la empresa debe depositar 3,000 por contrato: $2{,}901\times3{,}000=8.7$ millones \emph{en efectivo, ese mismo día}. El inventario sí ganó valor, pero esa ganancia no es caja hasta que el producto se venda semanas después.
+\end{ejemplo}
+
+Este ejemplo muestra por qué el informe descarta los futuros: \enquote{exigen márgenes diarios que la liquidez no soporta}. Una cobertura perfecta en valor puede producir una crisis de caja.
+
+\begin{definicion}[Apalancamiento]
+Hay \textbf{apalancamiento} cuando una posición expone a ganancias y pérdidas mucho mayores que el capital invertido. En el ejemplo, un depósito de 6,000 controla 1,000 barriles que valen unos 92,600 dólares: un movimiento de 6.5\,\% del precio equivale al 100\,\% del margen. El apalancamiento atrae a los especuladores y obliga a las empresas que cubren a tener caja disponible.
+\end{definicion}
+
+\section{Riesgo de contraparte, ISDA, CSA y CVA}
+
+En un derivado OTC no hay cámara de compensación. Si una de las partes quiebra cuando el contrato tiene valor positivo para la otra, esta pierde ese valor. Es el \textbf{riesgo de contraparte}.
+
+\begin{definicion}[ISDA y CSA]
+El \textbf{contrato marco ISDA} (\emph{International Swaps and Derivatives Association}) es el contrato estándar que regula todas las operaciones de derivados OTC entre dos partes: definiciones, eventos de incumplimiento, compensación de saldos (\emph{netting}) y terminación anticipada. El \textbf{anexo CSA} (\emph{Credit Support Annex}) regula el \textbf{colateral}: cuándo y cuánto debe depositar en garantía la parte que tiene un valor negativo. Sus parámetros principales son:
+\begin{itemize}
+\item el \textbf{umbral} (\emph{threshold}): la pérdida que el banco tolera antes de pedir colateral;
+\item el \textbf{monto mínimo de transferencia} (MTA): por debajo de él no se mueve colateral, para evitar transferencias pequeñas;
+\item la \textbf{frecuencia de reajuste} (diaria, semanal) y el \textbf{período de reposición}: cada cuánto se recalcula el colateral y cuántos días hay para entregarlo.
+\end{itemize}
+\end{definicion}
+
+Un umbral alto es una forma de pedir \enquote{crédito} al banco: mientras la pérdida acumulada del derivado no supere el umbral, la empresa no deposita nada. Para PETROPERÚ es la diferencia entre un derivado utilizable y uno que reproduce el problema de los márgenes. Con umbral cero, en cambio, un CSA se parece mucho a una cuenta de margen de bolsa.
+
+\paragraph{Colateral exigible} Con un CSA, la empresa entrega
+\[ \text{Colateral}=\max(\text{Pasivo del derivado}-\text{Umbral},\,0), \]
+siempre que el exceso supere el MTA. Si el derivado vale $-60$ para la empresa y el umbral es 40, entrega 20; si el umbral fuera 80, no entrega nada.
+
+\subsection{Cuánto podría deber la empresa: EPE y PFE}
+
+El valor de un swap cambia a lo largo de su vida. Para medir el riesgo de contraparte no basta con su valor de hoy (cero, al pactarse): hay que mirar cuánto \emph{podría} valer en el futuro.
+
+\begin{definicion}[Exposición esperada y potencial]
+Para quien está expuesto (aquí, el banco frente a PETROPERÚ), la \textbf{exposición} en una fecha futura es $\max(V,0)$, donde $V$ es el valor del derivado a su favor en esa fecha. La \textbf{exposición esperada} (EE o, promediada en el tiempo, \textbf{EPE}) es su promedio sobre todos los escenarios. La \textbf{exposición potencial futura} (PFE) al 99\,\% es el cuantil: la exposición que solo se supera en el 1\,\% de los escenarios.
+\end{definicion}
+
+\figura{perfil_ccs}{Perfil de exposición del CCS del informe, calculado con el código del informe (volatilidad del TC de 6.75\,\%). Crece al principio porque el TC tiene más tiempo para moverse y cae al final porque quedan menos cuotas por pagar. Pico de la EPE: 23.9 millones; de la PFE al 99\,\%: 134.9 millones, hacia el noveno mes.}
+
+La forma de \enquote{joroba} es típica de un swap amortizable: dos fuerzas opuestas, la incertidumbre que se acumula con el tiempo y el nocional que se va pagando. La EPE sirve para cobrar el riesgo de crédito (el CVA, a continuación); la PFE sirve para planear la liquidez: es el colateral que podría pedirse en un escenario malo, y el informe la usa para calibrar el umbral necesario (cap.~\ref{cap:niif}).
+
+\subsection{El precio del riesgo de crédito: CVA}
+
+\begin{definicion}[CVA]
+El \textbf{CVA} (\emph{credit valuation adjustment}) es el ajuste por riesgo de crédito de la contraparte: el valor presente de la pérdida esperada por un posible incumplimiento:
+\[ \text{CVA}\approx\text{LGD}\times\sum_{k}DF(t_k)\,EE(t_k)\,PD(t_{k-1},t_k), \]
+donde $EE$ es la exposición esperada en cada fecha, $PD(t_{k-1},t_k)$ la probabilidad de incumplir en ese intervalo y LGD la fracción que se pierde si hay incumplimiento.
+\end{definicion}
+
+\paragraph{De dónde sale la probabilidad de incumplimiento} Si un emisor paga un spread de crédito $s$ y, en caso de impago, se pierde la fracción LGD, una aproximación estándar (Hull, 2022) es que la intensidad anual de incumplimiento es
+\[ \lambda\approx\frac{s}{\text{LGD}},\qquad PD(t_{k-1},t_k)=e^{-\lambda t_{k-1}}-e^{-\lambda t_k}. \]
+La lógica: el inversionista exige como compensación la pérdida esperada por año, $\lambda\times\text{LGD}$, y eso es el spread.
+
+\begin{ejemplo}{CVA del CCS del informe}
+Spread de PETROPERÚ: 569 pb (implícito en el precio de sus bonos a diciembre de 2025). LGD: 60\,\%. Intensidad: $\lambda=0.0569/0.60=9.48\,\%$ anual, una probabilidad de incumplimiento de $1-e^{-0.0948}=9.0\,\%$ en el primer año. Con el perfil de EPE de la figura (pico de 23.9 millones), el informe obtiene un CVA de US\$ 1.7 millones. Repartido como recargo anual sobre el saldo en dólares del swap, equivale a unos \textbf{11 pb}: la tasa del CCS pasa de 5.87\,\% a 5.98\,\% (\emph{all-in}). Con el spread de agosto de 2026 (318 pb), el recargo sería de unos 6 pb.
+\end{ejemplo}
+
+\begin{adicional}[lo que el CVA no incluye]
+El informe advierte que su CVA es un \emph{mínimo}. Un banco real añade otros ajustes, conocidos en conjunto como XVA:
+\begin{itemize}
+\item \textbf{FVA} (\emph{funding}): el costo de financiar un derivado sin colateral;
+\item \textbf{KVA} (\emph{capital}): el costo del capital regulatorio que el banco debe mantener;
+\item el \textbf{DVA} es el espejo del CVA: el valor que tiene para PETROPERÚ su \emph{propio} riesgo de incumplir. La NIIF~13 exige incluirlo en el valor razonable.
+\end{itemize}
+Además está el riesgo \textbf{wrong-way}: que la exposición crezca justo cuando la contraparte se debilita. En el CCS, el pasivo de PETROPERÚ crece si el sol se deprecia, un escenario que podría coincidir con más presión sobre su caja.
+\end{adicional}
+
+\subsection{Incumplimiento cruzado}
+
+\begin{definicion}[\emph{Cross-default} y \emph{cross-acceleration}]
+Una cláusula de \textbf{incumplimiento cruzado} (\emph{cross-default}, sección 5(a)(vi) del ISDA) permite al banco terminar los derivados si la empresa incumple \emph{otra} deuda por encima de un umbral. La versión más suave, \textbf{cross-acceleration}, solo se activa si esa otra deuda fue efectivamente \emph{acelerada} (su acreedor exigió el pago anticipado).
+\end{definicion}
+
+\begin{informe}
+La cláusula importa mucho aquí: por la opinión con salvedades del auditor, PETROPERÚ ya incumplió un covenant del préstamo CESCE. Con un \emph{cross-default} estándar, el ISDA podría nacer incumplido. El informe exige limitarlo a \emph{cross-acceleration}, con umbral alto y dispensa expresa para el CESCE, y negociar que la rebaja de calificación, la opinión con salvedades o la incertidumbre de empresa en marcha no causen el cierre inmediato sin un \textbf{período de cura}. \enquote{Sin ella, no se firma}. También propone negociar que la garantía del Estado (compromisos contingentes del MINEM autorizados por el D.U. N.° 003-2026, hasta US\$ 2,000 millones) respalde las líneas de derivados.
+\end{informe}
+
+\section{Liquidación: entrega física o por diferencias}
+
+\begin{definicion}[Formas de liquidación]
+Con \textbf{entrega física}, al vencimiento se intercambia el activo subyacente por el precio pactado. Con \textbf{liquidación por diferencias} (\emph{cash settlement}), solo se paga la diferencia entre el precio pactado y el de mercado, en una moneda acordada.
+\end{definicion}
+
+El NDF del informe (\emph{non-deliverable forward}) es un forward de monedas que se liquida por diferencias en dólares: nadie entrega soles. El swap de WTI también se liquida por diferencias: PETROPERÚ no entrega petróleo al banco; recibe o paga la diferencia entre el precio fijo y el promedio observado.
+
+\begin{cuidado}[\enquote{un derivado no tiene costo}]
+Muchos derivados se pactan con valor inicial cero: no hay que pagar nada al firmar. Eso no los hace gratuitos. Tienen un costo económico (renunciar a ganancias, pagar un diferencial de tasas, el CVA incorporado en la tasa) y pueden exigir colateral. El informe distingue explícitamente \enquote{costo inicial} (cero) de \enquote{costo económico} en su Cuadro~11.
+\end{cuidado}
+
+\begin{resumen}
+\begin{itemize}
+\item El mercado spot fija precios para hoy; los derivados permiten fijar hoy precios futuros.
+\item Largo gana si el precio sube; corto, si baja. PETROPERÚ está larga en crudo y corta en soles; cubrirse es tomar la posición opuesta.
+\item Payoff es el pago contractual al vencimiento; ganancia o pérdida descuenta además el costo de la posición.
+\item Cobertura reduce riesgo, especulación lo aumenta, arbitraje explota precios inconsistentes. El no arbitraje es la base de la valoración.
+\item Las bolsas eliminan casi todo el riesgo de contraparte a cambio de márgenes diarios; el OTC es flexible pero tiene riesgo de contraparte, mitigado con ISDA, CSA y colateral, y cobrado vía CVA (11 pb en el CCS del informe).
+\item La EPE mide la exposición promedio (base del CVA); la PFE, la exposición en un escenario malo (base para planear el colateral).
+\item Para una empresa sin caja, los márgenes diarios son inaceptables: de ahí la preferencia del informe por instrumentos OTC con umbrales altos.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[conceptual] Indique si cada agente está largo o corto en el activo indicado: (a) una aerolínea que comprará combustible en seis meses, respecto del combustible; (b) un exportador de cobre que cobrará en dólares, respecto del dólar (su moneda funcional es el sol); (c) PETROPERÚ respecto del sol; (d) un importador peruano que paga en dólares en 90 días, respecto del dólar.
+
+\ejercicio[conceptual] Clasifique como cobertura, especulación o arbitraje: (a) un fondo compra futuros de crudo porque cree que habrá guerra; (b) PETROPERÚ vende un swap de WTI sobre su inventario; (c) un banco compra bonos en Lima y los vende más caros en Nueva York en el mismo instante.
+
+\ejercicio[cálculo] Con los datos del ejemplo de márgenes, ¿cuánto tendría que depositar PETROPERÚ si el WTI subiera US\$ 5 en un solo día? ¿Y si bajara US\$ 5?
+
+\ejercicio[cálculo] Calcule el CVA aproximado de un derivado con exposición esperada de 25 millones, probabilidad de incumplimiento de 12\,\% y LGD de 55\,\%.
+
+\ejercicio[conceptual] ¿Por qué un umbral alto en el CSA es valioso para PETROPERÚ? ¿Por qué un banco no lo concedería fácilmente?
+
+\ejercicio[conceptual] Explique la diferencia entre payoff y ganancia en una opción por la que se pagó una prima de 5 y cuyo payoff al vencimiento es 3.
+
+\ejercicio[cálculo] Un derivado vale $-95$ millones para la empresa. El CSA tiene un umbral de 79 millones y un MTA de 5 millones. ¿Cuánto colateral entrega? ¿Y si el derivado valiera $-82$?
+
+\ejercicio[cálculo] Un emisor paga un spread de 300 pb y la LGD es 55\,\%. Estime la intensidad anual de incumplimiento y la probabilidad de incumplir en el primer año.
+
+\ejercicio[conceptual] ¿Por qué el informe exige limitar el incumplimiento cruzado del ISDA a \emph{cross-acceleration} con dispensa para el CESCE?

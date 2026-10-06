@@ -1,0 +1,106 @@
+% Preámbulo común a las dos ediciones (Kobo y A4).
+% Cada edición define antes: clase, geometry, \edicion y \figescala.
+
+\usepackage[sc]{mathpazo}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\setsansfont{TeX Gyre Heros}[Scale=0.92]
+\setmonofont{DejaVu Sans Mono}[Scale=0.82]
+\usepackage{babel}
+\babelprovide[import,main]{spanish}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{microtype}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs,tabularx,array,multirow}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{csquotes}
+\usepackage{bookmark}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=azul,urlcolor=azul,citecolor=azul,
+  pdftitle={Derivados financieros desde cero: el caso PETROPERÚ},
+  pdfauthor={Libro de estudio},bookmarksnumbered=true}
+
+% ---------- Colores (contrastados para pantallas Kaleido) ----------
+\definecolor{azul}{HTML}{1D4E9E}
+\definecolor{rojo}{HTML}{C0391B}
+\definecolor{verde}{HTML}{1F7A38}
+\definecolor{oro}{HTML}{A86F00}
+\definecolor{morado}{HTML}{6E2A8E}
+\definecolor{gris}{HTML}{4A4A4A}
+
+% ---------- Párrafos y listas ----------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em plus 0.15em}
+\linespread{1.06}
+\setlist{nosep,leftmargin=1.1em,topsep=2pt,itemsep=1pt}
+\setlength{\emergencystretch}{3em}
+\tolerance=2000
+\raggedbottom
+\setlength{\tabcolsep}{3pt}
+\captionsetup{font=small,labelfont={bf,color=azul},skip=3pt,justification=raggedright,singlelinecheck=false}
+\setcounter{tocdepth}{1}
+\setcounter{secnumdepth}{2}
+
+% ---------- Títulos ----------
+\titleformat{\part}[display]{\centering\sffamily\bfseries\color{azul}}{\Large Parte \thepart}{6pt}{\LARGE}
+\titleformat{\chapter}[display]{\sffamily\bfseries\color{azul}}{\small\MakeUppercase{Capítulo} \thechapter}{2pt}{\Large\raggedright}[\vspace{-2pt}{\color{azul}\titlerule[0.8pt]}]
+\titlespacing*{\chapter}{0pt}{0pt}{8pt}
+\titleformat{\section}{\sffamily\bfseries\large\color{azul}\raggedright}{\thesection}{0.5em}{}
+\titlespacing*{\section}{0pt}{10pt}{3pt}
+\titleformat{\subsection}{\sffamily\bfseries\normalsize\color{gris}\raggedright}{\thesubsection}{0.5em}{}
+\titlespacing*{\subsection}{0pt}{8pt}{2pt}
+\titleformat{\paragraph}[runin]{\bfseries\color{azul}}{}{0pt}{}[.]
+\titlespacing*{\paragraph}{0pt}{4pt}{0.5em}
+
+% ---------- Cabecera ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\scriptsize\sffamily\color{gris}\nouppercase{\leftmark}}
+\fancyhead[R]{\scriptsize\sffamily\color{gris}\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+\fancypagestyle{plain}{\fancyhf{}\fancyhead[R]{\scriptsize\sffamily\color{gris}\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% ---------- Recuadros ----------
+\tcbset{base/.style={enhanced,breakable,boxrule=0.6pt,arc=1.5pt,left=3pt,right=3pt,top=2pt,bottom=2pt,
+  fonttitle=\sffamily\bfseries\small,before skip=6pt,after skip=6pt,parbox=false}}
+\newtcolorbox{definicion}[1][]{base,colback=azul!6,colframe=azul,title={Definición\if\relax\detokenize{#1}\relax\else: #1\fi}}
+\newtcolorbox{intuicion}[1][]{base,colback=verde!6,colframe=verde,title={Intuición\if\relax\detokenize{#1}\relax\else: #1\fi}}
+\newtcolorbox{importante}[1][]{base,colback=oro!8,colframe=oro,title={\if\relax\detokenize{#1}\relax Concepto clave\else #1\fi}}
+\newtcolorbox{cuidado}[1][]{base,colback=rojo!5,colframe=rojo,title={Error frecuente\if\relax\detokenize{#1}\relax\else: #1\fi}}
+\newtcolorbox{informe}[1][]{base,colback=gris!6,colframe=gris,title={En el informe\if\relax\detokenize{#1}\relax\else: #1\fi}}
+\newtcolorbox{adicional}[1][]{base,colback=morado!5,colframe=morado,title={Contenido adicional\if\relax\detokenize{#1}\relax\else: #1\fi}}
+\newtcolorbox{resumen}{base,colback=azul!4,colframe=azul,title={Resumen del capítulo}}
+\newtcolorbox{objetivos}{base,colback=white,colframe=azul,boxrule=0.8pt,title={Objetivos de aprendizaje}}
+\newtcolorbox{prerreq}{base,colback=white,colframe=gris,title={Prerrequisitos}}
+
+\newcounter{ejemplo}[chapter]
+\renewcommand{\theejemplo}{\thechapter.\arabic{ejemplo}}
+\newtcolorbox{ejemplo}[1]{base,colback=white,colframe=verde,boxrule=0.8pt,
+  title={\refstepcounter{ejemplo}Ejemplo \theejemplo: #1}}
+
+% Ficha de ecuación con 8 pasos
+\newtcolorbox{ficha}[1]{base,colback=white,colframe=azul,boxrule=0.9pt,title={Ficha de la ecuación: #1}}
+\newcommand{\paso}[1]{\par\smallskip{\sffamily\bfseries\small\color{azul}#1.}\ }
+
+% Ejercicios
+\newcounter{ejer}[chapter]
+\renewcommand{\theejer}{\thechapter.\arabic{ejer}}
+\newcommand{\ejercicio}[1][]{\par\medskip\refstepcounter{ejer}{\sffamily\bfseries\color{azul}Ejercicio \theejer}\if\relax\detokenize{#1}\relax\else\ {\small(#1)}\fi.\ }
+\newcommand{\solucion}[1]{\par\medskip{\sffamily\bfseries\color{verde}Solución #1.}\ }
+
+% Atajos
+\newcommand{\US}{US\$}
+\newcommand{\MM}{\,millones}
+\newcommand{\figura}[3][0.98]{\begin{figure}[H]\centering\includegraphics[width=\figescala\dimexpr #1\linewidth\relax]{fig/#2}\caption{#3}\label{fig:#2}\end{figure}}
+\newcommand{\pb}{\,\text{pb}}
+\DeclareMathOperator{\VP}{VP}
+\DeclareMathOperator{\VF}{VF}
+\newcommand{\E}{\mathbb{E}}

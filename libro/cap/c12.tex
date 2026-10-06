@@ -1,0 +1,234 @@
+\chapter{Estrategia 2: swap y collar sobre el WTI}\label{cap:e2}
+
+\begin{objetivos}
+\begin{itemize}
+\item Describir el diseño de la Estrategia~2: qué se cubre, cuánto y con qué programa rodante.
+\item Reproducir los strikes y primas del collar en sus tres capas (Cuadro~7 del informe).
+\item Construir la tabla de escenarios sobre el inventario (Cuadro~8) y leer la Figura~5.
+\item Medir la cobertura en barriles equivalentes y demostrar que el swap fija el resultado.
+\item Evaluar el costo de la backwardation, el skew, el riesgo de base y lo que queda sin cubrir.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Capítulos~\ref{cap:futuros} (costo de acarreo, backwardation, base), \ref{cap:swaps} (swap de materias primas), \ref{cap:opciones} (collar) y~\ref{cap:valoracion} (modelo de Black, griegas y skew).\end{prerreq}
+
+\section{El diseño}
+
+\paragraph{La respuesta, primero} La Estrategia~2 (E2) cubre el 80\,\% del inventario de crudo, mitad con un swap y mitad con un collar. Si el WTI cae 30\,\%, la pérdida baja de US\$ 80.6 a 34.0 millones, sin pagar prima. A cambio, si el WTI sube 30\,\%, la ganancia se limita a US\$ 21.8 millones (frente a 80.6 sin cobertura).
+
+\paragraph{Por qué OTC} Se usan contratos con bancos, no futuros de NYMEX, porque los futuros exigen márgenes diarios en efectivo que la liquidez no soporta (cap.~\ref{cap:futuros}).
+
+\subsection{Qué se cubre: un saldo estructural}
+
+El inventario no es un lote fijo: entra y sale crudo todos los días. Con compras de 87 mil barriles diarios, los 2,901 mil barriles en inventario equivalen a $2{,}901/87=33$ días de compras: el inventario \textbf{rota} en aproximadamente un mes.
+
+\begin{definicion}[Saldo estructural]
+El \textbf{saldo estructural} es la parte del inventario que, aunque sus barriles cambien, siempre está presente en el tanque: el nivel mínimo con el que opera la refinería. Es un riesgo permanente aunque cada barril individual se venda en semanas.
+\end{definicion}
+
+El informe cubre el 80\,\% del inventario: 2.32 millones de barriles, US\$ 214.9 millones al WTI de hoy. El 20\,\% restante queda abierto \emph{a propósito}: si el inventario baja, la empresa no queda sobrecubierta (con más derivados que barriles), lo que sería especulación. El 80\,\% es el tope de la política propuesta (50\,\%--80\,\% del inventario).
+
+\subsection{Cómo se cubre: un programa rodante en tres capas}
+
+\begin{definicion}[Programa rodante]
+Un \textbf{programa rodante} cubre un riesgo permanente con contratos de corto plazo escalonados. Cuando vence uno, se contrata otro a plazo más largo, de modo que la cobertura total se mantiene.
+\end{definicion}
+
+El volumen cubierto se reparte en \textbf{tres capas} iguales, una por cada mes en que se vende el inventario: noviembre, diciembre y enero. Cada capa es de $2.32/3=0.774$ millones de barriles (774 contratos de 1,000 barriles). Al vencer, cada capa se repone a tres meses. Si no se repusiera, la cobertura caería al 53\,\% del inventario tras el primer vencimiento y al 27\,\% tras el segundo.
+
+Dentro de cada capa, la mitad del volumen va a cada instrumento:
+\begin{enumerate}
+\item[(a)] Un \textbf{swap de WTI} con liquidaciones mensuales a US\$ 89.38/bl, el promedio de los futuros de noviembre a enero. En total, 1.16 millones de barriles. Se usa para los cargamentos cuyo margen ya está definido: si el precio de venta del producto ya está pactado, conviene fijar también el del crudo.
+\item[(b)] Un \textbf{collar de costo cero} por capa: put comprada al 90\,\% del futuro de ese mes (redondeado a 0.10) y call vendida de igual prima. En total, 1.16 millones de barriles.
+\end{enumerate}
+
+\begin{intuicion}[por qué mezclar]
+El swap elimina la incertidumbre por completo, pero fija hoy un precio inferior al actual por la backwardation y renuncia a toda subida. El collar deja un rango de precios abierto, protege contra caídas grandes y no cuesta prima. Combinándolos, la empresa obtiene un punto intermedio: menos variabilidad que con el collar solo y más posibilidad de beneficiarse de alzas que con el swap solo.
+\end{intuicion}
+
+\section{Los parámetros y la valorización del collar}
+
+\begin{center}\small
+\captionof{table}{Parámetros de la Estrategia 2 (Cuadro~7 del informe). Las tres cifras van en el orden nov / dic / ene.}\label{tab:c8}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xr@{}}
+\toprule
+\multicolumn{2}{@{}l}{\emph{Insumos de mercado}}\\
+Futuros $F$ (US\$/bl) & 92.60 / 89.01 / 86.54\\
+Volatilidad implícita $\sigma$ (OVX) & 56.1\,\%\\
+Plazo al vencimiento $T$ (días) & 17 / 50 / 79\\
+Tasa libre de riesgo $r$ (SOFR, continua) & 4.12\,\%\\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Estructura del collar (costo cero, por capa)}}\\
+Volumen cubierto: total / en collar (MMbl) & 2.32 / 1.16\\
+Put comprada: strike (US\$/bl) & 83.30 / 80.10 / 77.90\\
+Put comprada: prima media (US\$/bl) & 3.12\\
+Call vendida: strike (US\$/bl) & 103.68 / 100.38 / 98.05\\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Inventario total si el WTI cae 30\,\% (US\$ MM)}}\\
+Sin cobertura & $(80.6)$\\
+Solo collar & $(44.4)$\\
+\textbf{Propuesta: swap + collar} & $\mathbf{(34.0)}$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Cada capa se valoriza como en el capítulo~\ref{cap:valoracion}: la put al 90\,\% de su futuro ($0.90\times92.60=83.34\to83.30$; $0.90\times89.01=80.11\to80.10$; $0.90\times86.54=77.89\to77.90$) se valoriza con Black, y el strike de la call es el que iguala su prima. Las primas de las puts son 1.12, 3.40 y 4.85: cuanto más plazo, más cara la protección.
+
+\figura{capas}{Piso y techo de cada capa del programa rodante. La banda de cada capa se ensancha con el plazo: con más tiempo hasta el vencimiento, la call de igual prima debe estar más lejos. Los plazos (17, 50 y 79 días) son ilustrativos: al ejecutar se recalculan los strikes con los futuros vigentes.}
+
+\section{El costo de la backwardation}
+
+El swap fija 89.38, por debajo del precio de hoy: frente al spot cede $1.16\times(92.60-89.38)=3.7$ millones (7.5 si todo el 80\,\% fuera swap). Pero, como vimos en el capítulo~\ref{cap:futuros}, ese descuento ya está en el precio futuro: en backwardation (enero 6.5\,\% bajo noviembre) el costo de acarreo implica un rendimiento de conveniencia de 44.7\,\% anual. Si el WTI converge al futuro de enero (86.54), el inventario sin cobertura perdería US\$ 17.6 millones, más que el swap. Frente al futuro, el costo esperado del swap es nulo.
+
+\section{Escenarios}
+
+El informe compara el inventario con y sin cobertura ante \textbf{choques instantáneos} del WTI, aplicados a todas las capas a la vez. Es una prueba de resistencia, no una proyección. Con $Q=2.901$ MMbl en inventario, $Q_C=0.80\,Q=2.32$ cubiertos, $S_0=92.60$ y $S_T$ el WTI del escenario, cada fila aplica una fórmula sencilla. La parte abierta (20\,\%) aporta siempre $(S_T-S_0)\times0.58$:
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.22\linewidth}X@{}}
+\toprule
+Posición & Resultado (US\$ millones)\\
+\midrule
+Sin cobertura & $Q\,(S_T-S_0)$\\
+Swap & $Q_C\,(89.38-S_0)+$ abierto\\
+Collar & $\frac{Q_C}{3}\sum_{\text{capas}}[\min(\max(S_T,K_p),K_c)-S_0]+$ abierto\\
+Solo put & $\frac{Q_C}{3}\sum_{\text{capas}}[\max(S_T,K_p)-S_0-p]+$ abierto\\
+Propuesta & $\tfrac12\,\text{Swap}+\tfrac12\,\text{Collar}$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}\small
+\captionof{table}{Resultado sobre el inventario total, US\$ millones (Cuadro~8 del informe). Coberturas sobre el 80\,\%; Put = solo put con prima pagada; Prop. = 50\,\% swap + 50\,\% collar.}\label{tab:c9}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+WTI & $S_T$ & Sin cob. & Swap & Collar & Put & Prop.\\
+\midrule
+$-30\,\%$ & 64.8 & $(80.6)$ & $(23.6)$ & $(44.4)$ & $(51.6)$ & $(34.0)$\\
+$-20\,\%$ & 74.1 & $(53.7)$ & $(18.2)$ & $(39.0)$ & $(46.2)$ & $(28.6)$\\
+$-10\,\%$ & 83.3 & $(26.9)$ & $(12.8)$ & $(26.9)$ & $(34.1)$ & $(19.9)$\\
+$=F$ ene & 86.5 & $(17.6)$ & $(11.0)$ & $(17.6)$ & $(24.8)$ & $(14.3)$\\
+$0\,\%$ & 92.6 & 0.0 & $(7.5)$ & 0.0 & $(7.2)$ & $(3.7)$\\
+$+10\,\%$ & 101.9 & 26.9 & $(2.1)$ & 22.8 & 19.6 & 10.3\\
+$+20\,\%$ & 111.1 & 53.7 & 3.3 & 29.6 & 46.5 & 16.4\\
+$+30\,\%$ & 120.4 & 80.6 & 8.7 & 34.9 & 73.3 & 21.8\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{ejemplo}{Tres celdas del cuadro}
+\emph{Collar, WTI $-30\,\%$} ($S_T=64.82$): todas las capas están bajo su piso. Parte cubierta: $0.774\times[(83.30-92.60)+(80.10-92.60)+(77.90-92.60)]=0.774\times(-36.5)=-28.2$. Parte abierta: $0.580\times(64.82-92.60)=-16.1$. Total: $-44.4$. Observe que la parte abierta no tiene piso: por eso el collar no protege \enquote{al 100\,\%}.
+
+\emph{Propuesta, WTI $-10\,\%$} ($S_T=83.34$): swap $2.32\times(89.38-92.60)+0.580\times(83.34-92.60)=-7.5-5.4=-12.8$. Collar: el precio está entre el piso y el techo de todas las capas (apenas sobre el piso de noviembre, 83.30), así que no hay protección: $2.32\times(-9.26)-5.4=-26.9$. Promedio: $(-12.8-26.9)/2=-19.9$.
+
+\emph{Solo put, WTI $-30\,\%$}: $0.774\times[(83.30-92.60-1.12)+(80.10-92.60-3.40)+(77.90-92.60-4.85)]-16.1=0.774\times(-45.87)-16.1=-51.6$.
+\end{ejemplo}
+
+\figura{e2_escenarios}{Perfil de resultados de las alternativas para el inventario (amplía la Figura~5 del informe con la put sola). Con el 20\,\% abierto ninguna línea es plana: hasta el swap pierde si el WTI cae. La propuesta (azul grueso) queda entre el swap y el collar.}
+
+\section{Evaluación}
+
+\begin{center}\small
+\captionof{table}{Resumen de las alternativas (US\$ millones), a partir del Cuadro~8 del informe.}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrr@{}}
+\toprule
+Alternativa (sobre el 80\,\%) & Prima & WTI $-30\,\%$ & WTI $+30\,\%$\\
+\midrule
+Sin cobertura & 0 & $(80.6)$ & 80.6\\
+Solo swap & 0 & $(23.6)$ & 8.7\\
+Solo collar & 0 & $(44.4)$ & 34.9\\
+Solo put & 7.2 & $(51.6)$ & 73.3\\
+50\,\% swap + 50\,\% collar & 0 & $(34.0)$ & 21.8\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Por qué 50/50} El reparto equilibra los extremos. Solo con swap, la pérdida en el peor escenario sería de 23.6 millones, pero con un alza de 30\,\% la ganancia se reduciría a 8.7. Solo con collar serían 44.4 y 34.9. La mezcla da 34.0 y 21.8.
+
+\paragraph{Por qué no la put sola} Tiene el mejor perfil (piso y casi toda la subida), pero cuesta 7.2 millones de prima por cada rotación del programa. El informe la deja como plan~B para el tramo más expuesto, porque no exige colateral.
+
+\paragraph{Riesgo residual} El VaR al 95\,\% al vencimiento de las opciones baja de US\$ 93.3 a 36.5 millones: una reducción de 61\,\%, menor que en la E1 porque queda abierto el 20\,\% del inventario y la zona entre los strikes del collar.
+
+\section{La cobertura medida en barriles}
+
+Así como la E1 mide posiciones de cambio (PCC, PND, PCG), la E2 mide su posición en barriles equivalentes:
+
+\begin{center}\small
+\captionof{table}{Posiciones en barriles (Cuadro~9 del informe). Positivo: largo en crudo.}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrr@{}}
+\toprule
+& MMbl & WTI $-10\,\%$ (US\$ MM)\\
+\midrule
+Físico: inventario de crudo & 2.90 & $(26.86)$\\
+Swap (vende a precio fijo) & $(1.16)$ & 10.75\\
+Collar (equivalente delta) & $(0.62)$ & 5.75\\
+\midrule
+Global (físico + derivados) & 1.12 & $(10.37)$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+El swap es lineal: equivale a vender 1.16 millones de barriles. El collar equivale a vender $0.535\times1.16=0.62$ millones: su delta media por barril es $-0.535$ (cap.~\ref{cap:valoracion}). La posición larga baja de 2.90 a 1.12 millones de barriles, un 61\,\% menos. Lo que queda es el 20\,\% abierto y la zona entre los strikes, donde el collar no protege.
+
+\paragraph{Demostración de la cobertura} En la parte que cubre el swap, lo que pierde el crudo lo gana el swap (Cuadro~10 del informe):
+\begin{center}\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+& WTI $-30\,\%$ & $=F$ ene & WTI $+30\,\%$\\
+\midrule
+Inventario (1.16 MMbl) & $(32.2)$ & $(7.0)$ & 32.2\\
+Swap: $(89.38-S)\times1.16$ & 28.5 & 3.3 & $(36.0)$\\
+\midrule
+Total & $(3.7)$ & $(3.7)$ & $(3.7)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+El total es constante: $(89.38-92.60)\times1.16=-3.7$, el descuento de la backwardation.
+
+\section{Sensibilidades y riesgo de base}
+
+\paragraph{Volatilidad} El OVX (56.1\,\%) coincide con la volatilidad realizada del futuro en el último año (55.8\,\%). El collar casi no depende del nivel de volatilidad: pierde unos 9 mil dólares por punto (cap.~\ref{cap:valoracion}).
+
+\paragraph{Skew} Sí depende del skew: si las calls cotizaran 5 puntos de volatilidad bajo las puts, el techo de enero bajaría de 98.05 a 95.37; con 10 puntos, a 92.90. Por eso los strikes se fijan con cotizaciones bancarias, no con el modelo.
+
+\paragraph{Base} El riesgo residual principal es la base: se compran crudos referidos al Brent, hoy US\$ 12.7/bl sobre el WTI frente a un promedio de 4.1 en dos años. El ratio de mínima varianza del Brent frente al futuro de WTI es 1.14, con una efectividad de solo 79\,\% (cap.~\ref{cap:futuros}). Como los escenarios suponen que el inventario sigue al WTI, \emph{sobrestiman} la reducción del riesgo. Se mantiene el WTI por su liquidez y porque los precios de venta siguen la paridad de importación sobre el WTI.
+
+\begin{cuidado}[descalce de fechas]
+Las opciones vencen antes que su futuro (7 días hábiles antes del 26 del mes previo), el swap se liquida mes a mes y el inventario se vende a lo largo de cada mes. Las fechas no coinciden exactamente: parte del riesgo de base es temporal, y el programa rodante debe ajustarse al calendario real de ventas.
+\end{cuidado}
+
+\section{Lo que la E2 no cubre: el margen}
+
+La E2 fija el precio del crudo en inventario, no el margen de refinación. Quedan fuera el inventario de productos (US\$ 31.3 millones por cada 10\,\% de caída) y la variación del \emph{crack} entre compra y venta. Para ellos existen swaps líquidos de diésel y gasolina (NYMEX HO y RBOB); el informe los deja como fase~2 (cap.~\ref{cap:diagnostico}).
+
+\section{Valor razonable: un adelanto}
+
+El swap y el collar nacen con valor cero. Si la curva de futuros cayera 10\,\% de inmediato, el collar sería un activo de US\$ 5.7 millones y el swap uno de 10.3 (8.86 por barril por 1.16 millones de barriles); con un alza de 10\,\%, serían pasivos de 5.8 y 10.3 millones. El capítulo~\ref{cap:niif} explica cómo se registran.
+
+\begin{resumen}
+\begin{itemize}
+\item El inventario rota en unos 33 días, pero tiene un saldo estructural. La E2 cubre el 80\,\% (2.32 MMbl, US\$ 214.9 millones) con un programa rodante de tres capas (nov, dic, ene) de 0.774 MMbl cada una; el 20\,\% queda abierto para no sobrecubrir.
+\item Mitad swap a 89.38 con liquidaciones mensuales; mitad collar de costo cero por capa: pisos 83.30 / 80.10 / 77.90 y techos 103.68 / 100.38 / 98.05.
+\item Ante una caída de 30\,\% del WTI, la pérdida baja de 80.6 a 34.0 millones sin prima; con un alza de 30\,\%, la ganancia se limita a 21.8. El VaR al 95\,\% baja de 93.3 a 36.5.
+\item La posición larga en crudo baja de 2.90 a 1.12 MMbl equivalentes (61\,\%).
+\item El swap cede 3.7 millones frente al spot, pero nada frente al futuro. El collar depende poco de la volatilidad y mucho del skew.
+\item Los riesgos residuales son la base Brent--WTI, el 20\,\% abierto, la zona entre strikes y el margen de refinación (fase~2).
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[cálculo] Con el modelo del Cuadro~8, calcule el resultado del swap, del collar y de la propuesta si el WTI termina en 95.00 y en 70.00.
+
+\ejercicio[cálculo] Suponga que la empresa repartiera lo cubierto en 70\,\% swap y 30\,\% collar. Calcule el resultado con el WTI $-30\,\%$ y $+30\,\%$.
+
+\ejercicio[cálculo] Verifique la celda \enquote{Solo put, $=F$ ene} del Cuadro~8 del informe.
+
+\ejercicio[conceptual] ¿Por qué tiene sentido usar el swap para los cargamentos \enquote{cuyo margen ya está definido} y el collar para el resto?
+
+\ejercicio[conceptual] Si la backwardation desapareciera y la curva quedara plana en 92.60, ¿cómo cambiaría el resultado del swap? ¿Seguiría siendo útil el collar?
+
+\ejercicio[conceptual] ¿Por qué el informe descarta comprar solo puts como estrategia principal, pero las conserva como plan~B?
+
+\ejercicio[cálculo] Vence la capa de noviembre y, por falta de líneas con los bancos, no se repone. ¿Qué porcentaje del inventario queda cubierto? ¿Y si tampoco se repone la de diciembre?

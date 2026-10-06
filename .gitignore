@@ -5,4 +5,5 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 informe/out/
+libro/out/
 .claude/settings.local.json

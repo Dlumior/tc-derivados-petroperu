@@ -1,0 +1,61 @@
+\chapter{Prefacio: cómo usar este libro}
+
+\section*{Para quién es}
+
+Este libro está escrito para alguien que nunca ha estudiado derivados financieros y que, sin embargo, necesita entender a fondo un informe técnico que los utiliza intensamente: el informe a la Gerencia General de PETROPERÚ S.A. sobre la gestión de sus riesgos financieros mediante instrumentos derivados. El informe es breve (diez páginas) y denso: en pocas líneas usa conceptos como \emph{cross currency swap}, NDF, paridad cubierta de tasas, curva cupón cero, \emph{bootstrap}, modelo de Black, \emph{skew}, \emph{backwardation}, rendimiento de conveniencia, ratio de mínima varianza, VaR, CVA, exposición potencial futura, contratos ISDA y CSA o contabilidad de coberturas según la NIIF~9. Cada uno de esos términos presupone otros. El propósito del libro es reconstruir esa cadena completa de conocimientos, desde el valor del dinero en el tiempo hasta la valorización de un collar de opciones, para que al terminar usted pueda releer el informe y entender cada cifra.
+
+\section*{La secuencia pedagógica}
+
+El informe empieza por el problema (los riesgos de la empresa) y termina en la solución (las estrategias con derivados). Para aprender conviene un orden distinto: primero las herramientas, después el caso. Por eso el libro tiene tres partes.
+
+\paragraph{Parte I: Fundamentos (capítulos 1 a 4)} El capítulo~1 presenta el caso y motiva todo lo que sigue: qué es PETROPERÚ, qué dicen sus estados financieros y por qué la volatilidad de precios amenaza su supervivencia. Los capítulos 2 y 3 construyen la caja de herramientas cuantitativa: valor del dinero en el tiempo, tasas de interés y sus convenciones, factores de descuento y curvas cupón cero (cap.~2); rendimientos, volatilidad, exposición cambiaria, sensibilidad de los bonos a las tasas y valor en riesgo (cap.~3). El capítulo~4 describe los mercados y su vocabulario: mercado spot y de derivados, posiciones largas y cortas, cobertura, especulación y arbitraje, mercados organizados y OTC, márgenes, riesgo de contraparte, contratos ISDA y CSA, exposición futura y CVA.
+
+\paragraph{Parte II: Los instrumentos (capítulos 5 a 9)} Se estudian los cuatro derivados básicos en orden de dificultad creciente. El forward (cap.~5) introduce la idea más importante del libro, el \emph{no arbitraje}, y con ella la paridad cubierta de tasas que fija el precio de un NDF. Los futuros (cap.~6) añaden márgenes diarios, costo de acarreo, \emph{backwardation} y riesgo de base. Los swaps (cap.~7) se entienden como carteras de forwards o como intercambio de bonos, y permiten valorizar el CCS del informe. Las opciones (caps.~8 y~9) cambian la naturaleza del problema: el resultado deja de ser lineal. Primero se estudian sus resultados y las estrategias (put protectora, collar); después su valoración con árboles binomiales, el modelo Black-Scholes-Merton, el modelo de Black (1976), la volatilidad implícita y su sesgo, y las griegas.
+
+\paragraph{Parte III: El caso PETROPERÚ (capítulos 10 a 13)} Con todas las herramientas en la mano, se recorre el informe: el diagnóstico de riesgos (cap.~10), la Estrategia~1 con CCS y NDF (cap.~11), la Estrategia~2 con swap y collar sobre WTI (cap.~12) y, finalmente, la contabilidad de coberturas, el colateral que decide si las estrategias son ejecutables, el gobierno de los derivados y la pregunta de fondo: por qué una empresa debería cubrirse (cap.~13).
+
+Los apéndices contienen las soluciones desarrolladas de todos los ejercicios, un glosario y las referencias.
+
+\section*{Correspondencia con el informe}
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.42\linewidth}X@{}}
+\toprule
+Sección del informe & Capítulos del libro \\
+\midrule
+1. Introducción; Cuadro 1 & 1 \\
+2. Matriz de riesgos (Cuadro 2) & 10 \\
+2.1 Tipo de cambio; Figura 1 & 3, 10 \\
+2.2 Precio del crudo & 3, 6, 10 \\
+2.3 Tasa, liquidez, crédito y margen & 2, 3, 4, 10 \\
+3.1 Estrategia 1 (Cuadros 3--6, Figuras 2--3) & 2, 4, 5, 7, 11 \\
+3.2 Estrategia 2 (Cuadros 7--10, Figuras 4--5) & 6, 7, 8, 9, 12 \\
+4. Comparación, VaR, colateral e implementación (Cuadros 11--13) & 3, 4, 7, 13 \\
+5. Conclusiones y recomendaciones & 13 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section*{Cómo está construido cada capítulo}
+
+Cada capítulo abre con sus objetivos y prerrequisitos, motiva cada concepto con una situación concreta, lo explica en lenguaje llano, lo define formalmente y, cuando hay una ecuación, la presenta en una \textbf{ficha de la ecuación} de ocho pasos: presentación, símbolos, intuición, construcción paso a paso, supuestos, ejemplo numérico, interpretación y limitaciones. Los recuadros tienen un código de color constante:
+
+\begin{definicion}[término]Definición formal de un concepto.\end{definicion}
+\begin{intuicion}Explicación sin fórmulas de por qué algo funciona.\end{intuicion}
+\begin{informe}Cómo aparece el concepto en el informe de PETROPERÚ.\end{informe}
+\begin{adicional}Material que el informe no desarrolla pero que es necesario para entenderlo. Se identifica así para no atribuirle al informe algo que no dice.\end{adicional}
+\begin{cuidado}Confusiones habituales.\end{cuidado}
+
+\section*{Convenciones de notación}
+
+\begin{itemize}
+\item \textbf{Números.} Como en el informe, el punto separa los decimales y la coma los miles: 3,380.4 significa tres mil trescientos ochenta coma cuatro. Los paréntesis indican valores negativos o pérdidas: $(155.2)$ es $-155.2$.
+\item \textbf{Unidades.} MM = millones; MBL = miles de barriles; MMbl = millones de barriles; MBDC = miles de barriles por día calendario; bl = barril; pb = punto básico ($0.01\,\%$); pp = punto porcentual.
+\item \textbf{Tipo de cambio.} $S$ siempre se expresa en \emph{soles por dólar} (S/ por US\$). Si $S$ sube, el dólar se encarece y el sol se deprecia; si $S$ baja, el sol se aprecia.
+\item \textbf{Tiempo.} $t=0$ es hoy (la fecha de valorización, 28 de setiembre de 2026) y $T$ el vencimiento, medido en años salvo que se indique otra cosa.
+\item \textbf{Tasas.} Se indica siempre la convención: simple, compuesta anual (efectiva) o continua. Confundirlas es una de las fuentes de error más frecuentes.
+\end{itemize}
+
+\section*{Una advertencia honesta}
+
+Esta edición sigue la versión final del informe (5 de octubre de 2026). Sus cifras se verificaron ejecutando el código público con que el informe las genera, sobre sus mismos datos de mercado; los gráficos del libro que reproducen resultados del informe se construyeron con ese mismo modelo. Varias cifras dependen de supuestos que el propio informe declara (por ejemplo, el cronograma del préstamo del Banco de la Nación o los plazos de las opciones). Cuando el libro reproduce un cálculo a mano, lo hace con los datos publicados en el informe; si difiere en un decimal por redondeo, se indica. Los ejemplos que no provienen del informe se identifican como \emph{didácticos}: sus números son ilustrativos y no describen ningún mercado real.

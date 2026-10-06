@@ -1,0 +1,247 @@
+\chapter{El valor del dinero en el tiempo}\label{cap:tasas}
+
+\begin{objetivos}
+\begin{itemize}
+\item Calcular valores futuros y presentes con interés simple, compuesto y continuo.
+\item Convertir una tasa de una convención a otra (simple a efectiva, efectiva a continua, anual a mensual).
+\item Construir la cuota de un préstamo amortizable y su cronograma.
+\item Entender qué es un factor de descuento, una tasa cupón cero y una curva de tasas.
+\item Obtener factores de descuento a partir de tasas swap mediante \emph{bootstrap}.
+\item Reconocer estas herramientas en las fórmulas y cuadros del informe.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Álgebra básica: potencias, raíces y logaritmos. El capítulo~\ref{cap:caso} para el contexto.\end{prerreq}
+
+\section{Por qué un sol hoy vale más que un sol mañana}
+
+Si alguien le ofrece S/ 1,000 hoy o S/ 1,000 dentro de un año, usted elegirá hoy. No es impaciencia irracional: con el dinero hoy puede depositarlo y tener más de 1,000 dentro de un año, puede usarlo ahora y, además, hay un riesgo de que la promesa futura no se cumpla. El \textbf{valor del dinero en el tiempo} es la idea de que una misma cantidad vale distinto según \emph{cuándo} se recibe. La \textbf{tasa de interés} es el precio que equilibra esa diferencia: cuánto hay que pagarle a alguien para que renuncie a su dinero durante un tiempo.
+
+Todo lo que viene en este libro, desde el precio de un forward hasta la tasa de un swap, depende de esta idea. Un derivado es una promesa de pagos futuros, y para saber cuánto vale hoy necesitamos traer esos pagos al presente.
+
+\section{Interés simple}
+
+En el interés simple, los intereses se calculan siempre sobre el capital inicial; no generan a su vez intereses.
+
+\begin{ficha}{interés simple}
+\paso{1. Ecuación}
+\[ \VF = \VP\,(1+r\,t) \]
+\paso{2. Símbolos} $\VP$: valor presente, el monto invertido hoy (en soles, dólares, etc.). $\VF$: valor futuro, el monto que se tendrá en $t$ (misma moneda). $r$: tasa de interés anual (en tanto por uno: 5\,\% se escribe 0.05). $t$: plazo en años.
+\paso{3. Intuición} Cada año se gana $r\times\VP$; en $t$ años se gana $r\,t\,\VP$, que se suma al capital.
+\paso{4. Construcción} Intereses $=\VP\cdot r\cdot t$. Valor final $=\VP+\VP\,r\,t=\VP(1+rt)$.
+\paso{5. Supuestos} Los intereses no se reinvierten. Es la convención habitual para plazos menores a un año en el mercado de dinero (depósitos, SOFR a 3 meses, tasas interbancarias).
+\paso{6. Ejemplo} S/ 1,000 al 5.55\,\% por 3 años: $1{,}000(1+0.0555\times3)=1{,}166.50$.
+\paso{7. Interpretación} Se ganan S/ 166.50 de intereses, 55.50 cada año.
+\paso{8. Limitaciones} Para plazos largos subestima lo que un inversionista realmente obtendría reinvirtiendo los intereses.
+\end{ficha}
+
+\paragraph{Convenciones de días} Cuando $t$ es menor a un año, hay que decidir cómo medirlo. La convención \textbf{actual/360} cuenta los días reales y divide entre 360; la \textbf{actual/365} divide entre 365. La tasa SOFR y la mayoría de tasas de mercado de dinero en dólares usan actual/360. Así, un plazo de 91 días es $t=91/360=0.2528$ años en actual/360 y $91/365=0.2493$ en actual/365. La diferencia parece pequeña, pero sobre cientos de millones importa.
+
+\section{Interés compuesto}
+
+En el interés compuesto los intereses de cada período se suman al capital y generan intereses en los períodos siguientes.
+
+\begin{ficha}{interés compuesto}
+\paso{1. Ecuación}
+\[ \VF = \VP\,(1+r)^t \]
+\paso{2. Símbolos} Como antes, pero $r$ es ahora una \textbf{tasa efectiva anual} (TEA): la tasa que, capitalizada una vez al año, produce el crecimiento observado.
+\paso{3. Intuición} Cada año el saldo se multiplica por $(1+r)$. Después de $t$ años se ha multiplicado $t$ veces.
+\paso{4. Construcción} Año 1: $\VP(1+r)$. Año 2: $[\VP(1+r)](1+r)=\VP(1+r)^2$. Por inducción, tras $t$ años: $\VP(1+r)^t$. La fórmula vale también para $t$ no entero si se interpreta como capitalización continua del rendimiento equivalente.
+\paso{5. Supuestos} Los intereses se reinvierten a la misma tasa. La tasa es constante durante el plazo.
+\paso{6. Ejemplo} S/ 1,000 al 5.55\,\% efectivo por 3 años: $1{,}000\times1.0555^3=1{,}000\times1.175912=1{,}175.91$.
+\paso{7. Interpretación} Frente a los 1,166.50 del interés simple, la diferencia de S/ 9.41 son los \enquote{intereses sobre intereses}.
+\paso{8. Limitaciones} En la realidad la tasa a la que se reinvierte cambia con el tiempo; por eso más adelante usaremos una tasa distinta para cada plazo (curva de tasas).
+\end{ficha}
+
+\section{Capitalización frecuente y continua}
+
+Si una tasa nominal anual $r_m$ se capitaliza $m$ veces al año, cada período paga $r_m/m$ y hay $m\,t$ períodos:
+\[ \VF=\VP\left(1+\frac{r_m}{m}\right)^{m t}. \]
+Cuando $m$ crece sin límite, se obtiene la \textbf{capitalización continua}. Usando el límite $\lim_{m\to\infty}(1+x/m)^m=e^x$,
+\[ \VF=\VP\,e^{r_c t}, \]
+donde $e\approx2.71828$ y $r_c$ es la \textbf{tasa continua}. Con $r_c=5.55\,\%$ y $t=3$: $1{,}000\times e^{0.1665}=1{,}181.16$.
+
+\figura{capitalizacion}{Crecimiento de US\$ 100 al 10\,\% anual con tres convenciones. La simple crece en línea recta; la compuesta anual, en escalones; la continua, de forma suave y un poco más rápida.}
+
+¿Por qué existe la convención continua si nadie paga intereses cada instante? Porque simplifica las matemáticas: las tasas continuas se suman en el tiempo ($e^{r_1t_1}e^{r_2t_2}=e^{r_1t_1+r_2t_2}$) y el logaritmo de un precio crece a ritmo constante. Los modelos de opciones (Black-Scholes, Black) y el modelo de costo de acarreo usan tasas continuas. El informe lo indica explícitamente: la tasa libre de riesgo del Cuadro~7 (4.12\,\%) es \enquote{SOFR, capitalización continua}.
+
+\section{Valor presente y factor de descuento}
+
+Si el valor futuro responde a \enquote{¿cuánto tendré?}, el valor presente responde a \enquote{¿cuánto vale hoy algo que recibiré después?}. Basta despejar.
+
+\begin{ficha}{valor presente y factor de descuento}
+\paso{1. Ecuación}
+\begin{gather*} \VP=\frac{\VF}{(1+r)^t}=\VF\cdot DF(t),\\ DF(t)=(1+r)^{-t}\quad\text{o}\quad DF(t)=e^{-r_c t}. \end{gather*}
+\paso{2. Símbolos} $DF(t)$: \textbf{factor de descuento} a plazo $t$, el valor hoy de una unidad monetaria pagada en $t$. Es un número entre 0 y 1 (si las tasas son positivas).
+\paso{3. Intuición} Descontar es el proceso inverso de capitalizar: si 1 hoy se convierte en $(1+r)^t$ en $t$, entonces 1 en $t$ vale $1/(1+r)^t$ hoy.
+\paso{4. Construcción} De $\VF=\VP(1+r)^t$ se divide entre $(1+r)^t$.
+\paso{5. Supuestos} El pago futuro es seguro (o la tasa incorpora su riesgo). La tasa corresponde a la misma moneda que el flujo.
+\paso{6. Ejemplo} US\$ 1 millón recibido en 3 años, tasa 4.80\,\%: $DF(3)=1.048^{-3}=0.868793$; $\VP=\text{US\$}~868{,}792.68$.
+\paso{7. Interpretación} Un millón dentro de tres años equivale hoy a 868.8 mil dólares: quien invierta hoy esa suma al 4.80\,\% tendrá exactamente un millón al final.
+\paso{8. Limitaciones} Usar una sola tasa para todos los plazos es una simplificación; las tasas dependen del plazo (sección~\ref{sec:curva}).
+\end{ficha}
+
+\figura{descuento}{El factor de descuento cae con el plazo y cae más rápido cuanto mayor es la tasa. A 9.7\,\%, el rendimiento que el mercado exige a los bonos de PETROPERÚ, un dólar a 20 años vale hoy unos 14 centavos.}
+
+\begin{importante}[descontar en la moneda correcta]
+Los flujos en soles se descuentan con tasas en soles; los flujos en dólares, con tasas en dólares. Mezclar monedas es un error grave. Por eso, en la ecuación~(1) del informe, la pata en soles del swap se descuenta con $DF^{S/}$ (curva soberana en soles de la SBS) y la pata en dólares con $DF^{US\$}$ (curva SOFR).
+\end{importante}
+
+\section{Conversión entre convenciones}
+
+Dos tasas son \textbf{equivalentes} si producen el mismo valor futuro en el mismo plazo. Igualando valores futuros se obtienen todas las conversiones.
+
+\begin{ficha}{tasas equivalentes}
+\paso{1. Ecuaciones} Para un plazo $t$:
+\[ 1+r_s\,t=(1+r_e)^t=e^{r_c t}. \]
+De ahí: $r_e=(1+r_s t)^{1/t}-1$, $\;r_c=\ln(1+r_e)$ y $r_e=e^{r_c}-1$. Para pasar una TEA a tasa mensual efectiva: $i_{mes}=(1+r_e)^{1/12}-1$.
+\paso{2. Símbolos} $r_s$: tasa simple; $r_e$: tasa efectiva anual; $r_c$: tasa continua; $\ln$: logaritmo natural.
+\paso{3. Intuición} Las tres expresiones describen el mismo crecimiento con distinto lenguaje.
+\paso{4. Construcción} Se iguala el valor futuro de 1 bajo cada convención y se despeja la tasa buscada.
+\paso{5. Supuestos} El mismo plazo y la misma convención de días para todas.
+\paso{6. Ejemplo (del informe)} El SOFR a tres meses es una tasa simple de 4.08\,\% (actual/360) por 91 días. Factor de crecimiento a 91 días: $1+0.0408\times91/360=1.0103133$. Hay $360/91=3.956$ períodos así en el año, luego
+\[ r_e=1.0103133^{360/91}-1=4.1426\,\%. \]
+El informe lo redondea a 4.14\,\%. En continua: $r_c=\ln(1.041426)=4.059\,\%$.
+\paso{7. Interpretación} La misma inversión rinde 4.08\,\% expresada como simple trimestral y 4.14\,\% como efectiva anual. La diferencia es el efecto de capitalizar cuatro veces al año.
+\paso{8. Limitaciones} En la práctica la tasa con la que se reinvertiría cada trimestre no es conocida; la conversión supone que se mantiene.
+\end{ficha}
+
+\begin{cuidado}[dividir la tasa entre 12]
+Una TEA de 5.55\,\% \emph{no} equivale a 5.55/12 = 0.4625\,\% mensual. La tasa mensual equivalente es $1.0555^{1/12}-1=0.4511\,\%$. Dividir entre 12 solo es correcto si 5.55\,\% es una tasa \emph{nominal} capitalizable mensualmente, cuya TEA sería $1.004625^{12}-1=5.69\,\%$. Siempre hay que preguntar: ¿qué convención tiene esta tasa?
+\end{cuidado}
+
+\section{Anualidades y la cuota francesa}
+
+Un préstamo \textbf{amortizable} se devuelve en cuotas que incluyen intereses y una parte del capital. En el sistema \textbf{francés}, todas las cuotas son iguales.
+
+\begin{ficha}{cuota francesa}
+\paso{1. Ecuación}
+\[ C=P_0\,\frac{i}{1-(1+i)^{-n}} \]
+\paso{2. Símbolos} $C$: cuota constante por período. $P_0$: capital prestado. $i$: tasa efectiva por período (mensual si las cuotas son mensuales). $n$: número de cuotas.
+\paso{3. Intuición} El préstamo es justo si el valor presente de las cuotas, descontadas a la tasa del préstamo, es igual a lo prestado.
+\paso{4. Construcción} Se impone
+\[ P_0=\sum_{k=1}^{n}\frac{C}{(1+i)^k}=C\,\sum_{k=1}^{n}v^k,\quad v=\frac{1}{1+i}. \]
+La suma geométrica vale $\sum_{k=1}^n v^k=v\frac{1-v^n}{1-v}$. Como $1-v=\frac{i}{1+i}$, se tiene $\frac{v}{1-v}=\frac{1}{i}$, y la suma es $\frac{1-(1+i)^{-n}}{i}$. Despejando $C$ se llega a la fórmula.
+\paso{5. Supuestos} Tasa fija, cuotas iguales y equiespaciadas, primera cuota un período después del desembolso.
+\paso{6. Ejemplo (préstamo del BN)} El préstamo del Banco de la Nación es de S/ 3,765.6 millones al 5.55\,\%. Los estados financieros a junio de 2026 muestran que todavía no se había amortizado nada, de modo que el informe supone que hasta junio de 2027 solo se pagan intereses y que el capital se devuelve en 18 cuotas francesas mensuales, de julio de 2027 a diciembre de 2028. Tratando el 5.55\,\% como tasa efectiva anual, $i=0.4511\,\%$ y $(1+i)^{-18}=0.922174$:
+\begin{align*} C&=3{,}765.6\times\frac{0.0045114}{1-0.922174}\\ &=3{,}765.6\times0.057967=218.28. \end{align*}
+\paso{7. Interpretación} Cada cuota de amortización es de S/ 218.3 millones, la cifra del informe. Al inicio la mayor parte es capital y una porción pequeña es interés (16.99 en la primera), porque la tasa mensual es baja frente al plazo.
+\paso{8. Limitaciones} Es un cronograma \emph{supuesto}: los estados financieros no lo publican y el informe lo declara inferido. Con otros cronogramas plausibles cambian la cuota y, como veremos, la tasa del swap que lo cubre.
+\end{ficha}
+
+\paragraph{El período de gracia} Mientras solo se pagan intereses, el saldo no cambia y cada pago es simplemente
+\[ \text{interés}=P_0\times i=3{,}765.6\times0.0045114=16.99 \]
+millones de soles al mes, los S/ 17.0 millones que menciona el informe. A la fecha de valorización (28 de setiembre de 2026) ya se pagaron nueve meses de intereses (enero a setiembre) y quedan 27 pagos: 9 de solo intereses (octubre de 2026 a junio de 2027) y 18 cuotas de S/ 218.3 millones.
+
+\begin{center}\small
+\captionof{table}{Paso del período de gracia a la amortización en el cronograma supuesto del BN (S/ millones).}
+\begin{tabular}{@{}crrrr@{}}
+\toprule
+Mes & Saldo inicial & Interés & Amortización & Saldo final\\
+\midrule
+jun-27 (gracia) & 3,765.59 & 16.99 & 0.00 & 3,765.59\\
+jul-27 (cuota 1) & 3,765.59 & 16.99 & 201.29 & 3,564.30\\
+ago-27 (cuota 2) & 3,564.30 & 16.08 & 202.20 & 3,362.10\\
+set-27 (cuota 3) & 3,362.10 & 15.17 & 203.11 & 3,158.99\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Desde julio de 2027, cada mes: interés $=$ saldo inicial $\times\,0.4511\,\%$; amortización $=218.28-$interés; saldo final $=$ saldo inicial $-$ amortización. Tras la cuota 18 (diciembre de 2028) el saldo es cero.
+
+\figura{saldo_bn}{Saldo del préstamo del BN con el cronograma supuesto: plano durante la gracia y decreciente desde julio de 2027. La curva es cóncava porque al principio los intereses absorben algo más de la cuota.}
+
+\begin{adicional}[reconstruir una cifra del informe]
+El informe no dice en el texto cómo convierte el 5.55\,\% a tasa mensual, pero su código lo hace como tasa efectiva anual. Si se usara $5.55/12$, el interés mensual sería S/ 17.42 millones y la cuota S/ 218.5 millones; con la tasa mensual equivalente a una TEA de 5.55\,\% salen los S/ 17.0 y S/ 218.3 millones del informe. Esta pequeña investigación ilustra por qué la convención de una tasa nunca es un detalle.
+\end{adicional}
+
+\section{Valor presente de varios flujos}
+
+Un activo que paga varios flujos $C_1, C_2, \dots, C_n$ en fechas $t_1,\dots,t_n$ vale la suma de sus valores presentes:
+\[ \VP=\sum_{k=1}^n C_k\,DF(t_k). \]
+Esta igualdad, aparentemente modesta, es la base de toda la valorización de bonos y swaps: un bono es una suma de cupones y principal descontados; una pata de un swap, una suma de cuotas descontadas. La ecuación~(1) del informe no es más que esta fórmula aplicada dos veces, una por moneda.
+
+\section{Tasas cupón cero y curva de tasas}\label{sec:curva}
+
+Hasta aquí hemos usado una sola tasa para todos los plazos. En la realidad, prestar a un año no rinde lo mismo que prestar a tres.
+
+\begin{definicion}[Tasa cupón cero y curva]
+La \textbf{tasa cupón cero} (o tasa \emph{spot}) a plazo $t$, $z(t)$, es el rendimiento de una inversión que paga un único flujo en $t$ y nada antes. Su factor de descuento es $DF(t)=(1+z(t))^{-t}$. La \textbf{curva cupón cero} (o estructura temporal de tasas) es la función $t\mapsto z(t)$.
+\end{definicion}
+
+Cada plazo tiene su propia tasa porque los inversionistas exigen compensaciones distintas según el horizonte (expectativas de tasas futuras, prima por plazo, inflación esperada). Una curva \textbf{creciente}, como las del informe, indica que los plazos largos rinden más.
+
+\figura{curvas}{Puntos de las curvas que el informe usa para valorizar el CCS: la curva cupón cero soberana en soles de la SBS y las tasas de los swaps SOFR en dólares. El punto de 3 meses en soles (3.90\,\%) y el de dólares (4.14\,\%) son los que usa el NDF; el punto a 2 años lo menciona el informe en el texto.}
+
+\begin{ejemplo}{Factores de descuento en soles}
+Con la curva soberana del informe: $z(1)=3.97\,\%$ y $z(3)=5.03\,\%$.
+\begin{align*} DF^{S/}(1)&=1.0397^{-1}=0.96182,\\ DF^{S/}(3)&=1.0503^{-3}=\frac{1}{1.158618}=0.86310. \end{align*}
+Una cuota de S/ 218.3 millones pagadera en tres años vale hoy $218.3\times0.86310=188.4$ millones.
+\end{ejemplo}
+
+\paragraph{Interpolación} Las curvas se publican en algunos plazos (nodos). Para un plazo intermedio se interpola. La forma más simple es la lineal: si $t_1<t<t_2$,
+\[ z(t)=z(t_1)+\frac{t-t_1}{t_2-t_1}\,[z(t_2)-z(t_1)]. \]
+Con $z(1)=3.97\,\%$, $z(2)=4.52\,\%$ y $t=1.5$: $z(1.5)=3.97+0.5\times0.55=4.245\,\%$. El CCS del informe tiene 27 flujos mensuales, de modo que cada uno se descuenta con una tasa interpolada.
+
+\section{Tasas swap y \emph{bootstrap}}
+
+En dólares, la curva cupón cero no se observa directamente: lo que el mercado cotiza son \textbf{tasas swap}. Estudiaremos los swaps en el capítulo~\ref{cap:swaps}; por ahora basta saber que la tasa swap a $n$ años es la tasa de cupón fijo que hace que un bono que paga ese cupón anual y su principal valga exactamente su valor nominal (se dice que es una \textbf{tasa par}). Es decir, para nominal 1:
+\[ 1=s_n\sum_{k=1}^{n}DF(k)+DF(n). \]
+
+\begin{definicion}[\emph{Bootstrap}]
+El \textbf{bootstrap} es el procedimiento que obtiene los factores de descuento uno por uno, del plazo más corto al más largo, despejando de cada ecuación de precio par el único factor desconocido.
+\end{definicion}
+
+\begin{ficha}{bootstrap de factores de descuento}
+\paso{1. Ecuación} Despejando $DF(n)$ de la condición de par:
+\[ DF(n)=\frac{1-s_n\sum_{k=1}^{n-1}DF(k)}{1+s_n}. \]
+\paso{2. Símbolos} $s_n$: tasa swap a $n$ años (cupón anual, en tanto por uno). $DF(k)$: factores ya obtenidos para plazos menores.
+\paso{3. Intuición} El bono par a $n$ años paga cupones en los años $1,\dots,n-1$, cuyo valor ya conocemos, y un último flujo $1+s_n$. Lo que falta para llegar a 1 es el valor del último flujo.
+\paso{4. Construcción} En $1=s_n\sum_{k=1}^{n}DF(k)+DF(n)$ se separa el último término: $1=s_n\sum_{k=1}^{n-1}DF(k)+(1+s_n)DF(n)$, y se despeja.
+\paso{5. Supuestos} Pagos anuales; los swaps son instrumentos libres de riesgo de crédito (en la práctica se colateralizan).
+\paso{6. Ejemplo (tasas del informe)} $s_1=4.50\,\%$, $s_2=4.72\,\%$, $s_3=4.80\,\%$.
+\begin{align*}
+DF(1)&=\frac{1}{1.045}=0.956938,\\
+DF(2)&=\frac{1-0.0472\times0.956938}{1.0472}\\ &=\frac{0.954833}{1.0472}=0.911796,\\
+DF(3)&=\frac{1-0.048\times(0.956938+0.911796)}{1.048}\\ &=\frac{0.910301}{1.048}=0.868608.
+\end{align*}
+Las tasas cupón cero son $z(1)=4.500\,\%$, $z(2)=0.911796^{-1/2}-1=4.725\,\%$ y $z(3)=0.868608^{-1/3}-1=4.807\,\%$.
+\paso{7. Interpretación} Con una curva creciente, la tasa cupón cero queda ligeramente por encima de la tasa swap del mismo plazo, porque la tasa swap es un promedio que incluye los plazos cortos, más baratos.
+\paso{8. Limitaciones} En la práctica los swaps SOFR pagan con otras frecuencias y convenciones de días, y la curva se construye con más instrumentos (depósitos, futuros) y métodos de interpolación más sofisticados.
+\end{ficha}
+
+\begin{informe}
+\enquote{La pata en dólares [se descuenta] con la curva cero obtenida por bootstrap de los swaps SOFR}. El SOFR (\emph{Secured Overnight Financing Rate}) es la tasa de referencia del mercado de dólares desde el fin del LIBOR: la tasa de préstamos de un día garantizados con bonos del Tesoro de EE.\,UU. Los swaps SOFR son el mercado más líquido de tasas en dólares y su curva se considera la mejor aproximación a una tasa \enquote{libre de riesgo} en dólares. En soles, a falta de una curva swap pública, el informe usa la curva soberana de la SBS, construida con bonos del Gobierno peruano.
+\end{informe}
+
+\begin{cuidado}[tasa del préstamo frente a tasa de descuento]
+La tasa de un préstamo (5.55\,\% del BN) es la que \emph{se pacta}; la tasa de la curva (4.52\,\% a dos años en soles) es la que el \emph{mercado} exige hoy. Descontar las cuotas del BN con la curva y no con el 5.55\,\% es lo que permite saber cuánto vale hoy ese compromiso. Que el cupón supere a la curva explica, como veremos en el capítulo~\ref{cap:e1}, por qué la pata en soles del CCS vale más que su nocional.
+\end{cuidado}
+
+\begin{resumen}
+\begin{itemize}
+\item El valor del dinero depende del momento en que se recibe; la tasa de interés es el precio del tiempo.
+\item Simple: $\VF=\VP(1+rt)$. Compuesta: $\VF=\VP(1+r)^t$. Continua: $\VF=\VP e^{r_c t}$. Se convierten igualando valores futuros.
+\item El factor de descuento $DF(t)$ es el valor hoy de una unidad pagada en $t$; el valor de varios flujos es $\sum C_k DF(t_k)$.
+\item La cuota francesa iguala el valor presente de las cuotas al capital: $C=P_0\,i/[1-(1+i)^{-n}]$. Con ella se reconstruye el cronograma supuesto del BN: solo intereses (S/ 17.0 millones al mes) hasta junio de 2027 y 18 cuotas de S/ 218.3 millones; a la valorización quedan 27 pagos.
+\item Cada plazo tiene su tasa (curva cupón cero). En dólares se obtiene por bootstrap de tasas swap.
+\item Los flujos se descuentan siempre con la curva de su propia moneda.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[cálculo] Calcule el valor futuro de US\$ 5,000 invertidos 4 años al 6\,\% con interés simple y con interés compuesto anual. Explique la diferencia.
+
+\ejercicio[cálculo] ¿Cuánto vale hoy un pago de US\$ 500 millones dentro de 2 años si la tasa cupón cero es 4.72\,\% efectiva anual?
+
+\ejercicio[cálculo] La tasa en soles a tres meses es 3.90\,\% simple por 91 días (actual/360). Conviértala a tasa efectiva anual.
+
+\ejercicio[cálculo] Un préstamo de 1,000 se paga en 12 cuotas mensuales iguales al 1\,\% efectivo mensual. Calcule la cuota y el interés y la amortización de la primera cuota.
+
+\ejercicio[cálculo] Las tasas swap a 1 y 2 años son 4.00\,\% y 4.50\,\%. Obtenga por bootstrap $DF(1)$, $DF(2)$ y la tasa cupón cero a 2 años.
+
+\ejercicio[conceptual] Explique por qué sería un error descontar las cuotas en soles del préstamo del BN con la curva SOFR en dólares.
+
+\ejercicio[conceptual] Una TEA de 12\,\% ¿equivale a 1\,\% mensual? Justifique y calcule la tasa mensual correcta.

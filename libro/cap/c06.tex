@@ -1,0 +1,177 @@
+\chapter{Contratos de futuros, costo de acarreo y riesgo de base}\label{cap:futuros}
+
+\begin{objetivos}
+\begin{itemize}
+\item Explicar en qué se diferencia un futuro de un forward.
+\item Seguir la liquidación diaria de una posición en futuros.
+\item Deducir el modelo de costo de acarreo para materias primas e interpretar el rendimiento de conveniencia.
+\item Distinguir \emph{contango} y \emph{backwardation} y calcular el rendimiento de conveniencia implícito del informe.
+\item Entender la base, el riesgo de base y el ratio de cobertura de mínima varianza.
+\item Explicar por qué el informe prefiere instrumentos OTC a los futuros de NYMEX.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Capítulo~\ref{cap:forwards} (forward y no arbitraje), capítulo~\ref{cap:riesgo} (volatilidad y correlación) y la sección sobre márgenes del capítulo~\ref{cap:mercados}.\end{prerreq}
+
+\section{Del forward al futuro}
+
+Un forward es flexible, pero tiene dos problemas: depende de la solvencia de la contraparte y es difícil de cancelar antes del vencimiento (hay que negociar con el mismo banco). Los futuros resuelven ambos problemas con estandarización y una cámara de compensación.
+
+\begin{definicion}[Contrato de futuros]
+Un \textbf{futuro} es un forward estandarizado que se negocia en una bolsa. La bolsa fija el subyacente, el tamaño del contrato, los meses de vencimiento y las reglas de entrega. La cámara de compensación es la contraparte de todos y exige márgenes; las ganancias y pérdidas se liquidan \emph{diariamente}.
+\end{definicion}
+
+\begin{informe}
+El informe usa los futuros \textbf{CL} de NYMEX (WTI). Cada contrato cubre 1,000 barriles y hay un contrato por mes de entrega. El \textbf{contrato frente} (\emph{front month}) es el de vencimiento más próximo; al 28 de setiembre de 2026 era el de noviembre de 2026, a US\$ 92.60/bl. El de enero de 2027 cotizaba US\$ 86.54/bl. Aunque el informe no usa futuros como instrumento de cobertura, sí los usa como \emph{fuente de precios}: el swap y el collar se construyen sobre ellos.
+\end{informe}
+
+\section{La liquidación diaria}
+
+\begin{ejemplo}{Tres días de una posición corta (didáctico)}
+Una empresa vende un futuro CL (1,000 barriles) a 92.60. Cada día la bolsa compara el precio de cierre (\emph{settlement}) con el del día anterior:
+
+\begin{center}\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Día & Cierre & Cambio & Abono (cargo) a la corta\\
+\midrule
+0 & 92.60 & & \\
+1 & 94.10 & $+1.50$ & $(1{,}500)$\\
+2 & 91.00 & $-3.10$ & $3{,}100$\\
+3 & 89.50 & $-1.50$ & $1{,}500$\\
+\midrule
+Total & & & $3{,}100$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+El total acumulado, $(92.60-89.50)\times1{,}000=3{,}100$, es el mismo que habría dado un forward al cerrarse en el día 3. Lo que cambia es el \emph{momento} en que fluye la caja: el día 1 la empresa tuvo que pagar 1,500 aunque su inventario se había valorizado.
+\end{ejemplo}
+
+\begin{adicional}[¿forward igual a futuro?]
+Si las tasas de interés fueran conocidas, el precio de un futuro y el de un forward con el mismo vencimiento serían iguales (Hull, 2022). Con tasas aleatorias pueden diferir levemente, porque la liquidación diaria se reinvierte a tasas que cambian. Para plazos de pocos meses, como los del informe, la diferencia es despreciable y se pueden tratar como equivalentes.
+\end{adicional}
+
+\section{El costo de acarreo para materias primas}
+
+En el capítulo anterior vimos que $F_0=S_0e^{rT}$ para un activo sin costos ni beneficios de tenencia. El petróleo es distinto: almacenarlo cuesta (tanques, seguros) y, a la vez, tenerlo físicamente tiene un valor que el contrato a plazo no ofrece: permite seguir operando la refinería si hay escasez. Ese beneficio se llama \textbf{rendimiento de conveniencia}.
+
+\begin{ficha}{modelo de costo de acarreo}
+\paso{1. Ecuación}
+\[ F_{0,T}=S_0\,e^{(r+u-y)T}. \]
+El informe la escribe como $F=S\,e^{(r-y)T}$, con $y$ el rendimiento de conveniencia \emph{neto} de los costos de almacenamiento.
+\paso{2. Símbolos} $F_{0,T}$: precio del futuro con vencimiento $T$. $S_0$: precio spot. $r$: tasa libre de riesgo continua. $u$: costo de almacenamiento como proporción del valor, anual y continuo. $y$: rendimiento de conveniencia, anual y continuo. $T$: plazo en años.
+\paso{3. Intuición} Comprar hoy y guardar cuesta intereses ($r$) y almacenamiento ($u$), pero da la \enquote{conveniencia} de tener el bien ($y$). El futuro refleja el costo \emph{neto} de acarrear el bien hasta $T$.
+\paso{4. Construcción} Por \emph{cash and carry}: si $F_0>S_0e^{(r+u)T}$, comprar, almacenar y vender a plazo daría ganancia segura; por eso $F_0\le S_0e^{(r+u)T}$. La desigualdad inversa no se cumple por arbitraje porque quienes tienen el bien para usarlo no lo venderían para recomprarlo a plazo: valoran tenerlo. El rendimiento de conveniencia $y$ se \emph{define} como el que convierte la desigualdad en igualdad.
+\paso{5. Supuestos} Tasas y costos continuos y constantes. $y$ no se observa: se infiere de los precios.
+\paso{6. Ejemplo (didáctico)} $S_0=80$, $r=4\,\%$, $u=2\,\%$, $T=0.5$. Si $y=0$: $F=80e^{0.03}=82.44$. Si $y=10\,\%$: $F=80e^{-0.02}=78.42$.
+\paso{7. Interpretación} Sin conveniencia, el futuro es más caro que el spot; con una conveniencia alta, más barato.
+\paso{8. Limitaciones} El rendimiento de conveniencia cambia con las condiciones del mercado (inventarios, crisis) y no es estable: es una variable implícita, no un parámetro estructural.
+\end{ficha}
+
+\begin{definicion}[\emph{Contango} y \emph{backwardation}]
+El mercado está en \textbf{contango} cuando los futuros más lejanos son más caros que los cercanos ($r+u>y$): hay abundancia y almacenar compensa. Está en \textbf{backwardation} cuando los futuros más lejanos son más baratos ($y>r+u$): hay escasez y el mercado premia tener el bien hoy.
+\end{definicion}
+
+\figura{contango}{Curva de futuros con contango y con backwardation para un mismo spot de 80.}
+
+\section{La \emph{backwardation} de setiembre de 2026}
+
+\figura{curva_futuros}{Curva de futuros del WTI al 28 de setiembre de 2026, de noviembre de 2026 a noviembre de 2027 (datos de NYMEX vía Yahoo Finance que usa el informe). Cada contrato es más barato que el anterior: a un año, el futuro cotiza 76.03. El swap del informe fija el promedio de los tres primeros contratos: $(92.60+89.01+86.54)/3=89.38$.}
+
+\begin{ejemplo}{Rendimiento de conveniencia implícito}
+Entre el contrato frente (noviembre) y el de enero hay unos dos meses ($\Delta T=2/12$). Aplicando el costo de acarreo entre dos futuros, $F_{ene}=F_{nov}\,e^{(r-y)\Delta T}$, y despejando:
+\begin{align*}
+y&=r-\frac{\ln(F_{ene}/F_{nov})}{\Delta T}\\
+&=0.0412-\frac{\ln(86.54/92.60)}{2/12}\\
+&=0.0412-\frac{-0.06768}{0.16667}\\
+&=0.0412+0.4061=0.447.
+\end{align*}
+El rendimiento de conveniencia neto implícito es 44.7\,\% anual, el valor del informe.
+\end{ejemplo}
+
+\begin{informe}
+El informe interpreta: con un rendimiento de conveniencia de 44.7\,\%, \enquote{muy superior a la tasa libre de riesgo (4.12\,\%)}, en plena crisis de oferta en Medio Oriente \enquote{el mercado paga por tener crudo disponible hoy}. Consecuencia práctica: toda venta a plazo fija un precio menor que el actual. El swap a 89.38 cubre 1.16 millones de barriles y \enquote{cede} $1.16\times(92.60-89.38)=3.7$ millones frente al precio de hoy (7.5 millones si cubriera todo el 80\,\% del inventario). Pero ese descuento \enquote{ya está en el precio futuro}: si el WTI \emph{converge al futuro} (si en enero el spot termina en 86.54), el inventario sin cobertura perdería $2.901\times(86.54-92.60)=-17.6$ millones. El informe concluye que, frente al futuro, el costo esperado del swap es nulo.
+\end{informe}
+
+\begin{cuidado}[\enquote{la cobertura me hace perder 3.7 millones}]
+La pérdida de 3.7 millones se mide frente al precio \emph{spot} de hoy. Pero vender hoy al spot no es una opción para crudo que todavía está en proceso de refinación: el inventario se venderá en uno a tres meses. La comparación relevante es con el precio al que probablemente se venderá, y la curva de futuros indica que el mercado descuenta precios menores. La backwardation no es un costo creado por la cobertura; es una característica del mercado que afecta al inventario con o sin ella.
+\end{cuidado}
+
+\section{La base y el riesgo de base}
+
+\begin{definicion}[Base]
+La \textbf{base} es la diferencia entre el precio spot del activo que se quiere cubrir y el precio del futuro usado para cubrirlo: $b_t=S_t-F_t$. Al vencimiento del futuro, si el activo es exactamente el subyacente, $F_T=S_T$ y la base es cero (\textbf{convergencia}).
+\end{definicion}
+
+El \textbf{riesgo de base} aparece cuando el activo cubierto no es exactamente el subyacente del derivado, o cuando la cobertura se cierra antes del vencimiento. Entonces la base al cierre es incierta, y la cobertura deja de ser perfecta.
+
+\begin{informe}
+\enquote{El principal riesgo residual es el de base: PETROPERÚ compra crudos referidos al Brent, cuyo diferencial con el WTI es hoy de US\$ 12.7/bl, y crudos pesados con descuento}. Ese diferencial es hoy excepcional: su promedio de los dos años previos fue de solo US\$ 4.1/bl. Si el diferencial cambia, el valor del crudo de PETROPERÚ se mueve distinto del WTI y la cobertura no lo captaría. El informe advierte que, como sus escenarios suponen que el inventario sigue al WTI, \emph{sobrestiman} la reducción del riesgo.
+\end{informe}
+
+\section{El ratio de cobertura de mínima varianza}
+
+Si el activo y el futuro no se mueven exactamente igual, ¿cuántos futuros conviene vender por cada barril? No necesariamente uno.
+
+\begin{ficha}{ratio de cobertura de mínima varianza}
+\paso{1. Ecuación}
+\begin{gather*}
+h^*=\rho\,\frac{\sigma_S}{\sigma_F},\\
+N^*=h^*\,\frac{Q_A}{Q_F}.
+\end{gather*}
+\paso{2. Símbolos} $h^*$: unidades de futuro por unidad de activo. $\rho$: correlación entre los cambios del precio del activo ($\Delta S$) y del futuro ($\Delta F$). $\sigma_S$, $\sigma_F$: sus desviaciones estándar. $N^*$: número óptimo de contratos. $Q_A$: cantidad cubierta; $Q_F$: tamaño de un contrato.
+\paso{3. Intuición} Si el activo se mueve, en promedio, más que el futuro, se necesitan más futuros; si se mueve menos o la correlación es baja, menos.
+\paso{4. Construcción} El cambio de valor de la posición cubierta (activo largo, $h$ futuros cortos por unidad) es $\Delta S-h\Delta F$. Su varianza es
+\[ V(h)=\sigma_S^2+h^2\sigma_F^2-2h\rho\sigma_S\sigma_F. \]
+Derivando e igualando a cero: $2h\sigma_F^2-2\rho\sigma_S\sigma_F=0$, luego $h^*=\rho\sigma_S/\sigma_F$. La segunda derivada, $2\sigma_F^2>0$, confirma un mínimo.
+\paso{5. Supuestos} Relación lineal estable entre $\Delta S$ y $\Delta F$; parámetros estimados con datos históricos representativos.
+\paso{6. Ejemplo (didáctico)} $\rho=0.90$, $\sigma_S=32\,\%$, $\sigma_F=29\,\%$: $h^*=0.90\times32/29=0.993$. Para 500,000 barriles, $N^*=0.993\times500{,}000/1{,}000=497$ contratos.
+\paso{7. Interpretación} La proporción de la varianza eliminada por la cobertura óptima es $\rho^2$: con $\rho=0.90$, el 81\,\%. El 19\,\% restante es riesgo de base.
+\paso{8. Limitaciones} Las correlaciones cambian, especialmente en crisis. El ratio debe reestimarse periódicamente.
+\end{ficha}
+
+\begin{informe}
+El informe estima el ratio con cambios semanales de precios de los dos años previos (101 semanas), frente al futuro CL más cercano:
+\begin{center}\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Activo cubierto & $h^*$ & $\rho^2$ & Contratos (2.32 MMbl)\\
+\midrule
+WTI de Cushing & 1.01 & 99\,\% & 2,347\\
+Brent & 1.14 & 79\,\% & 2,648\\
+\bottomrule
+\end{tabular}
+\end{center}
+Con el WTI la cobertura es casi perfecta; con el Brent, el futuro de WTI solo explica el 79\,\% de la varianza. El informe mantiene el WTI y una cobertura 1:1 (2,322 contratos equivalentes: tres capas de 774) por dos razones: es el mercado más líquido y los precios de venta de PETROPERÚ siguen la paridad de importación sobre el WTI. Si el marcador relevante resultara ser el Brent, propone pasar a swaps de Brent.
+\end{informe}
+
+\section{¿Por qué no usar futuros?}
+
+Los futuros son baratos, líquidos y casi sin riesgo de contraparte. El informe los descarta por una sola razón, ya anticipada: \enquote{los futuros exigen márgenes diarios que la liquidez no soporta}. Con 94\,\% de las líneas de crédito revolventes usadas, una racha de subidas del WTI obligaría a depositar decenas de millones de dólares en efectivo mientras el inventario, aunque valorizado, todavía no se ha vendido. Los instrumentos OTC (swap y collar) replican el efecto económico de los futuros sin esa exigencia diaria, a cambio de riesgo de contraparte y de un CVA.
+
+\begin{resumen}
+\begin{itemize}
+\item Un futuro es un forward estandarizado, negociado en bolsa, con cámara de compensación y liquidación diaria. Su resultado total coincide con el de un forward; cambia el calendario de caja.
+\item Para materias primas, $F=S_0e^{(r+u-y)T}$: el futuro refleja intereses, almacenamiento y rendimiento de conveniencia.
+\item Contango: futuros crecientes. Backwardation: decrecientes, por escasez.
+\item En setiembre de 2026 el WTI estaba en fuerte backwardation (enero 6.5\,\% bajo noviembre), con un rendimiento de conveniencia implícito de 44.7\,\%.
+\item La base es $S-F$; el riesgo de base surge cuando lo cubierto no es exactamente el subyacente (Brent y crudos pesados frente a WTI).
+\item El ratio de mínima varianza es $h^*=\rho\sigma_S/\sigma_F$ y elimina la fracción $\rho^2$ de la varianza; el informe obtiene 1.01 (99\,\%) para el WTI y 1.14 (79\,\%) para el Brent, y cubre 1:1 con WTI.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[cálculo] Una posición larga en un futuro CL se abre a 85.00. Los cierres de los tres días siguientes son 86.20, 84.70 y 83.90. Calcule los abonos y cargos diarios y el total.
+
+\ejercicio[cálculo] El spot de un crudo es 70, $r=4\,\%$, $u=1\,\%$ y $y=8\,\%$ (todas continuas). Calcule el futuro a 6 meses. ¿El mercado está en contango o en backwardation?
+
+\ejercicio[cálculo] El futuro a 1 mes cotiza 80.00 y el futuro a 4 meses 76.00. Con $r=4\,\%$, calcule el rendimiento de conveniencia neto implícito entre ambos contratos.
+
+\ejercicio[cálculo] Para cubrir un combustible con futuros de crudo se estima $\rho=0.85$, $\sigma_S=0.25$ y $\sigma_F=0.20$. Calcule $h^*$, el número de contratos de 1,000 barriles para cubrir 600,000 barriles y la fracción de varianza eliminada.
+
+\ejercicio[conceptual] Explique por qué la backwardation hace que el swap del informe ceda US\$ 3.7 millones frente al precio de hoy y por qué, aun así, cubrir puede ser preferible.
+
+\ejercicio[conceptual] Si el diferencial Brent-WTI pasa de 12.7 a 18.0 dólares por barril mientras el WTI se mantiene, ¿qué parte de ese movimiento capta una cobertura sobre WTI de compras de crudo indexadas al Brent? ¿Qué implica para el ratio de cobertura?

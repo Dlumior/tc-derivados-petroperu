@@ -1,0 +1,208 @@
+\chapter{Contratos forward y el principio de no arbitraje}\label{cap:forwards}
+
+\begin{objetivos}
+\begin{itemize}
+\item Definir un contrato forward y dibujar su payoff.
+\item Usar un forward para cubrir una posición larga o corta.
+\item Deducir el precio forward por no arbitraje (\emph{cash and carry}).
+\item Valorizar un forward pactado anteriormente.
+\item Deducir la paridad cubierta de tasas de interés y calcular un tipo de cambio forward.
+\item Entender el NDF, su liquidación por diferencias y el costo de la cobertura.
+\end{itemize}
+\end{objetivos}
+
+\begin{prerreq}Capítulo~\ref{cap:tasas} (capitalización y descuento) y capítulo~\ref{cap:mercados} (posiciones, payoff, no arbitraje).\end{prerreq}
+
+\section{Fijar hoy un precio de mañana}
+
+Una panadería sabe que dentro de seis meses necesitará 100 toneladas de harina. Teme que el precio suba. Un molino teme lo contrario: que el precio baje antes de vender su producción. Ambos pueden acordar hoy un precio para una entrega dentro de seis meses. Ninguno paga nada al firmar; dentro de seis meses se entrega la harina y se paga el precio pactado, sea cual sea el precio de mercado entonces. Han firmado un \textbf{forward}. La panadería se ha protegido contra subidas; el molino, contra bajadas; y ambos han renunciado a beneficiarse de un movimiento favorable.
+
+\section{Definición y payoff}
+
+\begin{definicion}[Contrato forward]
+Un \textbf{forward} es un acuerdo entre dos partes para comprar y vender un activo en una fecha futura $T$ a un precio $K$ fijado hoy, llamado \textbf{precio de entrega}. Quien se compromete a comprar tiene la posición \textbf{larga}; quien se compromete a vender, la \textbf{corta}. Se negocia OTC y, al pactarse, $K$ se fija de modo que el contrato valga cero para ambas partes. Ese valor de $K$ es el \textbf{precio forward} $F_0$.
+\end{definicion}
+
+Al vencimiento, la parte larga recibe un activo que vale $S_T$ y paga $K$. Su payoff es
+\[ \text{payoff largo}=S_T-K,\qquad \text{payoff corto}=K-S_T. \]
+Como no hubo pago inicial, el payoff es también la ganancia o pérdida.
+
+\figura{forward_payoff}{Payoff de un forward con precio de entrega $K=89.38$ (el precio del swap de WTI del informe). La parte larga gana si $S_T>K$ y la corta si $S_T<K$. Las líneas son rectas: el forward es un instrumento \emph{lineal}.}
+
+\section{Cubrir con un forward}
+
+Recordemos: cubrir es tomar la posición opuesta. Quien tiene un inventario (largo en el activo) vende forward (corto). La suma de ambas posiciones elimina la dependencia del precio:
+\[ \underbrace{(S_T-S_0)}_{\text{inventario}}+\underbrace{(K-S_T)}_{\text{forward corto}}=K-S_0. \]
+El resultado ya no depende de $S_T$: queda fijado en $K-S_0$, conocido hoy.
+
+\figura{cobertura_forward}{Inventario de crudo valorizado frente a su precio de hoy (92.60) más un forward corto a 89.38. La suma es una recta horizontal en $89.38-92.60=-3.22$ por barril: se elimina el riesgo, pero se fija una pérdida conocida porque el precio a plazo es menor que el actual.}
+
+\begin{informe}
+Esta figura es, en esencia, el Cuadro~10 del informe: el volumen que cubre el swap (1.16 millones de barriles) más el swap suman $1.16\times(89.38-92.60)=-3.7$ millones \enquote{en todo escenario}. El swap de WTI que estudiaremos en el capítulo~\ref{cap:swaps} se comporta, para el inventario, como una venta a plazo.
+\end{informe}
+
+\section{El precio forward por no arbitraje}
+
+¿De dónde sale $K$? La intuición diría \enquote{del precio que se espera para $T$}. No es así. Para un activo que se puede almacenar sin costo y que no genera ingresos, el precio forward queda determinado por el precio spot y la tasa de interés.
+
+\begin{ficha}{precio forward de un activo sin ingresos}
+\paso{1. Ecuación}
+\[ F_0=S_0\,e^{rT}. \]
+\paso{2. Símbolos} $F_0$: precio forward hoy para entrega en $T$. $S_0$: precio spot hoy. $r$: tasa libre de riesgo continua. $T$: plazo en años.
+\paso{3. Intuición} Comprar a plazo y comprar hoy y guardar el activo son dos formas de tener el activo en $T$. La segunda exige pagar $S_0$ hoy y, por tanto, perder los intereses de ese dinero. Si ambas estrategias terminan igual, deben costar lo mismo: el precio forward es el spot más el costo de financiarlo hasta $T$.
+\paso{4. Construcción} Supongamos $F_0>S_0e^{rT}$. Un arbitrajista: (a) pide prestado $S_0$ a la tasa $r$; (b) compra el activo al spot; (c) vende un forward a $F_0$. En $T$ entrega el activo, cobra $F_0$ y devuelve el préstamo $S_0e^{rT}$. Gana $F_0-S_0e^{rT}>0$ sin riesgo ni capital. Esta estrategia (\emph{cash and carry}) empujaría $F_0$ hacia abajo. Si $F_0<S_0e^{rT}$, la estrategia inversa (vender en corto el activo, invertir el dinero y comprar forward) da una ganancia segura de $S_0e^{rT}-F_0$. Solo $F_0=S_0e^{rT}$ elimina ambas oportunidades.
+\paso{5. Supuestos} Sin costos de transacción; se puede pedir y prestar a la tasa $r$; se puede vender en corto; no hay costos de almacenamiento ni ingresos del activo; no hay riesgo de incumplimiento.
+\paso{6. Ejemplo (didáctico)} $S_0=100$, $r=5\,\%$, $T=1$: $F_0=100e^{0.05}=105.13$.
+\paso{7. Interpretación} Un forward a un año debe pactarse a 105.13. Si el mercado lo cotizara a 108, el \emph{cash and carry} ganaría $108-105.13=2.87$ por unidad sin riesgo.
+\paso{8. Limitaciones} Para materias primas el almacenamiento cuesta y tener el bien físico puede tener un beneficio (rendimiento de conveniencia): la fórmula se generaliza en el capítulo~\ref{cap:futuros}. Para monedas, la \enquote{renta} del activo es la tasa de interés de esa moneda (sección~\ref{sec:cip}).
+\end{ficha}
+
+\begin{center}\small
+\captionof{table}{Arbitraje \emph{cash and carry} cuando el forward cotiza 108 ($S_0=100$, $r=5\,\%$).}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrr@{}}
+\toprule
+Operación & Hoy & En $T=1$\\
+\midrule
+Pedir prestado 100 & $+100.00$ & $-105.13$\\
+Comprar el activo al spot & $-100.00$ & \\
+Vender forward a 108 y entregar el activo & 0 & $+108.00$\\
+\midrule
+Total & 0 & $+2.87$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{adicional}[activos con ingresos]
+Si el activo paga un rendimiento continuo $q$ (dividendos, por ejemplo), quien lo guarda lo cobra, y el forward debe ser más barato: $F_0=S_0e^{(r-q)T}$. La lógica es la misma: el precio forward refleja el \emph{costo neto de mantener} el activo hasta $T$.
+\end{adicional}
+
+\section{El valor de un forward ya pactado}
+
+Al firmarse, un forward vale cero. Después, el mercado se mueve y el contrato adquiere valor para una parte y valor negativo para la otra.
+
+\begin{ficha}{valor de un forward en vida}
+\paso{1. Ecuación}
+\begin{gather*} f_{\text{largo}}=(F_t-K)\,e^{-r(T-t)},\\ f_{\text{corto}}=(K-F_t)\,e^{-r(T-t)}. \end{gather*}
+\paso{2. Símbolos} $F_t$: precio forward de mercado en $t$ para el mismo vencimiento $T$. $K$: precio pactado. $T-t$: plazo remanente.
+\paso{3. Intuición} Si hoy se puede pactar a $F_t$ y yo tengo un contrato a $K$, mi contrato vale la diferencia, cobrada en $T$ y por tanto descontada.
+\paso{4. Construcción} Compare dos contratos largos con el mismo vencimiento: el mío (a $K$) y uno nuevo (a $F_t$, que vale cero). En $T$ difieren en $(S_T-K)-(S_T-F_t)=F_t-K$, una cantidad conocida hoy. Su valor presente es $(F_t-K)e^{-r(T-t)}$.
+\paso{5. Supuestos} Los del no arbitraje; sin riesgo de contraparte.
+\paso{6. Ejemplo (didáctico)} PETROPERÚ vendió forward a $K=89.38$. Un tiempo después el forward para la misma fecha cotiza 85.00, faltan 0.2 años y $r=4.12\,\%$: $f_{\text{corto}}=(89.38-85.00)e^{-0.0412\times0.2}=4.38\times0.99179=4.34$ dólares por barril.
+\paso{7. Interpretación} El precio bajó: el contrato de venta es un activo para PETROPERÚ y un pasivo para el banco. Esa ganancia del derivado compensa la pérdida de valor del inventario.
+\paso{8. Limitaciones} Si la contraparte puede incumplir, el valor debe ajustarse por CVA.
+\end{ficha}
+
+\begin{informe}
+Esta es la lógica del \enquote{registro contable} del informe: \enquote{ambos derivados se pactan a valor cero y luego se miden a valor razonable: como activo si el valor es favorable y como pasivo si no}.
+\end{informe}
+
+\section{Forwards de monedas: la paridad cubierta de tasas}\label{sec:cip}
+
+En un forward de monedas, el \enquote{activo} es una moneda extranjera, y tener esa moneda rinde su propia tasa de interés.
+
+\begin{ficha}{paridad cubierta de tasas de interés}
+\paso{1. Ecuación} Con tipo de cambio en soles por dólar y tasas efectivas anuales,
+\[ F=S_0\left(\frac{1+r_{S/}}{1+r_{US\$}}\right)^{T}. \]
+Con tasas continuas: $F=S_0\,e^{(r_{S/}-r_{US\$})T}$.
+\paso{2. Símbolos} $F$: tipo de cambio forward (S/ por US\$) para el plazo $T$. $S_0$: tipo de cambio spot. $r_{S/}$, $r_{US\$}$: tasas en soles y dólares para ese plazo. $T$: plazo en años (el informe usa $d/360$, con $d$ días).
+\paso{3. Intuición} Hay dos maneras de convertir hoy soles en soles futuros pasando o no por el dólar. Ambas deben rendir lo mismo; si no, habría arbitraje.
+\paso{4. Construcción} Parta de $S_0$ soles.
+\begin{itemize}
+\item \emph{Camino A}: invertirlos en soles. En $T$ se tienen $S_0(1+r_{S/})^T$ soles.
+\item \emph{Camino B}: cambiarlos hoy por 1 dólar, invertirlo en dólares y vender hoy a plazo los dólares que se tendrán: en $T$ se tienen $(1+r_{US\$})^T$ dólares, que se convierten a $F$: $F(1+r_{US\$})^T$ soles.
+\end{itemize}
+Ambos caminos son libres de riesgo (el forward elimina la incertidumbre cambiaria). Por no arbitraje, $S_0(1+r_{S/})^T=F(1+r_{US\$})^T$, y se despeja $F$.
+\paso{5. Supuestos} Libre movilidad de capitales; se puede pedir y prestar en ambas monedas a esas tasas; sin costos de transacción ni riesgo de contraparte.
+\paso{6. Ejemplo (del informe)} $S_0=3.4367$ (TC de compra), $r_{S/}=3.90\,\%$, $r_{US\$}=4.14\,\%$ (efectiva, a partir del SOFR simple de 4.08\,\%), $d=91$:
+\begin{align*}
+\frac{1.0390}{1.0414}&=0.997695,\\
+0.997695^{91/360}&=e^{0.252778\times\ln 0.997695}\\&=e^{-0.000583}=0.999417,\\
+F&=3.4367\times0.999417=3.4347.
+\end{align*}
+\paso{7. Interpretación} El dólar a 91 días vale 3.4347 soles, unos 20 \textbf{pips} (diezmilésimas) menos que al contado; el informe reporta $(20.5)$ pips, diferencia que se explica por el redondeo de las tasas. La moneda con \emph{menor} tasa (el sol) cotiza \emph{más cara} a plazo: compensa al inversionista en soles por la menor tasa.
+\paso{8. Limitaciones} En la práctica hay diferenciales de compra y venta, costos de crédito y, en monedas como el sol, restricciones que pueden desviar el forward de la paridad.
+\end{ficha}
+
+\begin{importante}[el forward no es un pronóstico]
+Que $F=3.4347<S_0=3.4367$ \emph{no} significa que el mercado espere que el sol se aprecie. Es un resultado de no arbitraje que refleja el diferencial de tasas. El tipo de cambio dentro de 91 días puede estar en cualquier parte.
+\end{importante}
+
+\paragraph{Precios de compra y venta} Los bancos cotizan un precio de \textbf{compra} (al que compran dólares, 3.4367) y uno de \textbf{venta} (al que los venden, 3.4390). Como PETROPERÚ \emph{vende} dólares para obtener soles, recibe el precio de compra. Por eso el informe convierte las patas del CCS y calcula el NDF con $S^{\text{compra}}_0=3.4367$, y usa el TC medio (3.4379) solo para expresar posiciones.
+
+\section{El NDF: forward sin entrega}
+
+En un forward \enquote{con entrega}, al vencimiento PETROPERÚ entregaría dólares y recibiría soles. En un NDF no se entrega el principal: se paga solo la diferencia de valor.
+
+\begin{ficha}{liquidación de un NDF de compra de soles}
+\paso{1. Ecuación} Para un NDF en que se compran a plazo $N$ soles al tipo $F$, el pago al vencimiento, en dólares, es
+\[ \text{Liquidación}=\frac{N}{S_T}-\frac{N}{F}. \]
+\paso{2. Símbolos} $N$: nocional en soles. $F$: tipo forward pactado. $S_T$: tipo de cambio de referencia en $T$ (publicado, por ejemplo, por el BCRP).
+\paso{3. Intuición} Con entrega, PETROPERÚ pagaría $N/F$ dólares y recibiría $N$ soles, que valen $N/S_T$ dólares. El NDF paga directamente esa diferencia de valor.
+\paso{4. Construcción} Valor recibido menos valor entregado, ambos en dólares: $N/S_T-N/F$.
+\paso{5. Supuestos} Tipo de referencia observable; liquidación en dólares en la fecha pactada.
+\paso{6. Ejemplo (del informe)} $N=750.7$ millones de soles, $F=3.4347$, $S_0=3.4367$. Si al vencimiento el TC cae 10\,\% ($S_T=3.0930$): $750.7/3.0930-750.7/3.4347=242.71-218.56=+24.14$ millones a favor de PETROPERÚ. Si sube 10\,\% ($S_T=3.7804$): $198.58-218.56=-19.99$ millones.
+\paso{7. Interpretación} El NDF gana cuando el sol se aprecia, justo cuando las cuentas por pagar en soles pierden.
+\paso{8. Limitaciones} Cubre un plazo (91 días); para cubrir una deuda que dura más hay que renovarlo, y cada renovación se hace al forward vigente entonces.
+\end{ficha}
+
+\subsection{Cobertura de las cuentas por pagar: el resultado neto}
+
+Supongamos que PETROPERÚ tiene cuentas por pagar de $N$ soles a 91 días. Su resultado cambiario respecto de hoy es $N/S_0-N/S_T$ (pierde si $S_T<S_0$). Sumándole el NDF:
+\[ \underbrace{\frac{N}{S_0}-\frac{N}{S_T}}_{\text{cuentas por pagar}}+\underbrace{\frac{N}{S_T}-\frac{N}{F}}_{\text{NDF}}=N\left(\frac{1}{S_0}-\frac{1}{F}\right). \]
+El término $N/S_T$ se cancela: el resultado neto no depende del tipo de cambio final.
+
+\begin{center}\small
+\captionof{table}{Reproducción del Cuadro~5 del informe: NDF a 91 días (US\$ millones).}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+$S_T$ & 3.093 ($-10\,\%$) & 3.437 (spot) & 3.780 ($+10\,\%$)\\
+\midrule
+CxP en S/ & $(24.27)$ & 0.00 & 19.86\\
+NDF compra S/ & 24.14 & $(0.13)$ & $(19.99)$\\
+\midrule
+Neto & $(0.13)$ & $(0.13)$ & $(0.13)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Comprobación: $N/S_0=750.7/3.4367=218.44$ y $N/F=750.7/3.4347=218.56$; $N(1/S_0-1/F)=218.44-218.56=-0.13$ millones.
+
+\figura{ndf}{Resultado de las cuentas por pagar, del NDF y de su suma según el TC al vencimiento. Las dos primeras líneas son curvas espejo; la suma es horizontal en $-0.13$ millones, el costo de la cobertura.}
+
+\begin{informe}[el costo de cubrirse]
+El informe resume: \enquote{como PETROPERÚ compra soles a plazo, recibe menos soles por dólar: la cobertura le cuesta 0.24\,\% anual, unos US\$ 0.13 millones por trimestre}. El 0.24\,\% es aproximadamente el diferencial de tasas $4.14\,\%-3.90\,\%$: la empresa \enquote{paga} la diferencia entre lo que rinde el dólar y lo que rinde el sol. Se trata de un costo cierto y pequeño a cambio de eliminar una pérdida potencial de US\$ 24 millones por trimestre.
+
+\emph{Contraste con el mercado local.} La SBS publica una curva \enquote{sintética} en dólares: la tasa en dólares implícita en los forwards USD/PEN que se negocian en el Perú. Con ella, el forward sería 3.4346, apenas 0.6 pips distinto. El informe concluye que el cálculo es coherente con el mercado local, pero aclara que la validación final corresponde a Riesgos, con cotizaciones de los bancos.
+\end{informe}
+
+\begin{cuidado}[creer que la cobertura \enquote{falló} porque el derivado perdió]
+Si el sol se deprecia, el NDF pierde 19.99 millones. No es un fracaso: las cuentas por pagar ganaron 19.86 millones. La cobertura se evalúa por el neto, que en todos los escenarios es $-0.13$.
+\end{cuidado}
+
+\begin{resumen}
+\begin{itemize}
+\item Un forward fija hoy el precio $K$ de una compraventa futura; payoff largo $S_T-K$, corto $K-S_T$. Es lineal y se pacta con valor cero.
+\item Una posición larga se cubre con un forward corto; el resultado conjunto queda fijado en $K-S_0$.
+\item Por no arbitraje, $F_0=S_0e^{rT}$ para un activo sin ingresos ni costos: el forward es el spot más el costo de financiarlo.
+\item Un forward en vida vale $(F_t-K)e^{-r(T-t)}$ para la parte larga.
+\item Paridad cubierta: $F=S_0[(1+r_{S/})/(1+r_{US\$})]^T$. Con las tasas del informe, $F=3.4347$, unos 20 pips bajo el spot.
+\item El NDF liquida $N/S_T-N/F$ en dólares. Junto con cuentas por pagar en soles, produce un neto constante $N(1/S_0-1/F)=-0.13$ millones, el costo de la cobertura.
+\end{itemize}
+\end{resumen}
+
+\section*{Ejercicios}
+\addcontentsline{toc}{section}{Ejercicios}
+
+\ejercicio[cálculo] Un activo sin ingresos ni costos de almacenamiento vale 50. La tasa libre de riesgo continua es 4\,\%. Calcule el precio forward a 6 meses.
+
+\ejercicio[cálculo] Con $S_0=100$, $r=5\,\%$ continua y $T=1$, el forward cotiza 102. Describa la estrategia de arbitraje y calcule su ganancia.
+
+\ejercicio[cálculo] El tipo de cambio spot es 3.40, la tasa en soles a un año 4.5\,\% y la tasa en dólares 4.0\,\% (ambas efectivas). Calcule el forward a un año. ¿Cotiza el dólar con prima o con descuento?
+
+\ejercicio[cálculo] Una empresa compró mediante un NDF S/ 100 millones a 3.50. Al vencimiento el tipo de referencia es 3.30. ¿Quién paga a quién y cuánto?
+
+\ejercicio[cálculo] PETROPERÚ vendió forward crudo a 89.38. Hoy el forward para la misma fecha cotiza 95.00, faltan 0.25 años y $r=4.12\,\%$. ¿Cuánto vale el contrato para PETROPERÚ?
+
+\ejercicio[conceptual] Un gerente afirma: \enquote{el forward a 3.4347 muestra que el mercado espera que el sol se aprecie; mejor no cubrirnos}. Comente.
+
+\ejercicio[conceptual] ¿Por qué el informe usa el tipo de cambio de compra y no el de venta para calcular el NDF?
