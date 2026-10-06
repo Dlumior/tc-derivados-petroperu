@@ -7,3 +7,7 @@ __pycache__/
 informe/out/
 libro/out/
 .claude/settings.local.json
+videos/.venv/
+videos/media/
+videos/out/
+videos/**/voiceovers/

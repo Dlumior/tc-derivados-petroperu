@@ -50,14 +50,23 @@ Estados: ⬜ pendiente · ✍️ guion · 🎞️ animación · 🔊 voz · ✅ 
 
 ### Fase 0: Entorno
 
-- [ ] `sudo dnf install cairo-devel pango-devel espeak-ng` y los paquetes TeX que pida Manim
-      (`standalone`, `preview`, `babel-spanish`, `physics`, `relsize`, `ragged2e`, `doublestroke`, `rsfs`).
-- [ ] Crear `videos/` como **proyecto `uv` propio** (torch y manim no deben ensuciar el entorno del informe), con
-      dependencia editable al paquete raíz para importar `derivados`.
-- [ ] Verificar la versión de Python que exige `kokoro`; fijarla en `videos/.python-version`.
-- [ ] `uv add manim "manim-voiceover[transcribe]" kokoro soundfile`.
-- [ ] Agregar a `.gitignore`: `videos/media/`, `videos/out/`, `videos/**/voiceovers/` (caché de audio).
-- [ ] Escena de prueba `hola.py` (un `MathTex` con tilde + un `Text`) renderiza en `-ql`.
+- [x] `espeak-ng` (ya estaba instalado, 1.52).
+- [x] `sudo dnf install cairo-devel pango-devel` (sin ellos no compila `manimpango`) y los paquetes TeX que pida
+      Manim (`standalone`, `preview`, `babel-spanish`, `physics`, `relsize`, `ragged2e`, `doublestroke`, `rsfs`).
+- [x] Crear `videos/` como **proyecto `uv` propio**, con `derivados = { path = "..", editable = true }`.
+      **No usar `uv add --editable ..`**: convierte el repo en *workspace* y cambia el `uv.lock` del informe.
+- [x] Python 3.12 fijado en `videos/.python-version` (el sistema trae 3.14).
+- [x] `kokoro` + `soundfile` + torch **solo-CPU** (índice `pytorch-cpu`; el de PyPI baja varios GB de CUDA).
+      Hay que exigir `transformers>=4.40`: sin eso el resolvedor cae a la 4.12 y falla `tokenizers`.
+- [x] Prueba de Kokoro en español (`em_alex`): 8.7 s de audio en ≈ 10 s de CPU.
+      Requiere `ESPEAK_DATA_PATH=/usr/share/espeak-ng-data` (el `espeakng-loader` de PyPI trae una ruta rota);
+      `narrador.py` debe fijarla antes de importar `kokoro`.
+- [x] `uv add manim "manim-voiceover[transcribe]"` (Manim CE 0.21.0).
+- [ ] Opcional: `sudo dnf install sox` (`manim-voiceover` avisa al arrancar; solo se usa para cambiar la velocidad del audio).
+- [x] Agregar a `.gitignore`: `videos/.venv/`, `videos/media/`, `videos/out/`, `videos/**/voiceovers/`.
+- [x] Escena de prueba `hola.py` (un `MathTex` con tilde + un `Text`) renderiza en `-ql`.
+      La plantilla de Manim ya carga `babel` en inglés: hay que **reemplazarlo** por
+      `[spanish,es-noshorthands,es-nolayout]` (agregar otro `babel` da *option clash*). Con español, `\max` sale "máx".
 
 ### Fase 1: Voz y estilo
 
@@ -142,3 +151,4 @@ Por cada capítulo, en el orden del tablero: guion → revisión → storyboard 
 | Fecha | Avance |
 |---|---|
 | 2026-10-05 | Plan creado. Voz: Kokoro local con respaldo ElevenLabs; destino: YouTube. |
+| 2026-10-05 | Fase 0 cerrada: entorno `videos/` aislado, Kokoro en CPU, Manim 0.21 con LaTeX en español (`hola.py`). |

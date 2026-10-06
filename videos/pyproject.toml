@@ -1,0 +1,23 @@
+[project]
+name = "videos-libro"
+version = "0.1.0"
+description = "Videos del libro de derivados (Manim + Kokoro)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "derivados",
+    "kokoro>=0.9.4",
+    "manim>=0.21.0",
+    "manim-voiceover[transcribe]>=0.4.0",
+    "soundfile>=0.13",
+    "torch>=2.4",
+    "transformers>=4.40",
+]
+
+[tool.uv.sources]
+derivados = { path = "..", editable = true }
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
