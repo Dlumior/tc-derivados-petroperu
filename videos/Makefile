@@ -3,7 +3,7 @@ CAP ?= 08
 FUENTE = $(wildcard c$(CAP)_*.py)
 MANIM = uv run manim
 
-.PHONY: test voces pronunciacion prueba borrador final
+.PHONY: test voces pronunciacion prueba borrador final storyboard
 
 test:
 	uv run pytest -q
@@ -24,3 +24,6 @@ final:  ## 1080p60 para YouTube
 
 pronunciacion:  ## cada término del diccionario → Whisper (out/pronunciacion.tsv)
 	uv run python revisar_pronunciacion.py
+
+storyboard:  ## un cuadro fijo por escena → out/storyboard/cNN.png
+	uv run python storyboard.py $(CAP)

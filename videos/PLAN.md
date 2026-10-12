@@ -102,14 +102,22 @@ Estados: ⬜ pendiente · ✍️ guion · 🎞️ animación · 🔊 voz · ✅ 
 - [x] Guion v2 (2026-10-11): ≈ 15 min; escena nueva "Largo y corto" (call/put larga y corta), desgaste del valor
       tiempo, arbitraje de paridad, tres capas del collar y plan B de la put.
 - [ ] Revisión del guion por el autor (rigor + claridad).
-- [ ] Storyboard: un fotograma por escena (`manim -s`), aprobado.
+- [x] Storyboard: `storyboard_c08.py` (11 cuadros) + `storyboard.py` → `out/storyboard/c08.png` (`make storyboard`).
+      Cada cuadro es una función reutilizable al animar; la clase `Cuadro` aplica el control de la franja.
+      Criterios que salieron de la revisión: en gráficos de payoff, **no numerar el eje horizontal** (cruza las
+      líneas en y = 0); marcar solo K, S₀, K_p, K_c con `marca_k`. Rótulos en espacio libre, unidos con guía si hace falta.
+- [ ] Aprobación del storyboard por el autor.
 - [ ] Animar las escenas (`c08_opciones.py`, una `Scene` por sección).
 - [ ] Narración con Kokoro; ajustar tiempos con marcas.
 - [ ] Render final, montaje, música y `loudnorm`.
 - [ ] Medir y anotar en §5: tiempo de render por minuto de video, horas de trabajo, problemas de pronunciación.
 - [ ] Revisión crítica del piloto (¿se entiende sin el libro?, ¿ritmo?, ¿voz aceptable?) → decisión D3.
 
-### Fase 3: Componentes reutilizables (`videos/componentes/`)
+### Fase 3: Componentes reutilizables (`videos/componentes.py`)
+
+Empezado con el storyboard del piloto: `titulo`, `ejes`, `quebrada`, `tarjeta` (con borde discontinuo para el lado
+corto), `marca_k`, `llave`. Datos del caso en `videos/datos.py` (`C08` texto, `V08` números, `llenar()`), con test.
+
 
 - [ ] `EjePayoff`: ejes de payoff/ganancia con tramos que se construyen.
 - [ ] `LineaDeTiempo`: fechas, flujos y flechas de pago/cobro.
@@ -169,3 +177,4 @@ Por cada capítulo, en el orden del tablero: guion → revisión → storyboard 
 | 2026-10-11 | Fase 1 cerrada: D1 (`em_alex`, `es-419`, 0.95) y D2 (siglas por su nombre); normalizador, servicio Kokoro, estilo y montaje probados. |
 | 2026-10-11 | Voz aprobada tras escuchar la prueba. Franja de subtítulos reservada y subtítulos del capítulo en `montar.py`. |
 | 2026-10-11 | Guion del piloto v2: ≈ 15 min, primera persona del plural, trayectorias simuladas, cierre como gancho. |
+| 2026-10-11 | Storyboard del piloto (11 cuadros) y `datos.py`: las 26 cifras del capítulo 8 coinciden con el libro. |

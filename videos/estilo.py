@@ -3,7 +3,7 @@ subtítulos y la clase base `Escena`.
 
 Importar `estilo` antes de construir objetos: fija el fondo y la tipografía por defecto.
 """
-from manim import DL, UP, MathTex, Tex, TexTemplate, Text, config
+from manim import DL, UP, MathTex, Scene, Tex, TexTemplate, Text, config
 from manim_voiceover import VoiceoverScene
 
 # Paleta de libro/figuras.py, aclarada para fondo oscuro (mismo tono, más luminosidad).
@@ -46,6 +46,14 @@ def apoyar(mobject, margen: float = 0.45):
     return mobject.shift(UP * (PISO + margen - mobject.get_bottom()[1]))
 
 
+def verificar_franja(mobjects) -> None:
+    """Falla si algún objeto baja a la franja de subtítulos."""
+    invasores = [m for m in mobjects if m.get_bottom()[1] < PISO - 1e-3]
+    if invasores:
+        detalle = ", ".join(f"{type(m).__name__} (borde inferior {m.get_bottom()[1]:.2f})" for m in invasores)
+        raise ValueError(f"Invaden la franja de subtítulos (y < {PISO:.2f}): {detalle}")
+
+
 class Escena(VoiceoverScene):
     """Escena narrada de la serie: usa la voz de narrador.py y falla si algo invade la franja de subtítulos."""
 
@@ -57,7 +65,12 @@ class Escena(VoiceoverScene):
 
     def play(self, *args, **kwargs):
         super().play(*args, **kwargs)
-        invasores = [m for m in self.mobjects if m.get_bottom()[1] < PISO - 1e-3]
-        if invasores:
-            detalle = ", ".join(f"{type(m).__name__} (borde inferior {m.get_bottom()[1]:.2f})" for m in invasores)
-            raise ValueError(f"Invaden la franja de subtítulos (y < {PISO:.2f}): {detalle}")
+        verificar_franja(self.mobjects)
+
+
+class Cuadro(Scene):
+    """Fotograma fijo (storyboard): mismo estilo y mismo control de la franja, sin voz."""
+
+    def tear_down(self):
+        verificar_franja(self.mobjects)
+        super().tear_down()
