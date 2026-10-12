@@ -1,4 +1,5 @@
-"""Une las escenas de un capítulo en el orden en que están definidas y prepara la subida a YouTube.
+"""Une las escenas de un capítulo (en el orden del guion, o en el de definición si no hay guion) y prepara la subida
+a YouTube.
 
 uv run python montar.py 08 [calidad]      (calidad: 480p15 | 1080p60, por defecto 1080p60)
 
@@ -52,11 +53,16 @@ if len(modulos) != 1:
 nombre = modulos[0].stem
 modulo = import_module(nombre)
 
-escenas = sorted(
-    (c for c in vars(modulo).values()
-     if inspect.isclass(c) and issubclass(c, Scene) and c.__module__ == nombre),
-    key=lambda c: inspect.getsourcelines(c)[1],
-)
+if (Path("guiones") / f"c{cap}.md").exists():  # el guion manda el orden y excluye clases base
+    from guion import narracion
+
+    escenas = [getattr(modulo, clase) for clase in narracion(cap)]
+else:
+    escenas = sorted(
+        (c for c in vars(modulo).values()
+         if inspect.isclass(c) and issubclass(c, Scene) and c.__module__ == nombre and "construct" in vars(c)),
+        key=lambda c: inspect.getsourcelines(c)[1],
+    )
 videos = [Path("media/videos") / nombre / calidad / f"{c.__name__}.mp4" for c in escenas]
 faltan = [str(v) for v in videos if not v.exists()]
 if faltan:

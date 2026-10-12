@@ -7,7 +7,7 @@ import numpy as np
 from manim import (DOWN, DR, LEFT, ORIGIN, RIGHT, UP, UR, Arrow, DashedLine, Dot, Line, MathTex, NumberLine,
                    Rectangle, RoundedRectangle, SurroundingRectangle, Text, VGroup, VMobject)
 
-from componentes import ejes, llave, marca_k, quebrada, tarjeta, titulo
+from componentes import Partes, ejes, llave, marca_k, quebrada, tarjeta
 from datos import C08, V08
 from derivados.opciones import black76
 from estilo import AZUL, GRIS, MORADO, ORO, ROJO, TEXTO, VERDE, Cuadro, apoyar, fuente
@@ -47,8 +47,9 @@ def cuadro_gancho():
     forward = DashedLine(e.c2p(0, s0), e.c2p(3, s0), color=ORO, stroke_width=5)
     rotulo = Text("forward", font_size=22, color=ORO).next_to(forward, UP, buff=0.08).align_to(forward, RIGHT)
     nota = Text("trayectorias ilustrativas", font_size=16, color=GRIS).next_to(e, UP, buff=0.05).align_to(e, RIGHT)
-    return VGroup(izquierda, e, trayectorias, forward, rotulo, nota,
-                  fuente(f"informe; trayectorias simuladas con σ = {C08['VolCrudo']}"))
+    return Partes(precio=precio, tanque=tanque, nivel=nivel, volumen=volumen, caida=caida, ejes=e,
+                  trayectorias=trayectorias, forward=forward, rotulo=rotulo, nota=nota,
+                  fuente=fuente(f"informe; trayectorias simuladas con σ = {C08['VolCrudo']}"))
 
 
 def cuadro_seguro():
@@ -70,8 +71,8 @@ def cuadro_seguro():
     cartas = VGroup(tarjeta(["Forward", "obligación en ambas direcciones"], ORO, ancho=4.8),
                     tarjeta(["Opción", "derecho: ejercemos si conviene"], AZUL, ancho=4.8)).arrange(RIGHT, buff=0.8)
     apoyar(cartas, margen=0.15)
-    return VGroup(titulo("Un seguro sobre un precio"), ramas, hoy, textos, prima, prima_txt, pago, pago_txt, cero,
-                  prima_perdida, cartas)
+    return Partes(ramas=ramas, hoy=hoy, textos=textos, prima=prima, prima_txt=prima_txt, pago=pago, pago_txt=pago_txt,
+                  cero=cero, prima_perdida=prima_perdida, cartas=cartas)
 
 
 def cuadro_definiciones():
@@ -93,7 +94,7 @@ def cuadro_definiciones():
     ejercicio[:2].arrange(RIGHT, buff=1.0)
     ejercicio[2].next_to(ejercicio[:2], DOWN, buff=0.15)
     apoyar(ejercicio, margen=0.1)
-    return VGroup(titulo("Call y put"), cartas, glosario, subyacente, ejercicio)
+    return Partes(cartas=cartas, glosario=glosario, subyacente=subyacente, ejercicio=ejercicio)
 
 
 def cuadro_posiciones():
@@ -123,16 +124,17 @@ def cuadro_posiciones():
     lema = Text("largo: pagar poco, ganar mucho  ·  corto: cobrar poco, perder mucho (la aseguradora)",
                 font_size=20, color=ORO)
     apoyar(lema, margen=0.45)
-    return VGroup(titulo("Cuatro posiciones: largo y corto"), bloque, lema,
-                  fuente("ejemplo del libro, cap. 8: K = 90, prima de la call 6, prima de la put 5"))
+    return Partes(cabeceras=cabeceras, grid=grid, flechas=flechas, suma=suma, lema=lema,
+                  fuente=fuente("ejemplo del libro, cap. 8: K = 90, prima de la call 6, prima de la put 5"))
 
 
 def _mini_payoff(nombre, f, g, color):
     e = ejes([50, 130, 20], [-40, 40, 20], x_length=5.2, y_length=1.9, etiquetas=None, numeros=False, font_size=16)
     e.y_axis.add_numbers(font_size=16)
     xs = [50, K, 130]
-    return VGroup(Text(nombre, font_size=22, color=color).next_to(e, UP, buff=0.05), e, marca_k(e, K, "K = 90", font_size=20),
-                  quebrada(e, xs, f, color, ancho=4), quebrada(e, xs, g, color, ancho=2.5, discontinua=True))
+    return Partes(nombre=Text(nombre, font_size=22, color=color).next_to(e, UP, buff=0.05), ejes=e,
+                  marca=marca_k(e, K, "K = 90", font_size=20), payoff=quebrada(e, xs, f, color, ancho=4),
+                  ganancia=quebrada(e, xs, g, color, ancho=2.5, discontinua=True))
 
 
 def cuadro_payoffs():
@@ -151,7 +153,7 @@ def cuadro_payoffs():
     leyenda = VGroup(Line(ORIGIN, RIGHT * 0.5, color=TEXTO, stroke_width=4), Text("payoff", font_size=18),
                      DashedLine(ORIGIN, RIGHT * 0.5, color=TEXTO, stroke_width=2), Text("ganancia", font_size=18)
                      ).arrange(RIGHT, buff=0.15).to_edge(RIGHT, buff=0.3).align_to(pie, DOWN)
-    return VGroup(formula, paneles, leyenda, pie)
+    return Partes(formula=formula, paneles=paneles, leyenda=leyenda, fuente=pie)
 
 
 def cuadro_valor_tiempo():
@@ -186,9 +188,9 @@ def cuadro_valor_tiempo():
                Text("valor tiempo", font_size=18)).arrange(RIGHT, buff=0.15),
         Text(f"σ = {C08['VolCrudo']}", font_size=18),
     ).arrange(DOWN, aligned_edge=LEFT, buff=0.18).to_edge(RIGHT, buff=0.5).shift(UP * 0.8)
-    return VGroup(titulo("Valor intrínseco y valor tiempo: la put de enero"), e, area, intrinseco, *curvas.values(),
-                  marca, punto, medida, rotulo, guia, k_txt, f_txt, bandas, leyenda,
-                  fuente("informe; libro/v2/capas.json; modelo de Black (cap. 9)"))
+    return Partes(ejes=e, area=area, intrinseco=intrinseco, curvas=VGroup(*curvas.values()), principal=principal,
+                  marca=marca, punto=punto, medida=medida, rotulo=rotulo, guia=guia, k_txt=k_txt, f_txt=f_txt,
+                  bandas=bandas, leyenda=leyenda, fuente=fuente("informe; libro/v2/capas.json; modelo de Black (cap. 9)"))
 
 
 def intrinseco_plot(e, kp):
@@ -201,7 +203,7 @@ def cuadro_paridad():
     ecuaciones = VGroup(
         MathTex(r"c - p = e^{-rT}\,(F_0 - K)", font_size=40),
         MathTex(rf"c = {C08['PrimaPutEne']} + {C08['VPDif']} = {C08['CallParidad']}", font_size=40, color=VERDE),
-    ).arrange(DOWN, buff=0.25).next_to(titulo("x"), DOWN, buff=0.45)
+    ).arrange(DOWN, buff=0.25).to_edge(UP, buff=0.5)
     caja = SurroundingRectangle(ecuaciones[1], color=VERDE, buff=0.12)
     datos = Text(f"put {C08['PrimaPutEne']} · F₀ = {C08['WTIFut']} · K = {C08['CollarPut']} · {C08['PlazoDiasOpc']} días",
                  font_size=20, color=GRIS).next_to(caja, DOWN, buff=0.15)
@@ -219,8 +221,8 @@ def cuadro_paridad():
     rotulos = VGroup(Text("call comprada + put vendida", font_size=20).next_to(izq, UP, buff=0.08),
                      Text("= forward a K", font_size=20, color=VERDE).next_to(der, UP, buff=0.08))
     igual = MathTex("=", font_size=60).move_to(VGroup(izq, der))
-    return VGroup(titulo("Paridad put-call"), ecuaciones, caja, datos, graficos, a, b, rotulos, igual,
-                  fuente("informe; libro/v2/capas.json"))
+    return Partes(ecuaciones=ecuaciones, caja=caja, datos=datos, izq=izq, der=der, a=a, b=b, rotulos=rotulos,
+                  igual=igual, fuente=fuente("informe; libro/v2/capas.json"))
 
 
 def cuadro_put_protectora():
@@ -248,9 +250,9 @@ def cuadro_put_protectora():
     derecha = VGroup(costo, lineas, plan_b).arrange(DOWN, buff=0.35).to_edge(RIGHT, buff=0.6)
     apoyar(derecha)
     deducible = MathTex(r"\text{pérdida máx} = (90 - 80) + 3 = 13", font_size=26).move_to(e.c2p(76, 14))
-    return VGroup(titulo("Put protectora: un seguro con deducible"), e, activo, protegido, piso, rotulos, deducible,
-                  derecha,
-                  fuente("ejemplo del libro (activo a 90, put 80, prima 3); informe, Cuadro 8"))
+    return Partes(ejes=e, activo=activo, protegido=protegido, piso=piso, rotulos=rotulos, deducible=deducible,
+                  costo=costo, lineas=lineas, plan_b=plan_b,
+                  fuente=fuente("ejemplo del libro (activo a 90, put 80, prima 3); informe, Cuadro 8"))
 
 
 def cuadro_collar():
@@ -279,8 +281,9 @@ def cuadro_collar():
                        (GRIS, f"inventario sin cobertura (hoy: {C08['WTISpot']})"), (AZUL, "inventario + collar")]
     ], Text("prima neta = 0", font_size=20, color=VERDE)).arrange(DOWN, aligned_edge=LEFT, buff=0.2)
     leyenda.to_edge(RIGHT, buff=0.3).align_to(e, UP)
-    return VGroup(titulo("Collar de costo cero: capa de enero"), e, inventario, put, call, collar, piso, techo,
-                  renuncia, rotulos, leyenda, fuente("informe; libro/v2/capas.json; WTI a 120: ejemplo del libro"))
+    return Partes(ejes=e, inventario=inventario, put=put, call=call, collar=collar, piso=piso, techo=techo,
+                  renuncia=renuncia, rotulos=rotulos, leyenda=leyenda,
+                  fuente=fuente("informe; libro/v2/capas.json; WTI a 120: ejemplo del libro"))
 
 
 def cuadro_capas():
@@ -306,8 +309,7 @@ def cuadro_capas():
                      VGroup(Arrow(LEFT * 0.25, RIGHT * 0.25 + DOWN * 0.1, color=ORO, buff=0, stroke_width=3),
                             Text("backwardation:\nlos futuros caen mes a mes", font_size=18, color=ORO)).arrange(RIGHT, buff=0.15),
                      ).arrange(DOWN, aligned_edge=LEFT).to_corner(UR, buff=0.5).shift(DOWN * 0.6)
-    return VGroup(titulo("Tres capas, tres collares"), e, elementos, flecha, leyenda,
-                  fuente("informe; libro/v2/capas.json"))
+    return Partes(ejes=e, elementos=elementos, flecha=flecha, leyenda=leyenda, fuente=fuente("informe; libro/v2/capas.json"))
 
 
 def cuadro_cierre():
@@ -326,7 +328,7 @@ def cuadro_cierre():
     gancho = VGroup(Text(f"¿De dónde sale {C08['PrimaPutEne']}?", font_size=26, color=ORO),
                     Text("→  Capítulo 9: Valoración de opciones", font_size=26)).arrange(RIGHT, buff=0.4)
     apoyar(gancho, margen=0.2)
-    return VGroup(titulo("Un misterio para el próximo capítulo"), recta, marcas, distancias, pregunta, gancho)
+    return Partes(recta=recta, marcas=marcas, distancias=distancias, pregunta=pregunta, gancho=gancho)
 
 
 CUADROS = [

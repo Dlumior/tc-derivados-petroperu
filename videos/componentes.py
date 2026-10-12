@@ -5,6 +5,16 @@ from manim import (DOWN, RIGHT, UP, Axes, BraceBetweenPoints, DashedVMobject, Ma
 from estilo import FONDO, GRIS, TEXTO
 
 
+class Partes(VGroup):
+    """VGroup cuyas piezas también se piden por nombre (`cuadro.ejes`): el storyboard arma la composición y la
+    animación la recorre pieza a pieza."""
+
+    def __init__(self, **partes):
+        super().__init__(*partes.values())
+        for nombre, parte in partes.items():
+            setattr(self, nombre, parte)
+
+
 def titulo(texto: str) -> Text:
     """Título de sección, arriba y discreto."""
     return Text(texto, font_size=34).to_edge(UP, buff=0.3)

@@ -35,7 +35,7 @@ Estados: ⬜ pendiente · ✍️ guion · 🎞️ animación · 🔊 voz · ✅ 
 
 | Cap. | Título | Estado | Duración | Notas |
 |---|---|---|---|---|
-| 08 | Opciones financieras (**piloto**) | ✍️ | ≈ 15 min | Fija el estilo; guion v2 en revisión |
+| 08 | Opciones financieras (**piloto**) | 🔊 | 14.4 min | Borrador 480p con voz; en revisión |
 | 02 | El valor del dinero en el tiempo | ⬜ | | |
 | 03 | Riesgo, rendimiento y exposición | ⬜ | | |
 | 04 | Mercados, posiciones y participantes | ⬜ | | |
@@ -106,9 +106,13 @@ Estados: ⬜ pendiente · ✍️ guion · 🎞️ animación · 🔊 voz · ✅ 
       Cada cuadro es una función reutilizable al animar; la clase `Cuadro` aplica el control de la franja.
       Criterios que salieron de la revisión: en gráficos de payoff, **no numerar el eje horizontal** (cruza las
       líneas en y = 0); marcar solo K, S₀, K_p, K_c con `marca_k`. Rótulos en espacio libre, unidos con guía si hace falta.
-- [ ] Aprobación del storyboard por el autor.
-- [ ] Animar las escenas (`c08_opciones.py`, una `Scene` por sección).
-- [ ] Narración con Kokoro; ajustar tiempos con marcas.
+- [x] Aprobación del storyboard por el autor (2026-10-11), **sin títulos** en pantalla: la narración guía.
+- [x] Animar las escenas (`c08_opciones.py`, una `Escena` por sección). La narración se lee del guion
+      (`guion.py`: `⟨A⟩` → marca, `{Llave}` → cifra) y la composición sale de los cuadros del storyboard, que
+      devuelven `Partes` con nombre. `make borrador` renderiza solo las escenas del guion, en su orden.
+- [x] Narración con Kokoro; tiempos con marcas. Pausas `‖` en el guion (33 en el cap. 8, 2.5 s cada una):
+      dentro de un bloque de voz, `self.wait` no detiene el audio, así que `Escena.narracion` reproduce el texto por
+      tramos. Primer borrador sin pausas: 12.8 min (la voz es continua; la estimación de 1.3× pausas no se cumplió).
 - [ ] Render final, montaje, música y `loudnorm`.
 - [ ] Medir y anotar en §5: tiempo de render por minuto de video, horas de trabajo, problemas de pronunciación.
 - [ ] Revisión crítica del piloto (¿se entiende sin el libro?, ¿ritmo?, ¿voz aceptable?) → decisión D3.
@@ -178,3 +182,4 @@ Por cada capítulo, en el orden del tablero: guion → revisión → storyboard 
 | 2026-10-11 | Voz aprobada tras escuchar la prueba. Franja de subtítulos reservada y subtítulos del capítulo en `montar.py`. |
 | 2026-10-11 | Guion del piloto v2: ≈ 15 min, primera persona del plural, trayectorias simuladas, cierre como gancho. |
 | 2026-10-11 | Storyboard del piloto (11 cuadros) y `datos.py`: las 26 cifras del capítulo 8 coinciden con el libro. |
+| 2026-10-12 | Piloto animado: 10 escenas con voz; borrador 480p de 14.4 min (−14.5 LUFS). Pausas de 2.5 s tras 33 momentos clave. |

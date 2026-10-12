@@ -3,6 +3,8 @@ subtítulos y la clase base `Escena`.
 
 Importar `estilo` antes de construir objetos: fija el fondo y la tipografía por defecto.
 """
+from contextlib import contextmanager
+
 from manim import DL, UP, MathTex, Scene, Tex, TexTemplate, Text, config
 from manim_voiceover import VoiceoverScene
 
@@ -54,14 +56,45 @@ def verificar_franja(mobjects) -> None:
         raise ValueError(f"Invaden la franja de subtítulos (y < {PISO:.2f}): {detalle}")
 
 
+PAUSA = "‖"  # en el guion: fin de tramo de voz; la imagen se queda quieta SEGUNDOS_PAUSA antes de seguir
+SEGUNDOS_PAUSA = 2.5
+
+
 class Escena(VoiceoverScene):
-    """Escena narrada de la serie: usa la voz de narrador.py y falla si algo invade la franja de subtítulos."""
+    """Escena narrada de la serie: usa la voz de narrador.py y falla si algo invade la franja de subtítulos.
+
+    `with self.narracion(texto):` reproduce el texto por tramos separados por PAUSA; `self.m("C")` espera la marca
+    <bookmark mark="C"/>, avanzando (con su pausa) hasta el tramo que la contiene.
+    """
 
     def setup(self):
         from narrador import servicio
 
         super().setup()
         self.set_speech_service(servicio())
+
+    @contextmanager
+    def narracion(self, texto: str):
+        self._tramos = [t.strip() for t in texto.split(PAUSA) if t.strip()]
+        self._tramo = 0
+        self.add_voiceover_text(self._tramos[0])
+        try:
+            yield
+        finally:
+            while self._tramo < len(self._tramos) - 1:
+                self._siguiente_tramo()
+            self.wait_for_voiceover()
+
+    def _siguiente_tramo(self):
+        self.wait_for_voiceover()
+        self.wait(SEGUNDOS_PAUSA)
+        self._tramo += 1
+        self.add_voiceover_text(self._tramos[self._tramo])
+
+    def m(self, marca: str):
+        while f'mark="{marca}"' not in self._tramos[self._tramo]:
+            self._siguiente_tramo()
+        self.wait_until_bookmark(marca)
 
     def play(self, *args, **kwargs):
         super().play(*args, **kwargs)
