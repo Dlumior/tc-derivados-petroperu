@@ -70,19 +70,24 @@ Estados: ⬜ pendiente · ✍️ guion · 🎞️ animación · 🔊 voz · ✅ 
 
 ### Fase 1: Voz y estilo
 
-- [ ] Script `elegir_voz.py`: el mismo párrafo del cap. 8 con `ef_dora`, `em_alex` y `em_santa`, a 0.9/1.0/1.1 de velocidad.
-- [ ] Escuchar y elegir voz y velocidad (decisión D1). Si ninguna convence, probar ElevenLabs con el mismo párrafo.
-- [ ] `narrador.py`: `KokoroService(SpeechService)` (genera `.wav`, devuelve ruta y duración) + selector de servicio.
-- [ ] `narrador.py`: normalizador de texto con test (`videos/tests/`):
-  - [ ] Números estilo EEFF (`1,234.5`, `(12.3)` → "menos doce coma tres").
-  - [ ] Monedas y unidades: `US$`, `S/`, `%`, `pb`, `bbl`, "millones".
-  - [ ] Siglas: WTI, CCS, NDF, IRS, CSA, ISDA, CVA, NIIF, BCRP, SOFR (deletreadas o leídas según D2).
-  - [ ] Fechas (`28-sep-2026`) y tasas (`5.25 %`).
-- [ ] Verificar si `espeak-ng es` suena peninsular; probar `es-419` si Kokoro lo permite.
-- [ ] `estilo.py`: paleta de `libro/figuras.py` (AZUL, ROJO, VERDE, GRIS, ORO, MORADO) sobre fondo oscuro,
-      `TexTemplate` con `babel` en español y `utf8`, tipografías, pie de fuente estándar.
-- [ ] Escena de prueba de 30 s con voz real y una marca `<bookmark/>` sincronizada.
-- [ ] `Makefile`: `make borrador CAP=08` (480p15), `make final CAP=08` (1080p60), `make montar CAP=08`.
+- [x] Script `elegir_voz.py`: el mismo párrafo del cap. 8 con dos acentos y tres velocidades (`make voces VOZ=em_alex`).
+- [x] Elegir voz y velocidad (D1): `em_alex`, `es-419`, 0.95.
+- [x] `narrador.py`: `KokoroService(SpeechService)` + selector (`VOZ_SERVICIO=elevenlabs` para el respaldo).
+      Devuelve el texto **normalizado** para que las marcas `<bookmark/>` se alineen con la transcripción de Whisper.
+- [x] `narrador.py`: normalizador de texto con test (`videos/tests/`, 33 casos):
+  - [x] Números estilo EEFF (`1,234.5`, `(12.3)` → "menos doce coma tres"), con apócope ("veintiún días").
+  - [x] Monedas y unidades: `US$`, `S/`, `%`, `pb`, `bbl`, "millones".
+  - [x] Siglas por su nombre (D2) y anglicismos con escritura fonética ("col", "estráik", "suap", "péy-of").
+  - [x] Fechas (`28-sep-2026`) y tasas (`5.25 %`).
+- [x] `espeak-ng es` cecea ("opθión"): se usa `es-419`, que sesea.
+- [x] `revisar_pronunciacion.py` (`make pronunciacion`): sintetiza cada término y lo transcribe con Whisper
+      (`out/pronunciacion.tsv`). "péiof" se oía "peo" → "péy-of". Probar siempre **dentro de una frase real**: en
+      la frase de prueba, "cólar" y "sófer" salían "color" y "software", pero en contexto se reconocen bien.
+- [x] `estilo.py`: paleta de `libro/figuras.py` aclarada sobre fondo `#0f1419`, CMU Serif, `TexTemplate` en
+      español, pie `fuente(...)`.
+- [x] Escena de prueba `prueba_voz.py` (24 s) con voz real y tres marcas `<bookmark/>` sincronizadas.
+- [x] `Makefile` (`make test | voces | pronunciacion | prueba | borrador CAP=08 | final CAP=08`) y `montar.py`
+      (une las escenas en orden de definición, `loudnorm` → −14.7 LUFS medido).
 
 ### Fase 2: Piloto (capítulo 8, Opciones)
 
@@ -140,8 +145,8 @@ Por cada capítulo, en el orden del tablero: guion → revisión → storyboard 
 
 | # | Decisión | Estado |
 |---|---|---|
-| D1 | Voz y velocidad de Kokoro (`ef_dora` / `em_alex` / `em_santa`) | Pendiente (Fase 1) |
-| D2 | Siglas: deletreadas ("ce-ce-ese") o leídas por su nombre ("cross currency swap") | Pendiente (Fase 1) |
+| D1 | Voz y velocidad de Kokoro (`ef_dora` / `em_alex` / `em_santa`) | ✅ `em_alex`, acento latinoamericano (`es-419`), velocidad 0.95 (2026-10-11) |
+| D2 | Siglas: deletreadas ("ce-ce-ese") o leídas por su nombre ("cross currency swap") | ✅ Por su nombre; las que se pronuncian como palabra (ISDA, NYMEX, SOFR, NIIF) quedan así (2026-10-11) |
 | D3 | Tras el piloto: Kokoro definitivo o regenerar la narración con ElevenLabs | Pendiente (Fase 2) |
 | D4 | Visibilidad en YouTube: pública o no listada | Pendiente (Fase 6) |
 | D5 | Créditos: autores del libro / curso / profesor en la descripción | Pendiente (Fase 6) |
@@ -152,3 +157,4 @@ Por cada capítulo, en el orden del tablero: guion → revisión → storyboard 
 |---|---|
 | 2026-10-05 | Plan creado. Voz: Kokoro local con respaldo ElevenLabs; destino: YouTube. |
 | 2026-10-05 | Fase 0 cerrada: entorno `videos/` aislado, Kokoro en CPU, Manim 0.21 con LaTeX en español (`hola.py`). |
+| 2026-10-11 | Fase 1 cerrada: D1 (`em_alex`, `es-419`, 0.95) y D2 (siglas por su nombre); normalizador, servicio Kokoro, estilo y montaje probados. |

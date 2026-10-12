@@ -8,16 +8,28 @@ dependencies = [
     "kokoro>=0.9.4",
     "manim>=0.21.0",
     "manim-voiceover[transcribe]>=0.4.0",
+    "num2words>=0.5.14",
     "soundfile>=0.13",
     "torch>=2.4",
+    "torchaudio>=2.4",
     "transformers>=4.40",
 ]
 
 [tool.uv.sources]
 derivados = { path = "..", editable = true }
 torch = { index = "pytorch-cpu" }
+torchaudio = { index = "pytorch-cpu" }
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

@@ -1,0 +1,26 @@
+# Videos del libro. Uso: make borrador CAP=08 · make final CAP=08 · make test · make pronunciacion
+CAP ?= 08
+FUENTE = $(wildcard c$(CAP)_*.py)
+MANIM = uv run manim
+
+.PHONY: test voces pronunciacion prueba borrador final
+
+test:
+	uv run pytest -q
+
+voces:  ## muestras de voz para elegir (out/voces/)
+	uv run python elegir_voz.py $(VOZ)
+
+prueba:  ## escena de 30 s con voz y marcas
+	$(MANIM) -ql prueba_voz.py PruebaVoz
+
+borrador:  ## 480p15, todas las escenas del capítulo, y montaje
+	$(MANIM) -ql -a $(FUENTE)
+	uv run python montar.py $(CAP) 480p15
+
+final:  ## 1080p60 para YouTube
+	$(MANIM) -qh -a $(FUENTE)
+	uv run python montar.py $(CAP) 1080p60
+
+pronunciacion:  ## cada término del diccionario → Whisper (out/pronunciacion.tsv)
+	uv run python revisar_pronunciacion.py
