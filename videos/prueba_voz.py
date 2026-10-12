@@ -4,19 +4,14 @@ uv run manim -ql prueba_voz.py PruebaVoz
 """
 from manim import (DOWN, LEFT, UL, UP, Axes, Create, DashedLine, Dot, FadeIn, FadeOut, GrowFromPoint, Line, MathTex,
                    Text, Write)
-from manim_voiceover import VoiceoverScene
-
-from estilo import AZUL, GRIS, ORO, VERDE, fuente
-from narrador import servicio
+from estilo import AZUL, GRIS, ORO, VERDE, Escena, apoyar, fuente
 
 # Ejemplo didáctico del libro, cap. 8 §Payoffs: K = 90, S_T = 110.
 K, S_T = 90, 110
 
 
-class PruebaVoz(VoiceoverScene):
+class PruebaVoz(Escena):
     def construct(self):
-        self.set_speech_service(servicio())
-
         titulo = Text("La opción de compra (call)", font_size=40).to_edge(UP)
         formula = MathTex(r"\text{Payoff} = \max(S_T - K,\ 0)").next_to(titulo, DOWN)
         with self.voiceover(
@@ -26,8 +21,8 @@ class PruebaVoz(VoiceoverScene):
             self.play(Write(titulo))
             self.play(FadeIn(formula, shift=DOWN * 0.2))
 
-        ejes = Axes(x_range=[50, 130, 10], y_range=[0, 40, 10], x_length=8, y_length=3.6,
-                    axis_config={"color": GRIS, "include_numbers": True, "font_size": 22}).shift(DOWN * 1.1)
+        ejes = apoyar(Axes(x_range=[50, 130, 10], y_range=[0, 40, 10], x_length=8, y_length=3.4,
+                           axis_config={"color": GRIS, "include_numbers": True, "font_size": 22}))
         etiqueta = ejes.get_axis_labels(MathTex("S_T", font_size=30), MathTex(r"\text{Payoff}", font_size=30))
         plano = Line(ejes.c2p(50, 0), ejes.c2p(K, 0), color=AZUL, stroke_width=6)
         subida = Line(ejes.c2p(K, 0), ejes.c2p(130, 130 - K), color=AZUL, stroke_width=6)

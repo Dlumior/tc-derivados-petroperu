@@ -1,8 +1,10 @@
-"""Estilo común de la serie: paleta, tipografía, plantilla LaTeX en español y pie de fuente.
+"""Estilo común de la serie: paleta, tipografía, plantilla LaTeX en español, pie de fuente, franja de
+subtítulos y la clase base `Escena`.
 
-Las escenas importan `from estilo import *` antes de construir objetos: fija el fondo y la tipografía por defecto.
+Importar `estilo` antes de construir objetos: fija el fondo y la tipografía por defecto.
 """
-from manim import DL, MathTex, Tex, TexTemplate, Text, config
+from manim import DL, UP, MathTex, Tex, TexTemplate, Text, config
+from manim_voiceover import VoiceoverScene
 
 # Paleta de libro/figuras.py, aclarada para fondo oscuro (mismo tono, más luminosidad).
 FONDO = "#0f1419"
@@ -28,6 +30,34 @@ MathTex.set_default(tex_template=ESPANOL, color=TEXTO)
 Tex.set_default(tex_template=ESPANOL, color=TEXTO)
 
 
+# Franja inferior reservada a los subtítulos de YouTube (el espectador elige su tamaño): ningún objeto entra en ella.
+FRANJA_SUBTITULOS = 0.15 * config.frame_height
+PISO = -config.frame_height / 2 + FRANJA_SUBTITULOS  # coordenada y más baja que puede ocupar el contenido
+
+
 def fuente(texto: str) -> Text:
-    """Pie de fuente en la esquina inferior izquierda, como \\fuente{...} en el libro."""
-    return Text(f"Fuente: {texto}", font_size=16, color=GRIS).to_corner(DL, buff=0.25)
+    """Pie de fuente a la izquierda, justo encima de la franja de subtítulos (como \\fuente{...} en el libro)."""
+    pie = Text(f"Fuente: {texto}", font_size=16, color=GRIS).to_corner(DL, buff=0.25)
+    return pie.shift(UP * (PISO + 0.05 - pie.get_bottom()[1]))
+
+
+def apoyar(mobject, margen: float = 0.45):
+    """Asienta el objeto sobre el piso; el margen por defecto deja sitio al pie de fuente."""
+    return mobject.shift(UP * (PISO + margen - mobject.get_bottom()[1]))
+
+
+class Escena(VoiceoverScene):
+    """Escena narrada de la serie: usa la voz de narrador.py y falla si algo invade la franja de subtítulos."""
+
+    def setup(self):
+        from narrador import servicio
+
+        super().setup()
+        self.set_speech_service(servicio())
+
+    def play(self, *args, **kwargs):
+        super().play(*args, **kwargs)
+        invasores = [m for m in self.mobjects if m.get_bottom()[1] < PISO - 1e-3]
+        if invasores:
+            detalle = ", ".join(f"{type(m).__name__} (borde inferior {m.get_bottom()[1]:.2f})" for m in invasores)
+            raise ValueError(f"Invaden la franja de subtítulos (y < {PISO:.2f}): {detalle}")

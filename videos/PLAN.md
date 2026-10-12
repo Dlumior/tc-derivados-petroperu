@@ -11,7 +11,10 @@ Este archivo es el registro de avance: marcar `[x]` al cerrar cada tarea y actua
 2. **Toda cifra del caso con fuente** en pantalla (pie pequeño, como `\fuente{...}`) y en la descripción de YouTube.
 3. **Adaptar, no leer**: cada video dura 10–14 min (≈ 1,600–2,000 palabras de narración). El capítulo tiene
    ≈ 2,800 palabras: hay que elegir una intuición central por sección.
-4. Idioma: español (Perú); números leídos según el normalizador (`1,234.5` → "mil doscientos treinta y cuatro coma cinco").
+4. **Franja de subtítulos**: el 15 % inferior del cuadro queda libre para los subtítulos de YouTube (el espectador
+   elige su tamaño). Las escenas heredan de `estilo.Escena`, que falla si algo entra en la franja; `apoyar()` asienta
+   gráficos sobre el piso dejando sitio al pie de fuente.
+5. Idioma: español (Perú); números leídos según el normalizador (`1,234.5` → "mil doscientos treinta y cuatro coma cinco").
 
 ## 1. Herramientas
 
@@ -86,8 +89,12 @@ Estados: ⬜ pendiente · ✍️ guion · 🎞️ animación · 🔊 voz · ✅ 
 - [x] `estilo.py`: paleta de `libro/figuras.py` aclarada sobre fondo `#0f1419`, CMU Serif, `TexTemplate` en
       español, pie `fuente(...)`.
 - [x] Escena de prueba `prueba_voz.py` (24 s) con voz real y tres marcas `<bookmark/>` sincronizadas.
+- [x] Franja de subtítulos (15 % inferior) con control automático en `estilo.Escena`; pie de fuente encima de ella.
 - [x] `Makefile` (`make test | voces | pronunciacion | prueba | borrador CAP=08 | final CAP=08`) y `montar.py`
-      (une las escenas en orden de definición, `loudnorm` → −14.7 LUFS medido).
+      (une las escenas en orden de definición, `loudnorm` → −14.7 LUFS medido). Además une los `.srt` en
+      `out/subtitulos/` y genera `out/vista_previa/` con subtítulos pequeños quemados (Liberation Sans: la Noto Sans
+      variable sale con números diminutos en libass). Revisar siempre desde `out/`: en `media/` el reproductor
+      carga el `.srt` de Manim a tamaño proporcional y tapa el video.
 
 ### Fase 2: Piloto (capítulo 8, Opciones)
 
@@ -137,7 +144,7 @@ Por cada capítulo, en el orden del tablero: guion → revisión → storyboard 
 - [ ] Crear el canal o la lista de reproducción; decidir visibilidad (D4).
 - [ ] Revisar la política de YouTube sobre contenido sintético (voz generada) y marcar la divulgación si corresponde.
 - [ ] Por video: título, descripción con capítulos (marcas de tiempo), referencias del libro y créditos de música.
-- [ ] Por video: subtítulos `.srt` en español y miniatura 1280×720.
+- [ ] Por video: subir `out/subtitulos/cNN.srt` (español) y miniatura 1280×720.
 - [ ] Tráiler de 60–90 s de la serie (opcional).
 - [ ] Publicar en el orden de la serie (1 → 13), no en el de producción.
 
@@ -158,3 +165,4 @@ Por cada capítulo, en el orden del tablero: guion → revisión → storyboard 
 | 2026-10-05 | Plan creado. Voz: Kokoro local con respaldo ElevenLabs; destino: YouTube. |
 | 2026-10-05 | Fase 0 cerrada: entorno `videos/` aislado, Kokoro en CPU, Manim 0.21 con LaTeX en español (`hola.py`). |
 | 2026-10-11 | Fase 1 cerrada: D1 (`em_alex`, `es-419`, 0.95) y D2 (siglas por su nombre); normalizador, servicio Kokoro, estilo y montaje probados. |
+| 2026-10-11 | Voz aprobada tras escuchar la prueba. Franja de subtítulos reservada y subtítulos del capítulo en `montar.py`. |
