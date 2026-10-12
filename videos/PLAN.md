@@ -35,7 +35,7 @@ Estados: ⬜ pendiente · ✍️ guion · 🎞️ animación · 🔊 voz · ✅ 
 
 | Cap. | Título | Estado | Duración | Notas |
 |---|---|---|---|---|
-| 08 | Opciones financieras (**piloto**) | ✍️ | ≈ 9–11 min | Fija el estilo; guion en revisión |
+| 08 | Opciones financieras (**piloto**) | ✍️ | ≈ 15 min | Fija el estilo; guion v2 en revisión |
 | 02 | El valor del dinero en el tiempo | ⬜ | | |
 | 03 | Riesgo, rendimiento y exposición | ⬜ | | |
 | 04 | Mercados, posiciones y participantes | ⬜ | | |
@@ -98,7 +98,9 @@ Estados: ⬜ pendiente · ✍️ guion · 🎞️ animación · 🔊 voz · ✅ 
 
 ### Fase 2: Piloto (capítulo 8, Opciones)
 
-- [x] `guiones/c08.md`: 9 escenas con narración, marcas y visual; cifras del caso como `{llaves}` con su origen.
+- [x] `guiones/c08.md`: 10 escenas con narración, marcas y visual; cifras del caso como `{llaves}` con su origen.
+- [x] Guion v2 (2026-10-11): ≈ 15 min; escena nueva "Largo y corto" (call/put larga y corta), desgaste del valor
+      tiempo, arbitraje de paridad, tres capas del collar y plan B de la put.
 - [ ] Revisión del guion por el autor (rigor + claridad).
 - [ ] Storyboard: un fotograma por escena (`manim -s`), aprobado.
 - [ ] Animar las escenas (`c08_opciones.py`, una `Scene` por sección).
@@ -166,3 +168,4 @@ Por cada capítulo, en el orden del tablero: guion → revisión → storyboard 
 | 2026-10-05 | Fase 0 cerrada: entorno `videos/` aislado, Kokoro en CPU, Manim 0.21 con LaTeX en español (`hola.py`). |
 | 2026-10-11 | Fase 1 cerrada: D1 (`em_alex`, `es-419`, 0.95) y D2 (siglas por su nombre); normalizador, servicio Kokoro, estilo y montaje probados. |
 | 2026-10-11 | Voz aprobada tras escuchar la prueba. Franja de subtítulos reservada y subtítulos del capítulo en `montar.py`. |
+| 2026-10-11 | Guion del piloto v2: ≈ 15 min, primera persona del plural, trayectorias simuladas, cierre como gancho. |
