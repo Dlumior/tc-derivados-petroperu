@@ -35,7 +35,7 @@ Estados: ⬜ pendiente · ✍️ guion · 🎞️ animación · 🔊 voz · ✅ 
 
 | Cap. | Título | Estado | Duración | Notas |
 |---|---|---|---|---|
-| 08 | Opciones financieras (**piloto**) | ⬜ | | Fija el estilo |
+| 08 | Opciones financieras (**piloto**) | ✍️ | ≈ 9–11 min | Fija el estilo; guion en revisión |
 | 02 | El valor del dinero en el tiempo | ⬜ | | |
 | 03 | Riesgo, rendimiento y exposición | ⬜ | | |
 | 04 | Mercados, posiciones y participantes | ⬜ | | |
@@ -98,7 +98,7 @@ Estados: ⬜ pendiente · ✍️ guion · 🎞️ animación · 🔊 voz · ✅ 
 
 ### Fase 2: Piloto (capítulo 8, Opciones)
 
-- [ ] `guiones/c08.md`: guion escena por escena, columnas *narración* | *visual*, con duración estimada.
+- [x] `guiones/c08.md`: 9 escenas con narración, marcas y visual; cifras del caso como `{llaves}` con su origen.
 - [ ] Revisión del guion por el autor (rigor + claridad).
 - [ ] Storyboard: un fotograma por escena (`manim -s`), aprobado.
 - [ ] Animar las escenas (`c08_opciones.py`, una `Scene` por sección).
